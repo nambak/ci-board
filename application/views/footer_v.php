@@ -3,7 +3,7 @@
     <p class="col-md-4 mb-0 text-body-secondary">
         <a href="http://www.cikorea.net" target="_blank" class="text-secondary text-decoration-none">CodeIgniter 한국사용자포럼</a>
     </p>
-    <p class="col-md-4 justify-content-end text-end">
+    <p class="col-md-4 mb-0 justify-content-end text-end align-middle">
         <small>Copyright by <em><a href="mailto:nambak80@gmail.com" class="text-secondary text-decoration-none">nambak80@gmail.com</a></em></small>
     </p>
 </footer>

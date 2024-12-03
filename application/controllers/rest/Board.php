@@ -9,22 +9,27 @@ class Board extends RestController
     public function __construct()
     {
         parent::__construct();
+
+        $this->load->model('board_m');
     }
 
-    public function index_get($id)
+    public function index_get()
     {
-        $this->load->model('board_m');
+        $this->response([
+            'rows' => $this->board_m->get()
+        ], 200);
+    }
 
-        if (!$this->board_m->exists($id)) {
-            $this->response([
-                'status'  => false,
-                'message' => 'No board  were found'
-            ], 404);
-        }
+    public function detail_get()
+    {
+        $this->load->model('post_m');
+        $id = $this->get('id', true);
+        $posts = $this->post_m->fetchByBoardId($id);
+        $board = $this->board_m->get($id);
 
         $this->response([
-            'board_id' => $id,
-            'data'     => $this->board_m->get()
+            'name' => $board[0]->name,
+            'rows' => $posts
         ], 200);
     }
 }

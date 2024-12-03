@@ -12,4 +12,11 @@ class Board extends MY_Controller
     {
          $this->load->view('board/list_v');
     }
+
+    public function detail()
+    {
+        $queryParams['id'] = $this->input->get('id', true);
+
+        $this->load->view('board/detail_v', $queryParams);
+    }
 }

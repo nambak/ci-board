@@ -1,43 +1,42 @@
-<article class="container my-5">
+<article class="container my-5" id="board_list">
     <h1>게시판</h1>
-    <table class="table table-striped">
-        <thead class="table-dark">
-        <tr>
-            <th scope="col">번호</th>
-            <th scope="col">제목</th>
-            <th scope="col">작성자</th>
-            <th scope="col">조회수</th>
-            <th scope="col">등록일</th>
-        </tr>
-        </thead>
-        <tbody>
-
-        </tbody>
-    </table>
-    <nav>
-        <ul class="pagination">
-            <li class="page-item"><a href="#" class="page-link">1</a></li>
-        </ul>
-    </nav>
+    <table class="table table-striped" id="board_list_table"></table>
 </article>
 <script defer>
-  $(document).ready(function () {
-    $.ajax({
-      url: '/rest/board/<?= $this->input->get('id', TRUE) ?: 1; ?>',
-      type: 'GET',
-      data: {
-        page: 1,
-      },
-      error: function (error) {
-        Swal.fire({
-          title: 'Error ' + error.status ,
-          text: error.statusText,
-          icon: 'error',
+    $(document).ready(function () {
+        $('#board_list_table').bootstrapTable({
+            url: '/rest/board',
+            columns: [{
+                field: 'id',
+                title: '번호',
+                formatter: function (value, row, index) {
+                    return row.id;
+                }
+            }, {
+                field: 'name',
+                title: '제목',
+                formatter: function (value, row, index) {
+                    return `<a href="/board/detail?id=${row.id}">${row.name}</a>`;
+                }
+            }, {
+                field: 'description',
+                title: '설명',
+                formatter: function (value, row, index) {
+                    return row.description;
+                }
+            }, {
+                field: 'created_at',
+                title: '등록일',
+                formatter: function (value, row, index) {
+                    return row.created_at;
+                }
+            }],
+            pagination: true,
+            headerStyle: function (column) {
+                return {
+                    classes: 'table-dark'
+                }
+            }
         });
-      },
-      success: function (response) {
-        console.log(response);
-      }
-    });
-  })
+    })
 </script>
