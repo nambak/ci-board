@@ -1,0 +1,43 @@
+:root {
+    --bs-primary: #5e81ac;
+    --bs-primary-rgb: 94, 129, 172;
+    --bs-body-color: #2e3440;
+    --bs-dark: #2e3440;  /* dark 테마 색상 변수 추가 */
+    --bs-dark-rgb: 46, 52, 64;  /* dark 색상의 RGB 값 추가 */
+}
+
+body {
+    color: #2e3440;
+}
+
+/* dark 배경 관련 클래스 수정 */
+.bg-dark {
+    background-color: #2e3440 !important;
+}
+
+.text-bg-dark {
+    color: #fff !important;
+    background-color: #2e3440 !important;
+}
+
+.btn-primary {
+    --bs-btn-bg: #5e81ac;
+    --bs-btn-border-color: #5e81ac;
+    --bs-btn-hover-bg: #4c6a8f;
+    --bs-btn-hover-border-color: #4c6a8f;
+    --bs-btn-active-bg: #4c6a8f;
+    --bs-btn-active-border-color: #4c6a8f;
+}
+
+.btn-outline-primary {
+    --bs-btn-color: #5e81ac;
+    --bs-btn-border-color: #5e81ac;
+    --bs-btn-hover-bg: #5e81ac;
+    --bs-btn-hover-border-color: #5e81ac;
+    --bs-btn-active-bg: #4c6a8f;
+    --bs-btn-active-border-color: #4c6a8f;
+}
+
+.text-primary {
+    color: #5e81ac !important;
+}

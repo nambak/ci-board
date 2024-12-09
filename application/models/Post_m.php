@@ -17,7 +17,11 @@ class Post_m extends CI_Model
 
     public function get($id)
     {
-        $query = $this->db->get_where('posts', ['id' => $id]);
+        $this->db->select('*');
+        $this->db->from('posts');
+        $this->db->join('users', 'users.id = posts.user_id');
+        $this->db->where('posts.id', $id);
+        $query = $this->db->get();
 
         return $query->row();
     }
