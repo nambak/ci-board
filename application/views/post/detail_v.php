@@ -30,7 +30,7 @@
         <div class="col">
             <div class="d-flex justify-content-between">
                 <div>
-                    <button class="btn btn-outline-secondary me-2">목록으로</button>
+                    <button id="gotoBoardListButton" class="btn btn-outline-secondary me-2">목록으로</button>
                     <button class="btn btn-outline-primary me-2">수정</button>
                     <button class="btn btn-outline-danger">삭제</button>
                 </div>
@@ -81,6 +81,13 @@
 </article>
 <script defer>
     let pageId = '#post_detail ';
+
+    function initRedirectBoardListButton(boardId) {
+        $(pageId + '#gotoBoardListButton').on('click', () => {
+            location.href = `/board/detail?id=${boardId}`;
+        });
+    }
+
     $(document).ready(() => {
         $.ajax({
             url: '/rest/post/detail',
@@ -98,6 +105,8 @@
                     $(pageId + '#views').text(data.views);
                     $(pageId + '#content').html(data.content);
                 }
+
+                initRedirectBoardListButton(data.board_id);
             },
             error: (error) => {
                 Swal.fire({
