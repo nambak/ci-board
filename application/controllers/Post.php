@@ -14,4 +14,11 @@ class Post extends MY_Controller
 
         $this->load->view('post/detail_v', $queryParams);
     }
+
+    public function edit()
+    {
+        $queryParams['id'] = $this->input->get('id', true);
+
+        $this->load->view('post/edit_v', $queryParams);
+    }
 }

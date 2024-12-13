@@ -30,8 +30,8 @@
         <div class="col">
             <div class="d-flex justify-content-between">
                 <div>
-                    <button id="gotoBoardListButton" class="btn btn-outline-secondary me-2">목록으로</button>
-                    <button class="btn btn-outline-primary me-2">수정</button>
+                    <button id="redirectBoardListButton" class="btn btn-outline-secondary me-2">목록으로</button>
+                    <button id="redirectEditPost" class="btn btn-outline-primary me-2">수정</button>
                     <button class="btn btn-outline-danger">삭제</button>
                 </div>
                 <div>
@@ -83,8 +83,14 @@
     let pageId = '#post_detail ';
 
     function initRedirectBoardListButton(boardId) {
-        $(pageId + '#gotoBoardListButton').on('click', () => {
+        $(pageId + '#redirectBoardListButton').on('click', () => {
             location.href = `/board/detail?id=${boardId}`;
+        });
+    }
+
+    function initRedirectPostEditButton(postId) {
+        $(pageId + '#redirectEditPost').on('click', () => {
+            location.href = `/post/edit?id=${postId}`;
         });
     }
 
@@ -107,6 +113,7 @@
                 }
 
                 initRedirectBoardListButton(data.board_id);
+                initRedirectPostEditButton(data.id);
             },
             error: (error) => {
                 Swal.fire({
