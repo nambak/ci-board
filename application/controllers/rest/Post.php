@@ -15,6 +15,11 @@ class Post extends RestController
         $this->load->model('post_m');
         $id = $this->get('id', true);
         $post = $this->post_m->get($id);
+
+        if (!$post) {
+            $this->response('post not found', 404);
+        }
+
         $this->response($post, 200);
     }
 }
