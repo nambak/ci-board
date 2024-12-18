@@ -8,6 +8,7 @@
 
 body {
     color: #2e3440;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 }
 
 /* dark 배경 관련 클래스 수정 */
