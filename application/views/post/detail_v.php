@@ -104,7 +104,6 @@
             },
             success: (data) => {
                 if(data) {
-                    console.log(data.title);
                     $(pageId + '#title').text(data.title);
                     $(pageId + '#writer').text(data.name);
                     $(pageId + '#createdAt').text(data.created_at);
