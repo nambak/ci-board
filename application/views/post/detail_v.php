@@ -32,7 +32,7 @@
                 <div>
                     <button id="redirectBoardListButton" class="btn btn-outline-secondary me-2">목록으로</button>
                     <button id="redirectEditPost" class="btn btn-outline-primary me-2">수정</button>
-                    <button class="btn btn-outline-danger">삭제</button>
+                    <button id="deletePost" class="btn btn-outline-danger">삭제</button>
                 </div>
                 <div>
                     <button class="btn btn-outline-primary me-2">이전글</button>
@@ -41,6 +41,7 @@
             </div>
         </div>
     </div>
+    <!-- TODO: 댓글 영역 분리하기 -->
     <!-- 댓글 영역 -->
     <div class="row">
         <div class="col">
@@ -94,6 +95,40 @@
         });
     }
 
+    function initDeletePostButton(postId) {
+        $(pageId + '#deletePost').on('click', () => {
+            Swal.fire({
+                title: '게시물을 삭제하시겠습니까?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: '삭제',
+                cancelButtonText: '취소'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/rest/post/delete',
+                        type: 'DELETE',
+                        dataType: 'json',
+                        data: {
+                            id: <?= $id ?>
+                        },
+                        success: (data) => {
+                            $(pageId + '#redirectBoardListButton').click();
+                        },
+                        error: (error) => {
+                            Swal.fire({
+                                title: error.status,
+                                text: error.statusText,
+                                icon: 'error'
+                            });
+                        }
+                    })
+                }
+            });
+        });
+    }
+
     $(document).ready(() => {
         $.ajax({
             url: '/rest/post/detail',
@@ -113,10 +148,12 @@
 
                 initRedirectBoardListButton(data.board_id);
                 initRedirectPostEditButton(data.id);
+                initDeletePostButton(data.id);
             },
             error: (error) => {
                 Swal.fire({
-                    title: `${error.status} ${error.statusText}`,
+                    title: error.status,
+                    text: error.statusText,
                     icon: 'error'
                 });
             }
