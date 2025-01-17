@@ -25,17 +25,27 @@ class Post extends RestController
 
     public function update_post()
     {
-        $id = $this->input->get('id', true);
-        $title = $this->input->post('title', true);
-        $content = $this->input->post('content', true);
+        try {
+            $id = $this->input->get('id', true);
+            $title = $this->input->post('title', true);
+            $content = $this->input->post('content', true);
 
-        $result = $this->post_m->update($id, $title, $content);
+            $this->post_m->update($id, $title, $content);
 
-        if ($result) {
             $this->response('success', 200);
-        } else {
-            $this->response('database failed: ' . $result , 500);
+        } catch (Exception $e) {
+            $this->response('server error: ' . $e->getMessage() , 500);
         }
+    }
 
+    public function index_delete($id)
+    {
+        try {
+            $this->post_m->delete($id);
+            $this->response('success', 200);
+
+        } catch (Exception $e) {
+            $this->response('server error: ' . $e->getMessage(), 500);
+        }
     }
 }

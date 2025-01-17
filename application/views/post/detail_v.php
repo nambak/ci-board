@@ -107,12 +107,9 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/rest/post/delete',
+                        url: '/rest/post/<?= $id ?>',
                         type: 'DELETE',
                         dataType: 'json',
-                        data: {
-                            id: <?= $id ?>
-                        },
                         success: (data) => {
                             $(pageId + '#redirectBoardListButton').click();
                         },

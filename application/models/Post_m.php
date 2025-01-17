@@ -32,4 +32,9 @@ class Post_m extends CI_Model
         return $this->db->update('posts', ['title' => $title, 'content' => $content]);
     }
 
+    public function delete($id)
+    {
+        $this->db->where('id', $id);
+        return $this->db->delete('posts');
+    }
 }
