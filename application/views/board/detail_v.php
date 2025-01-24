@@ -1,11 +1,27 @@
 <article class="container my-5" id="board_detail">
-    <h1 id="title"></h1>
-    <table class="table table-striped" id="board_detail_table"></table>
+    <div class="row mb-4">
+        <h1 id="title"></h1>
+    </div>
+    <div class="row mb-3">
+        <table class="table table-striped" id="board_detail_table"></table>
+    </div>
+    <div class="row">
+        <div class="col">
+            <button id="writePost" class="btn btn-primary">글 작성</button>
+        </div>
+    </div>
 </article>
 <script defer>
     const pageId = '#board_detail ';
 
     $(document).ready(() => {
+        initPostList();
+        $(pageId + '#writePost').on('click', () => {
+            location.href = '/post/create?board_id=<?= $id ?>';
+        });
+    });
+
+    function initPostList() {
         $(pageId + '#board_detail_table').bootstrapTable({
             url: '/rest/board/detail',
             columns: [{
@@ -54,5 +70,5 @@
                 $(pageId + '#title').text(title)
             }
         });
-    });
+    }
 </script>

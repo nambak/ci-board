@@ -21,4 +21,11 @@ class Post extends MY_Controller
 
         $this->load->view('post/edit_v', $queryParams);
     }
+
+    public function create()
+    {
+        $queryParams['board_id'] = $this->input->get('board_id', true);
+
+        $this->load->view('post/create_v', $queryParams);
+    }
 }

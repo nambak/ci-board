@@ -29,7 +29,8 @@ class Board extends RestController
 
         $this->response([
             'name' => $board[0]->name,
-            'rows' => $posts
+            'rows' => $posts,
+            'id' => $id
         ], 200);
     }
 }
