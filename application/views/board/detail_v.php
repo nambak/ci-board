@@ -11,6 +11,12 @@
         </div>
     </div>
 </article>
+<style>
+    #board_detail_table td a {
+        color: #000;
+        text-decoration: none;
+    }
+</style>
 <script defer>
     const pageId = '#board_detail ';
 
@@ -22,30 +28,32 @@
     });
 
     function initPostList() {
-        $(pageId + '#board_detail_table').bootstrapTable({
+        const $table = $(pageId + '#board_detail_table');
+        $table.bootstrapTable({
             url: '/rest/board/detail',
             columns: [{
                 field: 'id',
                 title: '번호',
                 formatter: (value, row, index) => {
-                    return row.id;
+                    let dataLength = $table.bootstrapTable('getData').length;
+                    return dataLength - index;
                 }
             }, {
                 field: 'title',
                 title: '제목',
-                formatter: (value, row, index) => {
+                formatter: (value, row) => {
                     return `<a href="/post/detail?id=${row.id}">${row.title}</a>`;
                 }
             }, {
                 field: 'views',
                 title: '조회수',
-                formater: (value, row, index) => {
+                formater: (value, row) => {
                     return row.views;
                 }
             }, {
                 field: 'created_at',
                 title: '등록일',
-                formatter: (value, row, index) => {
+                formatter: (value, row) => {
                     return row.created_at
                 }
             }],
@@ -55,7 +63,7 @@
                     classes: 'table-dark'
                 }
             },
-            queryParams: (params) => {
+            queryParams: () => {
                 return {
                     id: <?= $id; ?>
                 }
