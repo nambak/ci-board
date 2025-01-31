@@ -42,7 +42,13 @@
                 field: 'title',
                 title: '제목',
                 formatter: (value, row) => {
-                    return `<a href="/post/detail?id=${row.id}">${row.title}</a>`;
+                    return `<a href="/post/detail?id=${row.post_id}">${row.title}</a>`;
+                }
+            }, {
+                field: 'writer',
+                title: '작성자',
+                formatter: (value, row) => {
+                    return `<a href="/user?id=${row.writer_id}">${row.writer}</a>`;
                 }
             }, {
                 field: 'views',
