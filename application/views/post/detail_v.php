@@ -147,12 +147,10 @@
                 initRedirectPostEditButton(data.id);
                 initDeletePostButton(data.id);
             },
-            error: (error) => {
-                Swal.fire({
-                    title: error.status,
-                    text: error.statusText,
-                    icon: 'error'
-                });
+            error: (xhr) => {
+                if (xhr.status === 404) {
+                    window.location.href = '/errors/error_404';
+                }
             }
         });
     });
