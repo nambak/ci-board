@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 class Post_m extends CI_Model
 {
@@ -29,12 +29,26 @@ class Post_m extends CI_Model
     public function update($id, $title, $content)
     {
         $this->db->where('id', $id);
+
         return $this->db->update('posts', ['title' => $title, 'content' => $content]);
     }
 
     public function delete($id)
     {
         $this->db->where('id', $id);
+
         return $this->db->delete('posts');
+    }
+
+    public function store($boardId, $title, $content)
+    {
+        $this->db->insert('posts', [
+            'board_id' => $boardId,
+            'user_id'  => 1,
+            'title'    => $title,
+            'content'  => $content
+        ]);
+
+        return $this->db->insert_id();
     }
 }

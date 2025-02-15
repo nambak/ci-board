@@ -11,6 +11,7 @@ class Post extends RestController
         $this->load->model('post_m');
     }
 
+    // 게시판 게시글 상세 정보 조회
     public function detail_get()
     {
         $id = $this->get('id', true);
@@ -46,6 +47,20 @@ class Post extends RestController
 
         } catch (Exception $e) {
             $this->response('server error: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function create_post()
+    {
+        try {
+            $title = $this->input->post('title', true);
+            $content = $this->input->post('content', true);
+            $boardId = $this->input->post('board_id', true);
+
+            $result = $this->post_m->store($boardId, $title, $content);
+            $this->response(['id' => $result], 200);
+        } catch (Exception $e) {
+            $this->response('server error: ' . $e->getMessage() , 500);
         }
     }
 }
