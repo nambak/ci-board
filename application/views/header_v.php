@@ -18,7 +18,7 @@
     <header class="p-3 text-bg-dark">
         <div class="container">
             <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-                <div class="bg-white text-black p-2 rounded-3 me-3">만들면서 배우는 Codeigniter</div>
+                <div class="bg-white text-black p-2 rounded-3 me-3">CI3Board</div>
                 <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
                     <li><a href="/board?id=1" class="nav-link px-2 text-white">게시판</a></li>
                 </ul>
