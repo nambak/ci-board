@@ -20,3 +20,5 @@ class Board extends MY_Controller
         $this->load->view('board/detail_v', $queryParams);
     }
 }
+
+
