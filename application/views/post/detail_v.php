@@ -35,8 +35,8 @@
                     <button id="deletePost" class="btn btn-outline-danger">삭제</button>
                 </div>
                 <div>
-                    <button class="btn btn-outline-primary me-2">이전글</button>
-                    <button class="btn btn-outline-primary">다음글</button>
+                    <button id="prevPostButton" class="btn btn-outline-primary me-2">이전글</button>
+                    <button id="nextPostButton" class="btn btn-outline-primary">다음글</button>
                 </div>
             </div>
         </div>
@@ -126,13 +126,33 @@
         });
     }
 
-    $(document).ready(() => {
+    function initPrevNextPostButton(data) {
+        if (data.prev_id) {
+            $(pageId + '#prevPostButton').on('click', () => {
+                getPostData(data.prev_id);
+            })
+            $(pageId + '#prevPostButton').removeAttr('disabled');
+        } else {
+            $(pageId + '#prevPostButton').attr('disabled', true);
+        }
+
+        if (data.next_id) {
+            $(pageId + '#nextPostButton').on('click', () => {
+                getPostData(data.next_id);
+            })
+            $(pageId + '#nextPostButton').removeAttr('disabled');
+        } else {
+            $(pageId + '#nextPostButton').attr('disabled', true);
+        }
+    }
+
+    function getPostData(postId) {
         $.ajax({
             url: '/rest/post/detail',
             type: 'GET',
             dataType: 'json',
             data: {
-                id: <?= $id ?>
+                id: postId
             },
             success: (data) => {
                 if(data) {
@@ -146,6 +166,7 @@
                 initRedirectBoardListButton(data.board_id);
                 initRedirectPostEditButton(data.id);
                 initDeletePostButton(data.id);
+                initPrevNextPostButton(data);
             },
             error: (error) => {
                 Swal.fire({
@@ -155,5 +176,9 @@
                 });
             }
         });
+    }
+
+    $(document).ready(() => {
+        getPostData(<?= $id ?>);
     });
 </script>

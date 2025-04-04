@@ -51,4 +51,40 @@ class Post_m extends CI_Model
 
         return $this->db->insert_id();
     }
+
+    /**
+     * 이전 게시물 가져오기
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function get_previous($id)
+    {
+        $this->db->select('*');
+        $this->db->from('posts');
+        $this->db->where('id <', $id);
+        $this->db->order_by('id', 'DESC');
+        $this->db->limit(1);
+
+        return $this->db->get()->row();
+    }
+
+
+    /**
+     * 다음 게시물 가져오기
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function get_next($id)
+    {
+        $this->db->select('*');
+        $this->db->from('posts');
+        $this->db->where('id >', $id);
+        $this->db->order_by('id', 'ASC');
+        $this->db->limit(1);
+
+        return $this->db->get()->row();
+    }
+
 }

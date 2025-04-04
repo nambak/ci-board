@@ -20,6 +20,12 @@ class Post extends RestController
             $this->response('post not found', 404);
         }
 
+        $prevPost = $this->post_m->get_previous($id);
+        $nextPost = $this->post_m->get_next($id);
+
+        $post->prev_id = $prevPost ? $prevPost->id : null;
+        $post->next_id = $nextPost ? $nextPost->id : null;
+
         $this->response($post, 200);
     }
 
