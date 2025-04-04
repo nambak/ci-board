@@ -10,7 +10,11 @@ class Post_m extends CI_Model
 
     public function fetchByBoardId($boardId)
     {
-        $query = $this->db->get_where('posts', ['board_id' => $boardId]);
+        $this->db->select('*');
+        $this->db->from('posts');
+        $this->db->where('board_id', $boardId);
+        $this->db->order_by('id', 'DESC');
+        $query = $this->db->get();
 
         return $query->result();
     }
