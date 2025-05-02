@@ -52,10 +52,10 @@
                 <div class="card-body">
                     <form>
                         <div class="mb-3">
-                            <textarea class="form-control" rows="3" placeholder="댓글을 입력하세요"></textarea>
+                            <textarea name="comment" class="form-control" rows="3" placeholder="댓글을 입력하세요"></textarea>
                         </div>
                         <div class="text-end">
-                            <button type="submit" class="btn btn-primary">댓글 작성</button>
+                            <button type="button" id="write_comment" class="btn btn-primary">댓글 작성</button>
                         </div>
                     </form>
                 </div>
@@ -146,6 +146,45 @@
         }
     }
 
+    function initCommentPostButton(postId) {
+        if (postId) {
+            $(pageId + '#write_comment').on('click', () => {
+                saveComment(postId);
+            });
+        }
+    }
+
+    function saveComment(postId) {
+        const comment = $(pageId + "textarea[name=comment]").val();
+
+        if (!comment) {
+            Swal.fire({
+                icon: 'warning',
+                text: '댓글 내용이 없습니다.'
+            });
+
+            return false;
+        }
+
+        $.ajax({
+            url: '/rest/comment/save',
+            type: 'POST',
+            data: {
+                post_id: postId,
+                comment: comment
+            },
+            success: (response) => {
+                console.log(response);
+            },
+            error: (error) => {
+                Swal.fire({
+                    title: `${error.status} ${error.statusText}`,
+                    icon: 'error'
+                });
+            }
+        });
+    }
+
     function getPostData(postId) {
         $.ajax({
             url: '/rest/post/detail',
@@ -179,6 +218,9 @@
     }
 
     $(document).ready(() => {
-        getPostData(<?= $id ?>);
+        const postId = <?= $id ?>;
+
+        getPostData(postId);
+        initCommentPostButton(postId);
     });
 </script>
