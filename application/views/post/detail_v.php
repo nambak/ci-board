@@ -41,7 +41,7 @@
             </div>
         </div>
     </div>
-    <!-- TODO: 댓글 영역 분리하기 -->
+
     <!-- 댓글 영역 -->
     <div class="row">
         <div class="col">
@@ -174,14 +174,35 @@
                 comment: comment
             },
             success: (response) => {
-                console.log(response);
+                getComments(postId)
             },
             error: (error) => {
-                Swal.fire({
-                    title: `${error.status} ${error.statusText}`,
-                    icon: 'error'
-                });
+                displayError(error)
             }
+        });
+    }
+
+    function getComments(postId) {
+        $.ajax({
+            url: `/rest/post/${postId}/comments`,
+            type: 'GET',
+            success: (response) => {
+                generateCommentList(response.data);
+            },
+            error: (error) => {
+                displayError(error)
+            }
+        })
+    }
+
+    function generateCommentList(data) {
+        console.log(data);
+    }
+
+    function displayError(error) {
+        Swal.fire({
+            title: `${error.status} ${error.statusText}`,
+            icon: 'error'
         });
     }
 
@@ -197,9 +218,9 @@
                 if(data) {
                     $(pageId + '#title').text(data.title);
                     $(pageId + '#writer').text(data.name);
-                    $(pageId + '#createdAt').text(data.created_at);
-                    $(pageId + '#views').text(data.views);
                     $(pageId + '#content').html(data.content);
+                    $(pageId + '#views').text(data.views);
+                    $(pageId + '#createdAt').text(data.created_at);
                 }
 
                 initRedirectBoardListButton(data.board_id);
@@ -208,11 +229,7 @@
                 initPrevNextPostButton(data);
             },
             error: (error) => {
-                Swal.fire({
-                    title: error.status,
-                    text: error.statusText,
-                    icon: 'error'
-                });
+                displayError(error);
             }
         });
     }
@@ -222,5 +239,6 @@
 
         getPostData(postId);
         initCommentPostButton(postId);
+        getComments(postId);
     });
 </script>

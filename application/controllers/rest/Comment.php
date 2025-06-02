@@ -12,6 +12,15 @@ class Comment extends RestController
         $this->load->model('post_m');
     }
 
+    public function index_get()
+    {
+        $comments = [
+            'data' => []
+        ];
+
+        $this->response($comments, 200);
+    }
+
     public function save_post()
     {
         $comment = $this->post('comment', true);
