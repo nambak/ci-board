@@ -11,6 +11,7 @@ class Post extends RestController
         $this->load->model('post_m');
     }
 
+    // 게시판 게시글 상세 정보 조회
     public function detail_get()
     {
         $id = $this->get('id', true);
