@@ -55,7 +55,7 @@
                             <textarea name="comment" class="form-control" rows="3" placeholder="댓글을 입력하세요"></textarea>
                         </div>
                         <div class="text-end">
-                            <button type="button" id="write_comment" class="btn btn-primary">댓글 작성</button>
+                            <button type="submit" class="btn btn-primary">댓글 작성</button>
                         </div>
                     </form>
                 </div>
@@ -218,9 +218,9 @@
                 if(data) {
                     $(pageId + '#title').text(data.title);
                     $(pageId + '#writer').text(data.name);
-                    $(pageId + '#content').html(data.content);
-                    $(pageId + '#views').text(data.views);
                     $(pageId + '#createdAt').text(data.created_at);
+                    $(pageId + '#views').text(data.views);
+                    $(pageId + '#content').html(data.content);
                 }
 
                 initRedirectBoardListButton(data.board_id);
@@ -228,8 +228,10 @@
                 initDeletePostButton(data.id);
                 initPrevNextPostButton(data);
             },
-            error: (error) => {
-                displayError(error);
+            error: (xhr) => {
+                if (xhr.status === 404) {
+                    window.location.href = '/errors/error_404';
+                }
             }
         });
     }
