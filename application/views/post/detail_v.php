@@ -41,7 +41,7 @@
             </div>
         </div>
     </div>
-    <!-- TODO: 댓글 영역 분리하기 -->
+
     <!-- 댓글 영역 -->
     <div class="row">
         <div class="col">
@@ -52,7 +52,7 @@
                 <div class="card-body">
                     <form>
                         <div class="mb-3">
-                            <textarea class="form-control" rows="3" placeholder="댓글을 입력하세요"></textarea>
+                            <textarea name="comment" class="form-control" rows="3" placeholder="댓글을 입력하세요"></textarea>
                         </div>
                         <div class="text-end">
                             <button type="submit" class="btn btn-primary">댓글 작성</button>
@@ -146,6 +146,66 @@
         }
     }
 
+    function initCommentPostButton(postId) {
+        if (postId) {
+            $(pageId + '#write_comment').on('click', () => {
+                saveComment(postId);
+            });
+        }
+    }
+
+    function saveComment(postId) {
+        const comment = $(pageId + "textarea[name=comment]").val();
+
+        if (!comment) {
+            Swal.fire({
+                icon: 'warning',
+                text: '댓글 내용이 없습니다.'
+            });
+
+            return false;
+        }
+
+        $.ajax({
+            url: '/rest/comment/save',
+            type: 'POST',
+            data: {
+                post_id: postId,
+                comment: comment
+            },
+            success: (response) => {
+                getComments(postId)
+            },
+            error: (error) => {
+                displayError(error)
+            }
+        });
+    }
+
+    function getComments(postId) {
+        $.ajax({
+            url: `/rest/post/${postId}/comments`,
+            type: 'GET',
+            success: (response) => {
+                generateCommentList(response.data);
+            },
+            error: (error) => {
+                displayError(error)
+            }
+        })
+    }
+
+    function generateCommentList(data) {
+        console.log(data);
+    }
+
+    function displayError(error) {
+        Swal.fire({
+            title: `${error.status} ${error.statusText}`,
+            icon: 'error'
+        });
+    }
+
     function getPostData(postId) {
         $.ajax({
             url: '/rest/post/detail',
@@ -177,6 +237,10 @@
     }
 
     $(document).ready(() => {
-        getPostData(<?= $id ?>);
+        const postId = <?= $id ?>;
+
+        getPostData(postId);
+        initCommentPostButton(postId);
+        getComments(postId);
     });
 </script>
