@@ -22,6 +22,11 @@ class Post extends MY_Controller
         $this->load->view('post/edit_v', $queryParams);
     }
 
+    /**
+     * 게시글 생성 화면을 출력합니다.
+     *
+     * GET 요청에서 'board_id' 파라미터를 받아와 게시글 생성 뷰에 전달합니다.
+     */
     public function create()
     {
         $queryParams['board_id'] = $this->input->get('board_id', true);
