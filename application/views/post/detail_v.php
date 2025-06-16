@@ -50,31 +50,33 @@
             <!-- 댓글 작성 폼 -->
             <div class="card mb-3">
                 <div class="card-body">
-                    <form>
-                        <div class="mb-3">
-                            <textarea name="comment" class="form-control" rows="3" placeholder="댓글을 입력하세요"></textarea>
-                        </div>
-                        <div class="text-end">
-                            <button type="submit" class="btn btn-primary">댓글 작성</button>
-                        </div>
-                    </form>
+                    <div class="mb-3">
+                        <textarea
+                            name="comment"s
+                            class="form-control"
+                            rows="3"
+                            placeholder="댓글을 입력하세요"
+                        ></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button
+                            id="write_comment"
+                            type="button"
+                            class="btn btn-primary"
+                        >댓글 작성
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- 댓글 목록 -->
-            <div class="card mb-2">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <strong>댓글작성자</strong>
-                            <small class="text-muted ms-2">2024-12-06 14:30</small>
-                        </div>
-                        <div>
-                            <button class="btn btn-sm text-primary">수정</button>
-                            <button class="btn btn-sm text-danger">삭제</button>
+            <div id="comment_list">
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-center">
+                            등록된 댓글이 없습니다.
                         </div>
                     </div>
-                    <p class="mt-2 mb-0">댓글 내용이 여기에 표시됩니다.</p>
                 </div>
             </div>
         </div>
@@ -95,7 +97,7 @@
         });
     }
 
-    function initDeletePostButton(postId) {
+    function initDeletePostButton() {
         $(pageId + '#deletePost').on('click', () => {
             Swal.fire({
                 title: '게시물을 삭제하시겠습니까?',
@@ -148,7 +150,8 @@
 
     function initCommentPostButton(postId) {
         if (postId) {
-            $(pageId + '#write_comment').on('click', () => {
+            $(pageId + '#write_comment').on('click', (event) => {
+                event.preventDefault();
                 saveComment(postId);
             });
         }
@@ -170,6 +173,7 @@
             url: '/rest/comment/save',
             type: 'POST',
             data: {
+                writer_id: 1,
                 post_id: postId,
                 comment: comment
             },
@@ -184,8 +188,11 @@
 
     function getComments(postId) {
         $.ajax({
-            url: `/rest/post/${postId}/comments`,
+            url: `/rest/comment`,
             type: 'GET',
+            data: {
+                post_id: postId,
+            },
             success: (response) => {
                 generateCommentList(response.data);
             },
@@ -196,7 +203,33 @@
     }
 
     function generateCommentList(data) {
-        console.log(data);
+        let html = '';
+
+        if (data.length <= 0) {
+            return false;
+        }
+
+        data.forEach((comment) => {
+            const template = `<div class="card mb-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>${comment.name}</strong>
+                            <small class="text-muted ms-2">${comment.created_at}</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm text-primary">수정</button>
+                            <button class="btn btn-sm text-danger">삭제</button>
+                        </div>
+                    </div>
+                    <p class="mt-2 mb-0">${comment.comment}</p>
+                </div>
+            </div>`;
+
+            html += template;
+        });
+
+        $('#comment_list').html(html);
     }
 
     function displayError(error) {
@@ -215,7 +248,7 @@
                 id: postId
             },
             success: (data) => {
-                if(data) {
+                if (data) {
                     $(pageId + '#title').text(data.title);
                     $(pageId + '#writer').text(data.name);
                     $(pageId + '#createdAt').text(data.created_at);
