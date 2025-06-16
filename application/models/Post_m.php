@@ -8,6 +8,12 @@ class Post_m extends CI_Model
         parent::__construct();
     }
 
+    /**
+     * 지정된 게시판 ID에 해당하는 모든 게시글을 최신순으로 조회합니다.
+     *
+     * @param int $boardId 게시판의 고유 ID.
+     * @return array 게시글 객체 배열.
+     */
     public function fetchByBoardId($boardId)
     {
         $this->db->select('*');
@@ -44,6 +50,14 @@ class Post_m extends CI_Model
         return $this->db->delete('posts');
     }
 
+    /**
+     * 새로운 게시글을 생성하고 해당 게시글의 ID를 반환합니다.
+     *
+     * @param int $boardId 게시판의 ID.
+     * @param string $title 게시글 제목.
+     * @param string $content 게시글 내용.
+     * @return int 생성된 게시글의 ID.
+     */
     public function store($boardId, $title, $content)
     {
         $this->db->insert('posts', [
@@ -57,10 +71,10 @@ class Post_m extends CI_Model
     }
 
     /**
-     * 이전 게시물 가져오기
+     * 주어진 게시물 ID보다 작은 ID를 가진 이전 게시물을 반환합니다.
      *
-     * @param $id
-     * @return mixed
+     * @param int $id 기준이 되는 게시물의 ID
+     * @return object|null 이전 게시물 객체를 반환하며, 없을 경우 null을 반환합니다.
      */
     public function get_previous($id)
     {
@@ -74,11 +88,11 @@ class Post_m extends CI_Model
     }
 
 
-    /**
-     * 다음 게시물 가져오기
+    /****
+     * 주어진 게시물 ID보다 큰 다음 게시물을 반환합니다.
      *
-     * @param $id
-     * @return mixed
+     * @param int $id 기준이 되는 게시물의 ID입니다.
+     * @return object|null 다음 게시물 객체를 반환하며, 없을 경우 null을 반환합니다.
      */
     public function get_next($id)
     {
