@@ -11,6 +11,7 @@ class Comment_m extends CI_Model
      * @param int $postId 댓글이 달릴 게시글의 ID
      * @param string $comment 댓글 내용
      * @param int $writerId 댓글 작성자의 사용자 ID
+     * @return void
      */
     public function create($postId, $comment, $writerId)
     {

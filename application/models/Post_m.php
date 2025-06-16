@@ -88,7 +88,7 @@ class Post_m extends CI_Model
     }
 
 
-    /****
+    /**
      * 주어진 게시물 ID보다 큰 다음 게시물을 반환합니다.
      *
      * @param int $id 기준이 되는 게시물의 ID입니다.
