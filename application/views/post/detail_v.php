@@ -35,13 +35,13 @@
                     <button id="deletePost" class="btn btn-outline-danger">삭제</button>
                 </div>
                 <div>
-                    <button class="btn btn-outline-primary me-2">이전글</button>
-                    <button class="btn btn-outline-primary">다음글</button>
+                    <button id="prevPostButton" class="btn btn-outline-primary me-2">이전글</button>
+                    <button id="nextPostButton" class="btn btn-outline-primary">다음글</button>
                 </div>
             </div>
         </div>
     </div>
-    <!-- TODO: 댓글 영역 분리하기 -->
+
     <!-- 댓글 영역 -->
     <div class="row">
         <div class="col">
@@ -50,31 +50,33 @@
             <!-- 댓글 작성 폼 -->
             <div class="card mb-3">
                 <div class="card-body">
-                    <form>
-                        <div class="mb-3">
-                            <textarea class="form-control" rows="3" placeholder="댓글을 입력하세요"></textarea>
-                        </div>
-                        <div class="text-end">
-                            <button type="submit" class="btn btn-primary">댓글 작성</button>
-                        </div>
-                    </form>
+                    <div class="mb-3">
+                        <textarea
+                            name="comment"s
+                            class="form-control"
+                            rows="3"
+                            placeholder="댓글을 입력하세요"
+                        ></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button
+                            id="write_comment"
+                            type="button"
+                            class="btn btn-primary"
+                        >댓글 작성
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- 댓글 목록 -->
-            <div class="card mb-2">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <strong>댓글작성자</strong>
-                            <small class="text-muted ms-2">2024-12-06 14:30</small>
-                        </div>
-                        <div>
-                            <button class="btn btn-sm text-primary">수정</button>
-                            <button class="btn btn-sm text-danger">삭제</button>
+            <div id="comment_list">
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-center">
+                            등록된 댓글이 없습니다.
                         </div>
                     </div>
-                    <p class="mt-2 mb-0">댓글 내용이 여기에 표시됩니다.</p>
                 </div>
             </div>
         </div>
@@ -95,7 +97,7 @@
         });
     }
 
-    function initDeletePostButton(postId) {
+    function initDeletePostButton() {
         $(pageId + '#deletePost').on('click', () => {
             Swal.fire({
                 title: '게시물을 삭제하시겠습니까?',
@@ -126,16 +128,127 @@
         });
     }
 
-    $(document).ready(() => {
+    function initPrevNextPostButton(data) {
+        if (data.prev_id) {
+            $(pageId + '#prevPostButton').on('click', () => {
+                getPostData(data.prev_id);
+            })
+            $(pageId + '#prevPostButton').removeAttr('disabled');
+        } else {
+            $(pageId + '#prevPostButton').attr('disabled', true);
+        }
+
+        if (data.next_id) {
+            $(pageId + '#nextPostButton').on('click', () => {
+                getPostData(data.next_id);
+            })
+            $(pageId + '#nextPostButton').removeAttr('disabled');
+        } else {
+            $(pageId + '#nextPostButton').attr('disabled', true);
+        }
+    }
+
+    function initCommentPostButton(postId) {
+        if (postId) {
+            $(pageId + '#write_comment').on('click', (event) => {
+                event.preventDefault();
+                saveComment(postId);
+            });
+        }
+    }
+
+    function saveComment(postId) {
+        const comment = $(pageId + "textarea[name=comment]").val();
+
+        if (!comment) {
+            Swal.fire({
+                icon: 'warning',
+                text: '댓글 내용이 없습니다.'
+            });
+
+            return false;
+        }
+
+        $.ajax({
+            url: '/rest/comment/save',
+            type: 'POST',
+            data: {
+                writer_id: 1,
+                post_id: postId,
+                comment: comment
+            },
+            success: (response) => {
+                getComments(postId)
+            },
+            error: (error) => {
+                displayError(error)
+            }
+        });
+    }
+
+    function getComments(postId) {
+        $.ajax({
+            url: `/rest/comment`,
+            type: 'GET',
+            data: {
+                post_id: postId,
+            },
+            success: (response) => {
+                generateCommentList(response.data);
+            },
+            error: (error) => {
+                displayError(error)
+            }
+        })
+    }
+
+    function generateCommentList(data) {
+        let html = '';
+
+        if (data.length <= 0) {
+            return false;
+        }
+
+        data.forEach((comment) => {
+            const template = `<div class="card mb-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>${comment.name}</strong>
+                            <small class="text-muted ms-2">${comment.created_at}</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm text-primary">수정</button>
+                            <button class="btn btn-sm text-danger">삭제</button>
+                        </div>
+                    </div>
+                    <p class="mt-2 mb-0">${comment.comment}</p>
+                </div>
+            </div>`;
+
+            html += template;
+        });
+
+        $('#comment_list').html(html);
+    }
+
+    function displayError(error) {
+        Swal.fire({
+            title: `${error.status} ${error.statusText}`,
+            icon: 'error'
+        });
+    }
+
+    function getPostData(postId) {
         $.ajax({
             url: '/rest/post/detail',
             type: 'GET',
             dataType: 'json',
             data: {
-                id: <?= $id ?>
+                id: postId
             },
             success: (data) => {
-                if(data) {
+                if (data) {
                     $(pageId + '#title').text(data.title);
                     $(pageId + '#writer').text(data.name);
                     $(pageId + '#createdAt').text(data.created_at);
@@ -146,6 +259,7 @@
                 initRedirectBoardListButton(data.board_id);
                 initRedirectPostEditButton(data.id);
                 initDeletePostButton(data.id);
+                initPrevNextPostButton(data);
             },
             error: (xhr) => {
                 if (xhr.status === 404) {
@@ -153,5 +267,13 @@
                 }
             }
         });
+    }
+
+    $(document).ready(() => {
+        const postId = <?= $id ?>;
+
+        getPostData(postId);
+        initCommentPostButton(postId);
+        getComments(postId);
     });
 </script>
