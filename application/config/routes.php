@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 /*
 | -------------------------------------------------------------------------
@@ -53,4 +53,3 @@ $route['default_controller'] = 'board';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 $route['rest/board/:num'] = 'rest/board/$1';
-$route['rest/post/:num/comments'] = 'rest/comment/$1';

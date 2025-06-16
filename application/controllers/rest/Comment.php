@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 use chriskacerguis\RestServer\RestController;
 
@@ -15,7 +15,7 @@ class Comment extends RestController
     public function index_get()
     {
         $comments = [
-            'data' => []
+            'data' => $this->comment_m->fetchByPost($this->get('post_id', true)),
         ];
 
         $this->response($comments, 200);
@@ -25,6 +25,8 @@ class Comment extends RestController
     {
         $comment = $this->post('comment', true);
         $postId = $this->post('post_id', true);
+        $writerId = $this->post('writer_id', true);
+
         $post = $this->post_m->get($postId);
 
         if (!$post) {
@@ -32,10 +34,10 @@ class Comment extends RestController
         }
 
         try {
-            $this->comment_m->create($postId, $comment);
+            $this->comment_m->create($postId, $comment, $writerId);
             $this->response('success', 200);
         } catch (Exception $e) {
-            $this->response('server error: ' . $e->getMessage() , 500);
+            $this->response('server error: ' . $e->getMessage(), 500);
         }
     }
 }
