@@ -158,7 +158,7 @@
     }
 
     function saveComment(postId) {
-        const comment = $(pageId + "textarea[name=comment]").val();
+        const comment = $(pageId + "textarea[name=comment]");
 
         if (!comment) {
             Swal.fire({
@@ -175,10 +175,13 @@
             data: {
                 writer_id: 1,
                 post_id: postId,
-                comment: comment
+                comment: comment.val(),
             },
             success: (response) => {
                 getComments(postId)
+
+                // 저장 후 textarea 비움
+                comment.val('');
             },
             error: (error) => {
                 displayError(error)
