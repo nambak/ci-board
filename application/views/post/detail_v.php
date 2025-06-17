@@ -52,7 +52,7 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <textarea
-                            name="comment"s
+                            name="comment"
                             class="form-control"
                             rows="3"
                             placeholder="댓글을 입력하세요"
