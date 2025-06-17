@@ -5,7 +5,7 @@ RUN docker-php-ext-install mysqli pdo pdo_mysql
 
 # 세션 디렉토리 생성 및 권한 설정
 RUN mkdir -p /tmp/sessions && \
-    chmod 777 /tmp/sessions && \
+    chmod 770 /tmp/sessions && \
     chown www-data:www-data /tmp/sessions
 
 # PHP 세션 설정
