@@ -17,11 +17,17 @@ class Comment extends RestController
      */
     public function index_get()
     {
-        $comments = [
-            'data' => $this->comment_m->fetchByPost($this->get('post_id', true)),
-        ];
+        $result = $this->comment_m->fetchByPost($this->get('post_id', true));
 
-        $this->response($comments, 200);
+        $data = array_map(function ($comment) {
+            return [
+                'name'       => $this->security->xss_clean($comment->name),
+                'comment'    => $this->security->xss_clean($comment->comment),
+                'created_at' => $this->security->xss_clean($comment->created_at)
+            ];
+        }, $result);
+
+        $this->response(compact('data'), 200);
     }
 
     /**
@@ -29,9 +35,13 @@ class Comment extends RestController
      */
     public function save_post()
     {
-        $comment = $this->post('comment', true);
         $postId = $this->post('post_id', true);
+        $comment = $this->post('comment', true);
         $writerId = $this->post('writer_id', true);
+
+        if (!$postId || !trim($comment) || !$writerId) {
+            $this->response('invalid request', 400);
+        }
 
         $post = $this->post_m->get($postId);
 
