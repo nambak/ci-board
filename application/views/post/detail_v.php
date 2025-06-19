@@ -160,7 +160,7 @@
     function saveComment(postId) {
         const comment = $(pageId + "textarea[name=comment]");
 
-        if (!comment) {
+        if (!comment.val()) {
             Swal.fire({
                 icon: 'warning',
                 text: '댓글 내용이 없습니다.'
