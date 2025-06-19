@@ -39,7 +39,7 @@ class Comment extends RestController
         $comment = $this->post('comment', true);
         $writerId = $this->post('writer_id', true);
 
-        if (!$postId || !$comment || !$writerId) {
+        if (!$postId || !trim($comment) || !$writerId) {
             $this->response('invalid request', 400);
         }
 
