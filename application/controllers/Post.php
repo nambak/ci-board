@@ -14,6 +14,12 @@ class Post extends MY_Controller
     {
         $currentPostId = $this->input->get('id', true);
         $currentPost = $this->post_m->get($currentPostId);
+
+        if (!$currentPost) {
+            show_404();
+            return;
+        }
+
         $currentBoardId = $currentPost->board_id;
         $prevPost = $this->post_m->getPrevious($currentBoardId, $currentPostId);
         $nextPost = $this->post_m->getNext($currentBoardId, $currentPostId);
