@@ -78,21 +78,19 @@
                             // 이전 페이지로 이동하거나 메인 페이지로 이동
                             location.href = new URLSearchParams(window.location.search).get('redirect') || '/board?id=1';
                         });
-                    } else {
-                        showErrors(response.errors || {});
-                        Swal.fire({
-                            icon: 'error',
-                            title: '로그인 실패',
-                            text: response.message || '로그인에 실패했습니다.'
-                        });
                     }
                 },
                 error: function (xhr, status, error) {
-                    console.error('Login error:', error);
+                    let message = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+
+                    if (xhr.status === 401 || xhr.status === 422) {
+                        message = xhr.responseJSON.message
+                    }
+
                     Swal.fire({
                         icon: 'error',
                         title: '오류 발생',
-                        text: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+                        text: message
                     });
                 },
                 complete: function () {
