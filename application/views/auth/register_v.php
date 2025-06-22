@@ -194,7 +194,7 @@
     }
 
     function validatePassword(password) {
-        // 최소 8자, 영문, 숫자, 특수문자 포함
+        // 최소 6자, 영문, 숫자, 특수문자 포함
         const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$/;
         return passwordRegex.test(password);
     }
