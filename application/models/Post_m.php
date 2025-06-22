@@ -3,11 +3,6 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Post_m extends CI_Model
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     /**
      * 지정된 게시판 ID에 해당하는 모든 게시글을 최신순으로 조회합니다.
      *

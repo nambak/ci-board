@@ -24,7 +24,7 @@
                 </ul>
                 <div class="text-end">
                     <a href="/login" class="btn btn-outline-light me-2">로그인</a>
-                    <button type="button" class="btn btn-warning">가입</button>
+                    <a href="/register" class="btn btn-warning">가입</a>
                 </div>
             </div>
         </div>
