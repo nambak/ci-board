@@ -16,7 +16,7 @@ class User_m extends CI_Model
     {
         $query = $this->db->get_where($this->table, ['email' => $email]);
 
-        return $query->row();
+        return $query->row_array();
     }
 
     /**
