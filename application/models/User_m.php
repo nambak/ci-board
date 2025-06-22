@@ -67,7 +67,7 @@ class User_m extends CI_Model
             $userData = [
                 'name'       => trim($data['name']),
                 'email'      => trim(strtolower($data['email'])),
-                'password'   => password_hash($data['password'], PASSWORD_DEFAULT),
+                'password'   => $data['password'],
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ];

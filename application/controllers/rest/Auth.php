@@ -161,16 +161,16 @@ class Auth extends RestController
     {
         try {
             // 입력 데이터 받기
-            $input_data = [
+            $inputData = [
                 'name'     => $this->post('name', true),
                 'email'    => $this->post('email', true),
-                'password' => $this->post('password', true),
+                'password' => trim($this->post('password', true)),
             ];
 
             // 유효성 검사 규칙 설정
             $this->form_validation->set_rules('name', '이름', 'required|trim|min_length[2]|max_length[50]');
             $this->form_validation->set_rules('email', '이메일', 'required|trim|valid_email|max_length[100]');
-            $this->form_validation->set_rules('password', '비밀번호', 'required|min_length[8]|max_length[255]');
+            $this->form_validation->set_rules('password', '비밀번호', 'required|min_length[6]|max_length[255]');
 
             // 유효성 검사 실행
             if (!$this->form_validation->run()) {
@@ -195,7 +195,7 @@ class Auth extends RestController
             }
 
             // 이메일 중복 확인
-            if ($this->user_m->check_email_exists($input_data['email'])) {
+            if ($this->user_m->check_email_exists($inputData['email'])) {
                 $this->response([
                     'success' => false,
                     'message' => '이미 사용 중인 이메일입니다.',
@@ -205,9 +205,9 @@ class Auth extends RestController
 
             // 회원가입 데이터 준비
             $userData = [
-                'name'       => trim($input_data['name']),
-                'email'      => trim(strtolower($input_data['email'])),
-                'password'   => password_hash($input_data['password'], PASSWORD_DEFAULT),
+                'name'       => trim($inputData['name']),
+                'email'      => trim(strtolower($inputData['email'])),
+                'password'   => password_hash($inputData['password'], PASSWORD_DEFAULT),
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ];
