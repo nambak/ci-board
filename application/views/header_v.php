@@ -23,7 +23,7 @@
                     <li><a href="/board?id=1" class="nav-link px-2 text-white">게시판</a></li>
                 </ul>
                 <div class="text-end">
-                    <button type="button" class="btn btn-outline-light me-2">로그인</button>
+                    <a href="/login" class="btn btn-outline-light me-2">로그인</a>
                     <button type="button" class="btn btn-warning">가입</button>
                 </div>
             </div>
