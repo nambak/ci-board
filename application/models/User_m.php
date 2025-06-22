@@ -46,7 +46,7 @@ class User_m extends CI_Model
             if (empty($data['email']) || empty($data['password']) || empty($data['name'])) {
                 return [
                     'success' => false,
-                    'message' => '필수 정보가 누략되었습니다',
+                    'message' => '필수 정보가 누락되었습니다',
                     'userId'  => null
                 ];
             }
