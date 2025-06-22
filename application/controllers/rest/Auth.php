@@ -6,6 +6,8 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Auth extends RestController
 {
+    const HTTP_UNPROCESSABLE_ENTITY = 422;
+
     public function __construct()
     {
         parent::__construct();
@@ -39,7 +41,7 @@ class Auth extends RestController
                 'success' => false,
                 'message' => '입력값을 확인해주세요.',
                 'errors'  => $errors
-            ], 422);
+            ], self::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $email = $this->post('email', true);
@@ -191,7 +193,7 @@ class Auth extends RestController
                     'success' => false,
                     'message' => '입력 정보를 확인해주세요.',
                     'errors'  => $errors
-                ], 422);
+                ], self::HTTP_UNPROCESSABLE_ENTITY);
             }
 
             // 이메일 중복 확인
@@ -200,7 +202,7 @@ class Auth extends RestController
                     'success' => false,
                     'message' => '이미 사용 중인 이메일입니다.',
                     'errors'  => ['email' => '이미 사용 중인 이메일입니다.']
-                ], 422);
+                ], self::HTTP_UNPROCESSABLE_ENTITY);
             }
 
             // 회원가입 데이터 준비
