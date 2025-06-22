@@ -206,8 +206,8 @@ class Auth extends RestController
             // 회원가입 데이터 준비
             $userData = [
                 'name'       => trim($inputData['name']),
-                'email'      => trim(strtolower($inputData['email'])),
-                'password'   => password_hash($inputData['password'], PASSWORD_DEFAULT),
+                'email'      => $inputData['email'],
+                'password'   => $inputData['password'],
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ];

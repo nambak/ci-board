@@ -14,7 +14,7 @@ class User_m extends CI_Model
      */
     public function get_user_by_email($email)
     {
-        $query = $this->db->get_where($this->table, ['email' => $email]);
+        $query = $this->db->get_where($this->table, ['email' => strtolower(trim($email))]);
 
         return $query->row_array();
     }
@@ -66,8 +66,8 @@ class User_m extends CI_Model
             // 사용자 데이터 준비
             $userData = [
                 'name'       => trim($data['name']),
-                'email'      => trim(strtolower($data['email'])),
-                'password'   => $data['password'],
+                'email'      => strtolower(trim($data['email'])),
+                'password'   => password_hash(trim($data['password']), PASSWORD_DEFAULT),
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ];
