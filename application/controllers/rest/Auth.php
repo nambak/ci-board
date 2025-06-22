@@ -61,7 +61,7 @@ class Auth extends RestController
         }
 
         // 로그인 검증
-        if ($email === $user['email'] && password_verify($password, $user['password'])) {
+        if (password_verify($password, $user['password'])) {
             // 로그인 성공 - 세션 설정
             $sessionData = [
                 'user_id'    => $user['id'],
