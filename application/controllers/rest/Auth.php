@@ -8,6 +8,9 @@ class Auth extends RestController
 {
     const HTTP_UNPROCESSABLE_ENTITY = 422;
 
+    /**
+     * Auth 클래스의 인스턴스를 초기화하고 필요한 라이브러리, 헬퍼, 모델을 로드합니다.
+     */
     public function __construct()
     {
         parent::__construct();
@@ -20,7 +23,9 @@ class Auth extends RestController
     }
 
     /**
-     * 로그인 처리
+     * 사용자의 로그인 요청을 처리합니다.
+     *
+     * 이메일과 비밀번호를 검증하여 인증에 성공하면 세션을 설정하고, "로그인 유지" 옵션 선택 시 보안 토큰 쿠키를 발급합니다. 인증 실패 또는 입력값 오류 시 적절한 상태 코드와 함께 상세 오류 메시지를 반환합니다.
      */
     public function login_post()
     {
@@ -109,7 +114,12 @@ class Auth extends RestController
     }
 
     /**
-     * 이메일 중복 확인
+     * GET 요청으로 전달된 이메일의 중복 여부를 확인합니다.
+     *
+     * 이메일 파라미터가 없거나 형식이 올바르지 않은 경우 400 에러를 반환하며,
+     * 정상적인 경우 해당 이메일이 이미 등록되어 있는지 여부를 반환합니다.
+     *
+     * @return void
      */
     public function check_email_get()
     {
@@ -157,7 +167,11 @@ class Auth extends RestController
     }
 
     /**
-     * 회원가입 처리
+     * 회원가입 요청을 처리하여 새로운 사용자를 등록합니다.
+     *
+     * 입력값 유효성 검사, 이메일 중복 확인 후 사용자를 생성하며, 성공 시 사용자 정보를 반환합니다.
+     * 유효성 검사 실패 또는 이메일 중복 시 422 상태 코드와 상세 오류 메시지를 반환합니다.
+     * 서버 오류 발생 시 500 상태 코드와 에러 메시지를 반환합니다.
      */
     public function register_post()
     {

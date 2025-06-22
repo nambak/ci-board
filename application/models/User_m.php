@@ -7,10 +7,12 @@ class User_m extends CI_Model
 
 
     /**
-     * 사용자 조회
+     * 이메일을 기준으로 사용자를 조회하여 반환합니다.
      *
-     * @param $email
-     * @return mixed
+     * 이메일 입력값은 공백을 제거하고 소문자로 변환하여 검색합니다.
+     *
+     * @param string $email 조회할 사용자의 이메일 주소.
+     * @return array|null 해당 이메일의 사용자 정보(연관 배열) 또는 사용자가 없을 경우 null.
      */
     public function get_user_by_email($email)
     {
@@ -20,10 +22,12 @@ class User_m extends CI_Model
     }
 
     /**
-     * 이메일 중복 확인
+     * 주어진 이메일이 이미 존재하는지 확인합니다.
      *
-     * @param string $email
-     * @return bool
+     * 이메일 입력값은 공백을 제거하고 소문자로 변환하여 비교합니다.
+     *
+     * @param string $email 확인할 이메일 주소
+     * @return bool 이메일이 존재하면 true, 존재하지 않으면 false를 반환합니다.
      */
     public function check_email_exists($email)
     {
@@ -34,10 +38,13 @@ class User_m extends CI_Model
     }
 
     /**
-     * 사용자 생성 (트랜잭션)
+     * 새로운 사용자를 데이터베이스에 등록합니다.
      *
-     * @param array $data
-     * @return array
+     * 필수 정보(이메일, 비밀번호, 이름)를 확인하고, 이메일 중복 여부를 검사한 후 트랜잭션 내에서 사용자 정보를 저장합니다.
+     * 성공 시 회원가입 완료 메시지와 생성된 사용자 ID를 반환하며, 실패 시 원인에 따른 메시지와 함께 실패 상태를 반환합니다.
+     *
+     * @param array $data 사용자 등록에 필요한 정보 배열
+     * @return array 성공 여부, 메시지, 생성된 사용자 ID를 포함한 결과 배열
      */
     public function create_user($data)
     {

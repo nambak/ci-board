@@ -11,7 +11,9 @@ class Auth extends MY_Controller {
     }
 
     /**
-     * 로그인 페이지
+     * 로그인 페이지를 표시한다.
+     *
+     * 사용자가 이미 로그인된 경우 메인 게시판 페이지로 리다이렉트한다. 로그인되어 있지 않으면 로그인 뷰를 로드한다.
      */
     public function login()
     {
@@ -26,7 +28,9 @@ class Auth extends MY_Controller {
     }
 
     /**
-     * 회원가입 페이지 표시
+     * 회원가입 페이지를 표시한다.
+     *
+     * 이미 로그인된 사용자는 메인 게시판 페이지로 리다이렉트된다.
      */
     public function register()
     {
