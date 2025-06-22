@@ -55,7 +55,8 @@
             const formData = {
                 email: $('#email').val(),
                 password: $('#password').val(),
-                remember: $('#remember').is(':checked')
+                remember: $('#remember').is(':checked'),
+                <?= $this->security->get_csrf_token_name(); ?>: '<?= $this->security->get_csrf_hash(); ?>'
             };
 
             // 로그인 버튼 비활성화

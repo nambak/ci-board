@@ -22,6 +22,14 @@ class Auth extends RestController
      */
     public function login_post()
     {
+        // CSRF 토큰 검증
+//        if (!$this->security->csrf_verify()) {
+//            $this->response([
+//                'success'         => false,
+//                'message'         => 'CSRF 토큰이 유효하지 않습니다.',
+//            ], 403);
+//        }
+
         // 폼 검증 규칙 설정
         $this->form_validation->set_rules('email', '이메일', 'required|valid_email');
         $this->form_validation->set_rules('password', '비밀번호', 'required|min_length[6]');
