@@ -150,7 +150,7 @@ class Auth extends RestController
                 'success' => false,
                 'message' => '서버 오류가 발생했습니다.',
                 'exists'  => false
-            ], parent::HTTP_INTERNAL_ERROR);
+            ], self::HTTP_INTERNAL_ERROR);
         }
     }
 
