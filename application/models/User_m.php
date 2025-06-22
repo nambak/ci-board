@@ -73,14 +73,7 @@ class User_m extends CI_Model
             ];
 
             // 사용자 데이터 삽입
-            if (!$this->db->insert($this->table, $userData)) {
-                $this->db->trans_rollback();
-                return [
-                    'success' => false,
-                    'message' => '사용자 정보 저장에 실패했습니다.',
-                    'userId'  => null
-                ];
-            }
+            $this->db->insert($this->table, $userData);
 
             $user_id = $this->db->insert_id();
 
@@ -90,7 +83,7 @@ class User_m extends CI_Model
             if ($this->db->trans_status() === false) {
                 return [
                     'success' => false,
-                    'message' => '회원가입 처리 중 오류가 발생했습니다.',
+                    'message' => '사용자 정보 저장에 실패했습니다',
                     'userId'  => null
                 ];
             }
