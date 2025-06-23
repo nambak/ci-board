@@ -38,7 +38,7 @@ defined('BASEPATH') || exit('No direct script access allowed');
                 <li><a href="/board?id=1" class="nav-link px-2 text-white">게시판</a></li>
             </ul>
             <div class="text-end">
-                <?php if(isset($this->session) && $this->session->userdata('logged_in')): ?>
+                <?php if($this->session->userdata('logged_in')): ?>
                     <span class="text-white me-3">
                             <?= $this->session->userdata('user_name') ?>님 환영합니다
                         </span>
