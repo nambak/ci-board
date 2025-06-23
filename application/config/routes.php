@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') or exit('No direct script access allowed');
+defined('BASEPATH') || exit('No direct script access allowed');
 
 /*
 | -------------------------------------------------------------------------
@@ -55,3 +55,4 @@ $route['translate_uri_dashes'] = false;
 $route['rest/board/:num'] = 'rest/board/$1';
 $route['login'] = 'auth/login';
 $route['register'] = 'auth/register';
+$route['logout'] = 'auth/logout';

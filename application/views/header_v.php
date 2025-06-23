@@ -23,8 +23,16 @@
                     <li><a href="/board?id=1" class="nav-link px-2 text-white">게시판</a></li>
                 </ul>
                 <div class="text-end">
-                    <a href="/login" class="btn btn-outline-light me-2">로그인</a>
-                    <a href="/register" class="btn btn-warning">가입</a>
+                    <?php if($this->session->userdata('logged_in')): ?>
+                        <!-- 로그인된 상태 -->
+                        <span class="text-white me-3">
+                            <?= $this->session->userdata('user_name') ?>님 환영합니다
+                        </span>
+                        <a href="<?= base_url('logout') ?>" class="btn btn-outline-light">로그아웃</a>
+                    <?php else: ?>
+                        <a href="/login" class="btn btn-outline-light me-2">로그인</a>
+                        <a href="/register" class="btn btn-warning">가입</a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
