@@ -57,6 +57,6 @@ class Auth extends MY_Controller
 
         $this->session->sess_destroy();
 
-        redirect('/login');
+        redirect('login');
     }
 }
