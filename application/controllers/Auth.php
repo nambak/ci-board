@@ -23,8 +23,7 @@ class Auth extends MY_Controller
             redirect('board');
         }
 
-        $data = [];
-        $this->load->view('auth/login_v', $data);
+        $this->load->view('auth/login_v');
     }
 
     /**
@@ -50,11 +49,6 @@ class Auth extends MY_Controller
      */
     public function logout()
     {
-        // 세션 데이터 삭제
-        $this->session->unset_userdata('user_id');
-        $this->session->unset_userdata('username');
-        $this->session->unset_userdata('logged_in');
-
         $this->session->sess_destroy();
 
         redirect('login');
