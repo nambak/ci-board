@@ -13,10 +13,7 @@ class Error extends MY_Controller {
 
     public function notFound()
     {
-        // HTTP 상태 코드 404 설정
-        $this->output->set_status_header('404');
-
-        // 404 페이지 로드
+        $this->output->set_status_header(404);
         $this->load->view('errors/html/error_404');
     }
 }
