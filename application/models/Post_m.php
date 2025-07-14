@@ -40,11 +40,11 @@ class Post_m extends CI_Model
         return $this->db->delete('posts');
     }
 
-    public function store($boardId, $title, $content)
+    public function store($boardId, $userId, $title, $content)
     {
         $this->db->insert('posts', [
             'board_id' => $boardId,
-            'user_id'  => 1,
+            'user_id'  => $userId,
             'title'    => $title,
             'content'  => $content
         ]);

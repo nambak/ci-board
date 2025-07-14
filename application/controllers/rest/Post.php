@@ -8,6 +8,7 @@ class Post extends RestController
     public function __construct()
     {
         parent::__construct();
+
         $this->load->model('post_m');
     }
 
@@ -52,12 +53,29 @@ class Post extends RestController
 
     public function create_post()
     {
+        $this->load->library('session');
+        $this->load->library('validation/post_validation');
+
+        $userId = $this->session->userdata('user_id');
+
+        if (empty($userId)) {
+            $this->response(['message' => '접근 권한이 없습니다.'], 403);
+        }
+
         try {
+
+            if ($this->post_validation->validate() === false) {
+                $this->response([
+                    'message' => $this->post_validation->get_errors()
+                ], 400);
+                return;
+            }
+
             $title = $this->input->post('title', true);
             $content = $this->input->post('content', true);
             $boardId = $this->input->post('board_id', true);
 
-            $result = $this->post_m->store($boardId, $title, $content);
+            $result = $this->post_m->store($boardId, $userId, $title, $content);
             $this->response(['id' => $result], 200);
         } catch (Exception $e) {
             $this->response('server error: ' . $e->getMessage() , 500);
