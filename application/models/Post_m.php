@@ -60,9 +60,11 @@ class Post_m extends CI_Model
      */
     public function store($boardId, $title, $content)
     {
+        $userId = get_user_id() ?: 1; // 로그인된 사용자가 없으면 기본값 1
+        
         $this->db->insert('posts', [
             'board_id' => $boardId,
-            'user_id'  => 1,
+            'user_id'  => $userId,
             'title'    => $title,
             'content'  => $content
         ]);
