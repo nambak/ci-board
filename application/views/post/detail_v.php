@@ -31,8 +31,10 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <button id="redirectBoardListButton" class="btn btn-outline-secondary me-2">목록으로</button>
-                    <button id="redirectEditPost" class="btn btn-outline-primary me-2">수정</button>
-                    <button id="deletePost" class="btn btn-outline-danger">삭제</button>
+                    <?php if ($is_logged_in): ?>
+                    <button id="redirectEditPost" class="btn btn-outline-primary me-2" style="display: none;">수정</button>
+                    <button id="deletePost" class="btn btn-outline-danger" style="display: none;">삭제</button>
+                    <?php endif; ?>
                 </div>
                 <div>
                     <button id="prevPostButton" class="btn btn-outline-primary me-2">이전글</button>
@@ -48,6 +50,7 @@
             <h5 class="mb-3">댓글</h5>
 
             <!-- 댓글 작성 폼 -->
+            <?php if ($is_logged_in): ?>
             <div class="card mb-3">
                 <div class="card-body">
                     <div class="mb-3">
@@ -68,6 +71,13 @@
                     </div>
                 </div>
             </div>
+            <?php else: ?>
+            <div class="card mb-3">
+                <div class="card-body text-center">
+                    <p class="mb-0 text-muted">댓글을 작성하려면 로그인이 필요합니다.</p>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <!-- 댓글 목록 -->
             <div id="comment_list">
@@ -260,8 +270,18 @@
                 }
 
                 initRedirectBoardListButton(data.board_id);
-                initRedirectPostEditButton(data.id);
-                initDeletePostButton(data.id);
+                
+                // 현재 사용자가 작성자인 경우에만 수정/삭제 버튼 표시
+                const currentUserId = <?= $current_user_id ? $current_user_id : 'null' ?>;
+                const isLoggedIn = <?= $is_logged_in ? 'true' : 'false' ?>;
+                
+                if (isLoggedIn && currentUserId && currentUserId == data.user_id) {
+                    $(pageId + '#redirectEditPost').show();
+                    $(pageId + '#deletePost').show();
+                    initRedirectPostEditButton(data.id);
+                    initDeletePostButton(data.id);
+                }
+                
                 initPrevNextPostButton(data);
             },
             error: (xhr) => {
@@ -274,9 +294,12 @@
 
     $(document).ready(() => {
         const postId = <?= $id ?>;
+        const isLoggedIn = <?= $is_logged_in ? 'true' : 'false' ?>;
 
         getPostData(postId);
-        initCommentPostButton(postId);
+        if (isLoggedIn) {
+            initCommentPostButton(postId);
+        }
         getComments(postId);
     });
 </script>

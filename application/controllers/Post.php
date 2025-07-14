@@ -11,6 +11,8 @@ class Post extends MY_Controller
     public function detail()
     {
         $queryParams['id'] = $this->input->get('id', true);
+        $queryParams['is_logged_in'] = $this->is_logged_in();
+        $queryParams['current_user_id'] = $this->get_user_id();
 
         $this->load->view('post/detail_v', $queryParams);
     }

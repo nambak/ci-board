@@ -7,7 +7,9 @@
     </div>
     <div class="row">
         <div class="col">
+            <?php if ($is_logged_in): ?>
             <button id="writePost" class="btn btn-primary">글 작성</button>
+            <?php endif; ?>
         </div>
     </div>
 </article>

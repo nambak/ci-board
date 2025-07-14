@@ -12,6 +12,14 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="/assets/css/ci_board.css" rel="stylesheet">
     <?= $debugbarRenderer->renderHead(); ?>
+    <script>
+        function login() {
+            window.location.href = '/auth/login';
+        }
+        function logout() {
+            window.location.href = '/auth/logout';
+        }
+    </script>
 </head>
 <body>
 <div>
@@ -23,8 +31,13 @@
                     <li><a href="/board?id=1" class="nav-link px-2 text-white">게시판</a></li>
                 </ul>
                 <div class="text-end">
-                    <button type="button" class="btn btn-outline-light me-2">로그인</button>
-                    <button type="button" class="btn btn-warning">가입</button>
+                    <?php if (isset($is_logged_in) && $is_logged_in): ?>
+                        <span class="text-white me-3">안녕하세요, <?= $user_data['name'] ?? '사용자' ?>님!</span>
+                        <button type="button" class="btn btn-outline-light" onclick="logout()">로그아웃</button>
+                    <?php else: ?>
+                        <button type="button" class="btn btn-outline-light me-2" onclick="login()">로그인</button>
+                        <button type="button" class="btn btn-warning">가입</button>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

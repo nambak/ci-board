@@ -16,6 +16,7 @@ class Board extends MY_Controller
     public function detail()
     {
         $queryParams['id'] = $this->input->get('id', true);
+        $queryParams['is_logged_in'] = $this->is_logged_in();
 
         $this->load->view('board/detail_v', $queryParams);
     }
