@@ -1,0 +1,12 @@
+{
+  "name": "ci-board",
+  "version": "1.0.0",
+  "description": "CI Board with Tailwind CSS",
+  "main": "index.js",
+  "scripts": {
+    "build-css": "tailwindcss -i ./assets/css/input.css -o ./assets/css/tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  }
+}
