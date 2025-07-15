@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Learning CI API Document",
-    "description": "Learning CI API ReDoc Document",
+    "description": "Learning CI API ReDoc Document with Security Enhancements",
     "version": "1.0.0"
   },
   "servers": [
@@ -51,6 +51,334 @@
                           }
                         }
                       }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rest/auth/check_email": {
+      "get": {
+        "summary": "이메일 중복 확인 (보안 강화)",
+        "description": "회원가입 시 이메일 중복을 확인합니다. 보안을 위해 Rate Limiting, CAPTCHA 검증, 인증 요구사항이 적용됩니다.",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "description": "확인할 이메일 주소",
+            "schema": {
+              "type": "string",
+              "format": "email",
+              "example": "user@example.com"
+            }
+          },
+          {
+            "name": "signup_token",
+            "in": "query",
+            "required": false,
+            "description": "회원가입 플로우 토큰 (비인증 사용자 필수)",
+            "schema": {
+              "type": "string",
+              "example": "abc123def456..."
+            }
+          },
+          {
+            "name": "captcha_id",
+            "in": "query",
+            "required": false,
+            "description": "CAPTCHA 챌린지 ID",
+            "schema": {
+              "type": "string",
+              "example": "captcha_123"
+            }
+          },
+          {
+            "name": "captcha_answer",
+            "in": "query",
+            "required": false,
+            "description": "CAPTCHA 답안",
+            "schema": {
+              "type": "string",
+              "example": "8"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "이메일 확인 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "exists": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "사용 가능한 이메일입니다."
+                    },
+                    "rate_limit": {
+                      "type": "object",
+                      "properties": {
+                        "remaining": {
+                          "type": "integer",
+                          "example": 4
+                        },
+                        "reset_time": {
+                          "type": "integer",
+                          "example": 1625097600
+                        }
+                      }
+                    },
+                    "signup_flow": {
+                      "type": "object",
+                      "properties": {
+                        "remaining_checks": {
+                          "type": "integer",
+                          "example": 4
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증 필요 또는 유효하지 않은 토큰",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "이 기능은 회원가입 과정에서만 사용할 수 있습니다."
+                    },
+                    "exists": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "error_code": {
+                      "type": "string",
+                      "example": "AUTH_REQUIRED"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "CAPTCHA 필요 또는 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "보안을 위해 인증이 필요합니다."
+                    },
+                    "exists": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "captcha_required": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "captcha": {
+                      "type": "object",
+                      "properties": {
+                        "question": {
+                          "type": "string",
+                          "example": "7 + 3 = ?"
+                        },
+                        "challenge_id": {
+                          "type": "string",
+                          "example": "abc123..."
+                        }
+                      }
+                    },
+                    "error_code": {
+                      "type": "string",
+                      "example": "CAPTCHA_REQUIRED"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate Limit 초과",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."
+                    },
+                    "exists": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "rate_limit": {
+                      "type": "object",
+                      "properties": {
+                        "reset_time": {
+                          "type": "integer",
+                          "example": 1625097600
+                        },
+                        "remaining": {
+                          "type": "integer",
+                          "example": 0
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rest/auth/generate_signup_token": {
+      "post": {
+        "summary": "회원가입 플로우 토큰 생성",
+        "description": "회원가입 과정에서 이메일 확인에 필요한 토큰을 생성합니다.",
+        "responses": {
+          "200": {
+            "description": "토큰 생성 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "회원가입 세션이 시작되었습니다."
+                    },
+                    "signup_token": {
+                      "type": "string",
+                      "example": "abc123def456..."
+                    },
+                    "expires_in": {
+                      "type": "integer",
+                      "example": 1800
+                    },
+                    "email_checks_allowed": {
+                      "type": "integer",
+                      "example": 5
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate Limit 초과",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "토큰 생성 요청이 너무 많습니다. 잠시 후 다시 시도해주세요."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rest/auth/generate_captcha": {
+      "get": {
+        "summary": "CAPTCHA 생성",
+        "description": "보안 검증용 CAPTCHA를 생성합니다.",
+        "responses": {
+          "200": {
+            "description": "CAPTCHA 생성 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "captcha": {
+                      "type": "object",
+                      "properties": {
+                        "question": {
+                          "type": "string",
+                          "example": "4 * 2 = ?"
+                        },
+                        "challenge_id": {
+                          "type": "string",
+                          "example": "def456..."
+                        }
+                      }
+                    },
+                    "expires_in": {
+                      "type": "integer",
+                      "example": 600
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate Limit 초과",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "CAPTCHA 요청이 너무 많습니다. 잠시 후 다시 시도해주세요."
                     }
                   }
                 }
