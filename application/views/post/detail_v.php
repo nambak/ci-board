@@ -112,6 +112,9 @@
                         url: '/rest/post/<?= $id ?>',
                         type: 'DELETE',
                         dataType: 'json',
+                        data: {
+                            '<?= $this->security->get_csrf_token_name(); ?>': '<?= $this->security->get_csrf_hash(); ?>'
+                        },
                         success: (data) => {
                             $(pageId + '#redirectBoardListButton').click();
                         },
@@ -176,6 +179,7 @@
                 writer_id: 1,
                 post_id: postId,
                 comment: comment.val(),
+                '<?= $this->security->get_csrf_token_name(); ?>': '<?= $this->security->get_csrf_hash(); ?>'
             },
             success: (response) => {
                 getComments(postId)
