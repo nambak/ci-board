@@ -13,8 +13,8 @@ class Post_validation extends Base_validation
     }
     public function validate()
     {
-        $this->CI->form_validation->set_rules('title', 'title', 'required|trim|max_length[255]|alpha_numeric_spaces');
-        $this->CI->form_validation->set_rules('content', 'content', 'required|trim|alpha_numeric_spaces');
+        $this->CI->form_validation->set_rules('title', 'title', 'required|trim|max_length[255]');
+        $this->CI->form_validation->set_rules('content', 'content', 'required|trim');
         $this->CI->form_validation->set_rules('board_id', 'board_id', 'required|numeric|callback_board_exists');
 
         return $this->CI->form_validation->run();

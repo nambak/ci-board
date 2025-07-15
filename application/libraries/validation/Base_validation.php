@@ -4,7 +4,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 abstract class Base_validation
 {
     protected $CI;
-    protected $errors = [];
 
     public function __construct()
     {
@@ -12,8 +11,5 @@ abstract class Base_validation
         $this->CI->load->library('form_validation');
     }
 
-    public function validate()
-    {
-        //
-    }
+    abstract public function validate();
 }
