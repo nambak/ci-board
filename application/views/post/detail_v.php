@@ -2,7 +2,7 @@
     <!-- 게시글 제목 -->
     <div class="row mb-4">
         <div class="col">
-            <h2 class="border-bottom pb-3" id="title"></h2>
+            <h2 class="border-bottom pb-3" id="title"><?= $currentPost->title ?></h2>
         </div>
     </div>
     <!-- 게시글 정보 -->
@@ -10,9 +10,9 @@
         <div class="col">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <span class="me-3">작성자: <span id="writer"></span></span>
-                    <span class="me-3">작성일: <span id="createdAt"></span></span>
-                    <span>조회수: <span id="views"></span></span>
+                    <span class="me-3">작성자: <?= $currentPost->name ?></span>
+                    <span class="me-3">작성일: <?= $currentPost->created_at ?></span>
+                    <span>조회수: <?= $currentPost->views ?></span>
                 </div>
             </div>
         </div>
@@ -21,7 +21,9 @@
     <div class="row mb-4">
         <div class="col">
             <div class="card">
-                <div class="card-body min-vh-50" id="content"></div>
+                <div class="card-body min-vh-50">
+                    <?= $currentPost->content ?>
+                </div>
             </div>
         </div>
     </div>
@@ -37,8 +39,17 @@
                     <?php endif; ?>
                 </div>
                 <div>
-                    <button id="prevPostButton" class="btn btn-outline-primary me-2">이전글</button>
-                    <button id="nextPostButton" class="btn btn-outline-primary">다음글</button>
+                    <?php if($prevPostId): ?>
+                    <a href="/post/detail?id=<?= $prevPostId ?>" class="btn btn-outline-primary me-2">이전글</a>
+                    <?php else: ?>
+                    <button disabled class="btn btn-outline-primary me-2">이전글</button>
+                    <?php endif; ?>
+
+                    <?php if($nextPostId): ?>
+                    <a href="/post/detail?id=<?= $nextPostId ?>" class="btn btn-outline-primary">다음글</a>
+                    <?php else: ?>
+                    <button disabled class="btn btn-outline-primary">다음글</button>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -113,7 +124,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/rest/post/<?= $id ?>',
+                        url: '/rest/post/<?= $currentPost->id ?>',
                         type: 'DELETE',
                         dataType: 'json',
                         success: (data) => {
@@ -249,40 +260,9 @@
         });
     }
 
-    function getPostData(postId) {
-        $.ajax({
-            url: '/rest/post/detail',
-            type: 'GET',
-            dataType: 'json',
-            data: {
-                id: postId
-            },
-            success: (data) => {
-                if (data) {
-                    $(pageId + '#title').text(data.title);
-                    $(pageId + '#writer').text(data.name);
-                    $(pageId + '#createdAt').text(data.created_at);
-                    $(pageId + '#views').text(data.views);
-                    $(pageId + '#content').html(data.content);
-                }
-
-                initRedirectBoardListButton(data.board_id);
-                initRedirectPostEditButton(data.id);
-                initDeletePostButton(data.id);
-                initPrevNextPostButton(data);
-            },
-            error: (xhr) => {
-                if (xhr.status === 404) {
-                    window.location.href = '/errors/error_404';
-                }
-            }
-        });
-    }
-
     $(document).ready(() => {
-        const postId = <?= $id ?>;
+        const postId = <?= $currentPost->id ?>;
 
-        getPostData(postId);
         initCommentPostButton(postId);
         getComments(postId);
     });

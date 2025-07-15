@@ -1,58 +1,56 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') || exit('No direct script access allowed');
 
 class Auth extends MY_Controller
 {
     public function __construct()
     {
         parent::__construct();
+        $this->load->library('session');
+        $this->load->helper(['url', 'form']);
+        $this->load->library('form_validation');
     }
 
     /**
-     * 간단한 로그인 처리 (테스트용)
+     * 로그인 페이지
+     *
+     * @return void
      */
     public function login()
     {
-        $email = $this->input->get('email', true);
-        $password = $this->input->get('password', true);
-        
-        if ($email && $password) {
-            if (do_login($email, $password)) {
-                echo json_encode(['success' => true, 'message' => 'Login successful']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Invalid credentials']);
-            }
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Email and password required']);
+        // 이미 로그인된 사용자는 메인 페이지로 리다이렉트
+        if ($this->session->userdata('logged_in')) {
+            redirect('board');
         }
+
+        $this->load->view('auth/login_v');
     }
 
     /**
-     * 로그아웃 처리
+     * 회원가입 페이지 표시
+     *
+     * @return void
+     */
+    public function register()
+    {
+        // 이미 로그인된 사용자는 메인 페이지로 리다이렉트
+        if ($this->session->userdata('logged_in')) {
+            redirect('board');
+        }
+
+        $this->load->view('auth/register_v');
+    }
+
+
+    /**
+     * 로그아웃
+     *
+     * @return void
      */
     public function logout()
     {
-        do_logout();
-        echo json_encode(['success' => true, 'message' => 'Logged out successfully']);
-    }
+        $this->session->sess_destroy();
 
-    /**
-     * 현재 로그인 상태 확인
-     */
-    public function status()
-    {
-        $user = get_current_user();
-        if ($user) {
-            echo json_encode([
-                'logged_in' => true,
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email
-                ]
-            ]);
-        } else {
-            echo json_encode(['logged_in' => false]);
-        }
+        redirect('login');
     }
 }
