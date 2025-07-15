@@ -41,8 +41,8 @@
     }
 
     function savePost(boardId) {
-        const title = $(pageId + 'input[name=title]').val();
-        const content = $(pageId + 'textarea[name=content]').val();
+        const title = $(pageId + 'input[name=title]').val().trim();
+        const content = $(pageId + 'textarea[name=content]').val().trim();
 
         if (!title) {
             Swal.fire({
@@ -82,7 +82,8 @@
             },
             error: (error) => {
                 Swal.fire({
-                    title: `${error.status} ${error.statusText}`,
+                    title: '오류',
+                    html: error.responseJSON.message,
                     icon: 'error'
                 });
             }

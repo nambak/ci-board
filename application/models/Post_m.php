@@ -49,7 +49,7 @@ class Post_m extends CI_Model
 
         return $this->db->delete('posts');
     }
-
+    
     /**
      * 새로운 게시글을 생성하고 해당 게시글의 ID를 반환합니다.
      *
@@ -58,11 +58,11 @@ class Post_m extends CI_Model
      * @param string $content 게시글 내용.
      * @return int 생성된 게시글의 ID.
      */
-    public function store($boardId, $title, $content)
+    public function store($boardId, $userId, $title, $content)
     {
         $this->db->insert('posts', [
             'board_id' => $boardId,
-            'user_id'  => 1,
+            'user_id'  => $userId,
             'title'    => $title,
             'content'  => $content
         ]);
