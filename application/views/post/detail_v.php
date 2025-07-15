@@ -33,7 +33,7 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <button id="redirectBoardListButton" class="btn btn-outline-secondary me-2">목록으로</button>
-                    <?php if (is_post_author($id)): ?>
+                    <?php if (is_post_author($currentPost->id)): ?>
                         <button id="redirectEditPost" class="btn btn-outline-primary me-2">수정</button>
                         <button id="deletePost" class="btn btn-outline-danger">삭제</button>
                     <?php endif; ?>
@@ -102,6 +102,7 @@
 
     function initRedirectBoardListButton(boardId) {
         $(pageId + '#redirectBoardListButton').on('click', () => {
+            console.log('click redirectBoardListButton', boardId);
             location.href = `/board/detail?id=${boardId}`;
         });
     }
@@ -262,8 +263,13 @@
 
     $(document).ready(() => {
         const postId = <?= $currentPost->id ?>;
+        const boardId = <?= $currentPost->board_id ?>; // 게시판 ID 추가
 
+        initRedirectBoardListButton(boardId);
+        initRedirectPostEditButton(postId);
+        initDeletePostButton();
         initCommentPostButton(postId);
         getComments(postId);
+
     });
 </script>

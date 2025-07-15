@@ -47,7 +47,12 @@ class Post extends MY_Controller
      */
     public function create()
     {
-        $queryParams['board_id'] = $this->input->get('board_id', true);
+        $this->load->library('session');
+
+        $queryParams = [
+            'board_id' => $this->input->get('board_id', true),
+            'user_id' => $this->session->userdata('user_id'),
+        ];
 
         $this->load->view('post/create_v', $queryParams);
     }

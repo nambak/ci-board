@@ -29,7 +29,7 @@
                         <span class="text-white me-3">
                             <?= $this->session->userdata('user_name') ?>님 환영합니다
                         </span>
-                        <a href="<?= base_url('logout') ?>" class="btn btn-outline-light">로그아웃</a>
+                        <a href="/logout" class="btn btn-outline-light">로그아웃</a>
                     <?php else: ?>
                         <a href="/login" class="btn btn-outline-light me-2">로그인</a>
                         <a href="/register" class="btn btn-warning">가입</a>
