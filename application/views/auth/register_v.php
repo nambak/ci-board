@@ -7,6 +7,7 @@
                 </div>
                 <div class="card-body">
                     <form id="registerForm" method="post" action="/register">
+                        <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
                         <div class="mb-3">
                             <label for="name" class="form-label">이름 <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="name" name="name" required>
