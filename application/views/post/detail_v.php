@@ -2,7 +2,7 @@
     <!-- 게시글 제목 -->
     <div class="row mb-4">
         <div class="col">
-            <h2 class="border-bottom pb-3" id="title"><?= $currentPost->title ?></h2>
+            <h2 class="border-bottom pb-3" id="title"><?= html_escape($currentPost->title) ?></h2>
         </div>
     </div>
     <!-- 게시글 정보 -->
@@ -10,9 +10,9 @@
         <div class="col">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <span class="me-3">작성자: <?= $currentPost->name ?></span>
-                    <span class="me-3">작성일: <?= $currentPost->created_at ?></span>
-                    <span>조회수: <?= $currentPost->views ?></span>
+                    <span class="me-3">작성자: <?= html_escape($currentPost->name) ?></span>
+                    <span class="me-3">작성일: <?= html_escape($currentPost->created_at) ?></span>
+                    <span>조회수: <?= html_escape($currentPost->views) ?></span>
                 </div>
             </div>
         </div>
