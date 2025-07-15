@@ -33,8 +33,10 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <button id="redirectBoardListButton" class="btn btn-outline-secondary me-2">목록으로</button>
-                    <button id="redirectEditPost" class="btn btn-outline-primary me-2">수정</button>
-                    <button id="deletePost" class="btn btn-outline-danger">삭제</button>
+                    <?php if (is_post_author($currentPost->id)): ?>
+                        <button id="redirectEditPost" class="btn btn-outline-primary me-2">수정</button>
+                        <button id="deletePost" class="btn btn-outline-danger">삭제</button>
+                    <?php endif; ?>
                 </div>
                 <div>
                     <?php if($prevPostId): ?>
@@ -59,26 +61,28 @@
             <h5 class="mb-3">댓글</h5>
 
             <!-- 댓글 작성 폼 -->
-            <div class="card mb-3">
-                <div class="card-body">
-                    <div class="mb-3">
-                        <textarea
-                            name="comment"
-                            class="form-control"
-                            rows="3"
-                            placeholder="댓글을 입력하세요"
-                        ></textarea>
-                    </div>
-                    <div class="text-end">
-                        <button
-                            id="write_comment"
-                            type="button"
-                            class="btn btn-primary"
-                        >댓글 작성
-                        </button>
+            <?php if (is_logged_in()): ?>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <textarea
+                                name="comment"
+                                class="form-control"
+                                rows="3"
+                                placeholder="댓글을 입력하세요"
+                            ></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button
+                                id="write_comment"
+                                type="button"
+                                class="btn btn-primary"
+                            >댓글 작성
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            <?php endif; ?>
 
             <!-- 댓글 목록 -->
             <div id="comment_list">
@@ -98,6 +102,7 @@
 
     function initRedirectBoardListButton(boardId) {
         $(pageId + '#redirectBoardListButton').on('click', () => {
+            console.log('click redirectBoardListButton', boardId);
             location.href = `/board/detail?id=${boardId}`;
         });
     }
@@ -184,7 +189,6 @@
             url: '/rest/comment/save',
             type: 'POST',
             data: {
-                writer_id: 1,
                 post_id: postId,
                 comment: comment.val(),
             },
@@ -224,6 +228,13 @@
         }
 
         data.forEach((comment) => {
+            // 댓글 수정/삭제 버튼은 작성자만 표시
+            const editDeleteButtons = comment.can_edit ? 
+                `<div>
+                    <button class="btn btn-sm text-primary">수정</button>
+                    <button class="btn btn-sm text-danger">삭제</button>
+                </div>` : '';
+            
             const template = `<div class="card mb-2">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
@@ -231,10 +242,7 @@
                             <strong>${comment.name}</strong>
                             <small class="text-muted ms-2">${comment.created_at}</small>
                         </div>
-                        <div>
-                            <button class="btn btn-sm text-primary">수정</button>
-                            <button class="btn btn-sm text-danger">삭제</button>
-                        </div>
+                        ${editDeleteButtons}
                     </div>
                     <p class="mt-2 mb-0">${comment.comment}</p>
                 </div>
@@ -255,8 +263,13 @@
 
     $(document).ready(() => {
         const postId = <?= $currentPost->id ?>;
+        const boardId = <?= $currentPost->board_id ?>; // 게시판 ID 추가
 
+        initRedirectBoardListButton(boardId);
+        initRedirectPostEditButton(postId);
+        initDeletePostButton();
         initCommentPostButton(postId);
         getComments(postId);
+
     });
 </script>
