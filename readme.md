@@ -48,7 +48,7 @@ CI Board는 CodeIgniter 프레임워크를 기반으로 개발된 웹 게시판 
 - 게시글 작성, 수정, 삭제
 - 댓글 시스템
 - REST API 엔드포인트
-- API 문서 (Swagger/Redoc)
+- API 문서 (Redoc)
 - 반응형 웹 인터페이스
 
 ## 설치 및 실행
@@ -83,7 +83,6 @@ composer install
 
 ## API 문서
 
-- **Swagger UI**: `/swagger` 엔드포인트에서 확인 가능
 - **Redoc**: `/redoc` 엔드포인트에서 확인 가능
 
 ## 프로젝트 구조
