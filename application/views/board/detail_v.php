@@ -14,6 +14,17 @@
 <script defer>
     const pageId = '#board_detail ';
 
+    // HTML escape function to prevent XSS
+    function htmlEscape(str) {
+        if (str == null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#x27;');
+    }
+
     $(document).ready(() => {
         initPostList();
         $(pageId + '#writePost').on('click', () => {
@@ -34,7 +45,7 @@
                 field: 'title',
                 title: '제목',
                 formatter: (value, row, index) => {
-                    return `<a href="/post/detail?id=${row.id}">${row.title}</a>`;
+                    return `<a href="/post/detail?id=${row.id}">${htmlEscape(row.title)}</a>`;
                 }
             }, {
                 field: 'views',

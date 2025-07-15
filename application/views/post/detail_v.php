@@ -85,6 +85,17 @@
 <script defer>
     let pageId = '#post_detail ';
 
+    // HTML escape function to prevent XSS
+    function htmlEscape(str) {
+        if (str == null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#x27;');
+    }
+
     function initRedirectBoardListButton(boardId) {
         $(pageId + '#redirectBoardListButton').on('click', () => {
             location.href = `/board/detail?id=${boardId}`;
@@ -217,15 +228,15 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <strong>${comment.name}</strong>
-                            <small class="text-muted ms-2">${comment.created_at}</small>
+                            <strong>${htmlEscape(comment.name)}</strong>
+                            <small class="text-muted ms-2">${htmlEscape(comment.created_at)}</small>
                         </div>
                         <div>
                             <button class="btn btn-sm text-primary">수정</button>
                             <button class="btn btn-sm text-danger">삭제</button>
                         </div>
                     </div>
-                    <p class="mt-2 mb-0">${comment.comment}</p>
+                    <p class="mt-2 mb-0">${htmlEscape(comment.comment)}</p>
                 </div>
             </div>`;
 
