@@ -188,9 +188,10 @@
             url: '/rest/comment/save',
             type: 'POST',
             data: {
-                writer_id: 1,
+                writer_id: <?= $user_id ?>,
                 post_id: postId,
                 comment: comment.val(),
+                <?= $this->security->get_csrf_token_name(); ?>: '<?= $this->security->get_csrf_hash(); ?>',
             },
             success: (response) => {
                 getComments(postId)
