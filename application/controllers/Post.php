@@ -7,7 +7,7 @@ class Post extends MY_Controller
     {
         parent::__construct();
         $this->load->model('post_m');
-
+        $this->load->library('session');
     }
 
     public function detail()
@@ -28,6 +28,7 @@ class Post extends MY_Controller
             'currentPost' => $currentPost,
             'prevPostId'  => $prevPost ? $prevPost->id : null,
             'nextPostId'  => $nextPost ? $nextPost->id : null,
+            'user_id'     => $this->session->userdata('user_id'),
         ];
 
         $this->load->view('post/detail_v', $data);
@@ -47,11 +48,9 @@ class Post extends MY_Controller
      */
     public function create()
     {
-        $this->load->library('session');
-
         $queryParams = [
             'board_id' => $this->input->get('board_id', true),
-            'user_id' => $this->session->userdata('user_id'),
+            'user_id'  => $this->session->userdata('user_id'),
         ];
 
         $this->load->view('post/create_v', $queryParams);
