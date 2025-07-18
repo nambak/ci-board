@@ -251,7 +251,7 @@
                     <div class="d-flex justify-content-between">
                         <div>
                             <strong>${htmlEscape(comment.name)}</strong>
-                            <small class="text-muted ms-2">${htmlEscape(comment.created_at)}</small>
+                            <small class="text-muted ms-2">${comment.created_at}</small>
                         </div>
                         ${editDeleteButtons}
                     </div>
