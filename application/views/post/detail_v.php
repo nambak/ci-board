@@ -22,7 +22,7 @@
         <div class="col">
             <div class="card">
                 <div class="card-body min-vh-50">
-                    <?= $currentPost->content ?>
+                    <?= nl2br($currentPost->content); ?>
                 </div>
             </div>
         </div>
@@ -99,6 +99,7 @@
 </article>
 <script defer>
     let pageId = '#post_detail ';
+    let userId = <?= isset($user_id) ? $user_id : 0 ?>;
 
     function initRedirectBoardListButton(boardId) {
         $(pageId + '#redirectBoardListButton').on('click', () => {
@@ -188,13 +189,13 @@
             url: '/rest/comment/save',
             type: 'POST',
             data: {
-                writer_id: <?= $user_id ?>,
+                writer_id: userId,
                 post_id: postId,
                 comment: comment.val(),
                 <?= $this->security->get_csrf_token_name(); ?>: '<?= $this->security->get_csrf_hash(); ?>',
             },
             success: (response) => {
-                getComments(postId)
+                getComments(postId);
 
                 // 저장 후 textarea 비움
                 comment.val('');
