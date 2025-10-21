@@ -18,6 +18,13 @@ class Post extends RestController
             $title = $this->put('title', true);
             $content = $this->put('content', true);
 
+            // 게시글 존재 확인
+            $post = $this->post_m->get($id);
+
+            if (!$post) {
+                $this->response('post not found', 404);
+            }
+
             if (!$title) {
                 $this->response('title required', 400);
             }
