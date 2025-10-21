@@ -12,12 +12,19 @@ class Post extends RestController
         $this->load->model('post_m');
     }
 
-    public function update_post()
+    public function index_put($id)
     {
         try {
-            $id = $this->input->get('id', true);
-            $title = $this->input->post('title', true);
-            $content = $this->input->post('content', true);
+            $title = $this->put('title', true);
+            $content = $this->put('content', true);
+
+            if (!$title) {
+                $this->response('title required', 400);
+            }
+
+            if (!$content) {
+                $this->response('content required', 400);
+            }
 
             $this->post_m->update($id, $title, $content);
 
@@ -60,5 +67,12 @@ class Post extends RestController
         } catch (Exception $e) {
             $this->response('server error: ' . $e->getMessage() , 500);
         }
+    }
+
+    public function index_get($id)
+    {
+        $post = $this->post_m->get($id);
+
+        $this->response($post, 200);
     }
 }
