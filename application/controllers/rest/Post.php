@@ -12,18 +12,32 @@ class Post extends RestController
         $this->load->model('post_m');
     }
 
-    public function update_post()
+    public function index_put($id)
     {
         try {
-            $id = $this->input->get('id', true);
-            $title = $this->input->post('title', true);
-            $content = $this->input->post('content', true);
+            $title = $this->put('title', true);
+            $content = $this->put('content', true);
+
+            // 게시글 존재 확인
+            $post = $this->post_m->get($id);
+
+            if (!$post) {
+                $this->response('post not found', 404);
+            }
+
+            if (!$title) {
+                $this->response('title required', 400);
+            }
+
+            if (!$content) {
+                $this->response('content required', 400);
+            }
 
             $this->post_m->update($id, $title, $content);
 
             $this->response('success', 200);
         } catch (Exception $e) {
-            $this->response('server error: ' . $e->getMessage() , 500);
+            $this->response('server error: ' . $e->getMessage(), 500);
         }
     }
 
@@ -58,7 +72,22 @@ class Post extends RestController
             $result = $this->post_m->store($boardId, $userId, $title, $content);
             $this->response(['id' => $result], 200);
         } catch (Exception $e) {
-            $this->response('server error: ' . $e->getMessage() , 500);
+            $this->response('server error: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function index_get($id)
+    {
+        try {
+            $post = $this->post_m->get($id);
+
+            if (!$post) {
+                $this->response('post not found', 404);
+            }
+
+            $this->response($post, 200);
+        } catch (Exception $e) {
+            $this->response('server error: ' . $e->getMessage(), 500);
         }
     }
 }
