@@ -37,7 +37,7 @@ class Post extends RestController
 
             $this->response('success', 200);
         } catch (Exception $e) {
-            $this->response('server error: ' . $e->getMessage() , 500);
+            $this->response('server error: ' . $e->getMessage(), 500);
         }
     }
 
@@ -72,14 +72,22 @@ class Post extends RestController
             $result = $this->post_m->store($boardId, $userId, $title, $content);
             $this->response(['id' => $result], 200);
         } catch (Exception $e) {
-            $this->response('server error: ' . $e->getMessage() , 500);
+            $this->response('server error: ' . $e->getMessage(), 500);
         }
     }
 
     public function index_get($id)
     {
-        $post = $this->post_m->get($id);
+        try {
+            $post = $this->post_m->get($id);
 
-        $this->response($post, 200);
+            if (!$post) {
+                $this->response('post not found', 404);
+            }
+
+            $this->response($post, 200);
+        } catch (Exception $e) {
+            $this->response('server error: ' . $e->getMessage(), 500);
+        }
     }
 }
