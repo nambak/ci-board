@@ -1,18 +1,37 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 class Post extends MY_Controller
 {
     public function __construct()
     {
         parent::__construct();
+        $this->load->model('post_m');
+        $this->load->library('session');
     }
 
     public function detail()
     {
-        $queryParams['id'] = $this->input->get('id', true);
+        $currentPostId = $this->input->get('id', true);
+        $currentPost = $this->post_m->get($currentPostId);
 
-        $this->load->view('post/detail_v', $queryParams);
+        if (!$currentPost) {
+            show_404();
+            return;
+        }
+
+        $currentBoardId = $currentPost->board_id;
+        $prevPost = $this->post_m->getPrevious($currentBoardId, $currentPostId);
+        $nextPost = $this->post_m->getNext($currentBoardId, $currentPostId);
+
+        $data = [
+            'currentPost' => $currentPost,
+            'prevPostId'  => $prevPost ? $prevPost->id : null,
+            'nextPostId'  => $nextPost ? $nextPost->id : null,
+            'user_id'     => $this->session->userdata('user_id'),
+        ];
+
+        $this->load->view('post/detail_v', $data);
     }
 
     public function edit()
@@ -29,7 +48,10 @@ class Post extends MY_Controller
      */
     public function create()
     {
-        $queryParams['board_id'] = $this->input->get('board_id', true);
+        $queryParams = [
+            'board_id' => $this->input->get('board_id', true),
+            'user_id'  => $this->session->userdata('user_id'),
+        ];
 
         $this->load->view('post/create_v', $queryParams);
     }

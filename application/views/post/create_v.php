@@ -63,12 +63,14 @@
         }
 
         $.ajax({
-            url: '/rest/post/create?board_id=' + boardId,
+            url: '/rest/post/create',
             type: 'POST',
             data: {
                 board_id: boardId,
                 title: title,
-                content: content
+                content: content,
+                user_id: <?= $user_id ?>,
+                <?= $this->security->get_csrf_token_name(); ?>: '<?= $this->security->get_csrf_hash(); ?>',
             },
             success: (response) => {
                 Swal.fire({

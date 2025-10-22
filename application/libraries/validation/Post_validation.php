@@ -9,6 +9,7 @@ class Post_validation extends Base_validation
     {
         parent::__construct();
         $this->CI->load->model('board_m');
+        $this->CI->load->model('user_m');
         $this->set_custom_message();
     }
     public function validate()
@@ -16,14 +17,23 @@ class Post_validation extends Base_validation
         $this->CI->form_validation->set_rules('title', 'title', 'required|trim|max_length[255]');
         $this->CI->form_validation->set_rules('content', 'content', 'required|trim');
         $this->CI->form_validation->set_rules('board_id', 'board_id', 'required|numeric|callback_board_exists');
+        $this->CI->form_validation->set_rules('user_id', 'user_id', 'required|numeric|callback_user_exists');;
 
         return $this->CI->form_validation->run();
     }
 
     public function board_exists($board_id)
     {
-        // Board 모델의 메서드 사용
         if ($this->CI->board_m->exists($board_id)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function user_exists($user_id)
+    {
+        if ($this->CI->user_m->exists($user_id)) {
             return true;
         } else {
             return false;
@@ -38,6 +48,7 @@ class Post_validation extends Base_validation
         $this->CI->form_validation->set_message('numeric', '{field}은(는) 숫자만 입력 가능합니다.');
 
         $this->CI->form_validation->set_message('board_exists', '존재하지 않는 게시판입니다.');
+        $this->CI->form_validation->set_message('board_exists', '존재하지 않는 사용자입니다.');
     }
 
     public function get_errors()
