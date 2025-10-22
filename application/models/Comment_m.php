@@ -38,4 +38,19 @@ class Comment_m extends CI_Model
 
         return $query->result();
     }
+
+    /**
+     * ID로 댓글 조회
+     * @param int $id
+     * @return object|null
+     */
+    public function get($id)
+    {
+        $this->db->select('*');
+        $this->db->from('comments');
+        $this->db->where('id', $id);
+        $query = $this->db->get();
+
+        return $query->row();
+    }
 }
