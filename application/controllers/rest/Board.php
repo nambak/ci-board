@@ -22,24 +22,32 @@ class Board extends RestController
 
     public function index_post()
     {
+        if (!$this->session->userdata('user_id')) {
+            $this->response(['message' => 'unauthorized'], 401);
+        }
+
         try {
             $name = $this->post('name', true);
             $description = $this->post('description', true);
 
             if (!$name) {
                 $this->response(['message' => 'name required'], 400);
-                return;
             }
 
             $id = $this->board_m->create($name, $description);
             $this->response(['id' => $id], 201);
         } catch (Exception $e) {
-            $this->response(['message' => 'server error: ' . $e->getMessage()], 500);
+            log_message('error', 'board.index_post: ' . $e->getMessage());
+            $this->response(['message' => 'server error'], 500);
         }
     }
 
     public function index_put($id)
     {
+        if (!$this->session->userdata('user_id')) {
+            $this->response(['message' => 'unauthorized'], 401);
+        }
+
         try {
             $name = $this->put('name', true);
             $description = $this->put('description', true);
@@ -58,12 +66,17 @@ class Board extends RestController
             $this->board_m->update($id, $name, $description);
             $this->response(['message' => 'success'], 200);
         } catch (Exception $e) {
-            $this->response(['message' => 'server error: ' . $e->getMessage()], 500);
+            log_message('error', 'board.index_post: ' . $e->getMessage());
+            $this->response(['message' => 'server error'], 500);
         }
     }
 
     public function index_delete($id)
     {
+        if (!$this->session->userdata('user_id')) {
+            $this->response(['message' => 'unauthorized'], 401);
+        }
+
         try {
             // 게시판 존재 확인
             if (!$this->board_m->exists($id)) {
@@ -74,7 +87,8 @@ class Board extends RestController
             $this->board_m->delete($id);
             $this->response(['message' => 'success'], 200);
         } catch (Exception $e) {
-            $this->response(['message' => 'server error: ' . $e->getMessage()], 500);
+            log_message('error', 'board.index_post: ' . $e->getMessage());
+            $this->response(['message' => 'server error'], 500);
         }
     }
 
@@ -88,7 +102,7 @@ class Board extends RestController
         $this->response([
             'name' => $board[0]->name,
             'rows' => $posts,
-            'id' => $id
+            'id'   => $id
         ], 200);
     }
 }

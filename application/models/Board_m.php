@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 class Board_m extends CI_Model
 {
@@ -23,8 +23,11 @@ class Board_m extends CI_Model
 
     public function create($name, $description = '')
     {
+        $name = trim((string)$name);
+        $description = trim((string)$description);
+
         $this->db->insert('boards', [
-            'name' => $name,
+            'name'        => $name,
             'description' => $description
         ]);
 
@@ -33,9 +36,13 @@ class Board_m extends CI_Model
 
     public function update($id, $name, $description = '')
     {
+        $name = trim((string)$name);
+        $description = trim((string)$description);
+
         $this->db->where('id', $id);
+
         return $this->db->update('boards', [
-            'name' => $name,
+            'name'        => $name,
             'description' => $description
         ]);
     }

@@ -203,8 +203,6 @@
             const boardId = $(this).data('id');
             const boardName = $(this).data('name');
 
-            console.log(boardId);
-
             Swal.fire({
                 title: '게시판 삭제',
                 text: `"${boardName}" 게시판을 삭제하시겠습니까?`,
