@@ -38,6 +38,46 @@ class Board extends RestController
         }
     }
 
+    public function index_put($id)
+    {
+        try {
+            $name = $this->put('name', true);
+            $description = $this->put('description', true);
+
+            if (!$name) {
+                $this->response(['message' => 'name required'], 400);
+                return;
+            }
+
+            // 게시판 존재 확인
+            if (!$this->board_m->exists($id)) {
+                $this->response(['message' => 'board not found'], 404);
+                return;
+            }
+
+            $this->board_m->update($id, $name, $description);
+            $this->response(['message' => 'success'], 200);
+        } catch (Exception $e) {
+            $this->response(['message' => 'server error: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function index_delete($id)
+    {
+        try {
+            // 게시판 존재 확인
+            if (!$this->board_m->exists($id)) {
+                $this->response(['message' => 'board not found'], 404);
+                return;
+            }
+
+            $this->board_m->delete($id);
+            $this->response(['message' => 'success'], 200);
+        } catch (Exception $e) {
+            $this->response(['message' => 'server error: ' . $e->getMessage()], 500);
+        }
+    }
+
     public function detail_get()
     {
         $this->load->model('post_m');

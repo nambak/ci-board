@@ -30,6 +30,22 @@ class Board_m extends CI_Model
 
         return $this->db->insert_id();
     }
+
+    public function update($id, $name, $description = '')
+    {
+        $this->db->where('id', $id);
+        return $this->db->update('boards', [
+            'name' => $name,
+            'description' => $description
+        ]);
+    }
+
+    public function delete($id)
+    {
+        // CASCADE 설정으로 관련 posts와 comments가 자동 삭제됨
+        $this->db->where('id', $id);
+        return $this->db->delete('boards');
+    }
 }
 
 
