@@ -128,6 +128,9 @@
                         url: '/rest/post/<?= $currentPost->id ?>',
                         type: 'DELETE',
                         dataType: 'json',
+                        data: {
+                            '<?= $this->security->get_csrf_token_name(); ?>': '<?= $this->security->get_csrf_hash(); ?>'
+                        },
                         success: (data) => {
                             $(pageId + '#redirectBoardListButton').click();
                         },
