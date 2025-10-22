@@ -130,8 +130,10 @@ class User_m extends CI_Model
                 'userId'  => $user_id
             ];
         } catch (Exception $e) {
-            // 트랜잭션 롤백
-            $this->db->trans_rollback();
+            // 트랜잭션이 아직 진행 중이면 롤백
+            if ($this->db->trans_status() !== false) {
+                $this->db->trans_rollback();
+            }
 
             log_message('error', 'User registration error: ' . $e->getMessage());
 
