@@ -67,14 +67,14 @@
                 title: '제목',
                 halign: 'center',
                 formatter: function (value, row, index) {
-                    return `<a href="/board/detail?id=${row.id}">${row.name}</a>`;
+                    return `<a href="/board/detail?id=${row.id}">${escapeHtml(row.name)}</a>`;
                 }
             }, {
                 field: 'description',
                 title: '설명',
                 halign: 'center',
                 formatter: function (value, row, index) {
-                    return row.description;
+                    return escapeHtml(row.description || '-');
                 }
             }, {
                 field: 'created_at',
@@ -96,14 +96,14 @@
                         <button
                             class="btn btn-sm btn-outline-primary edit-board"
                             data-id="${row.id}"
-                            data-name="${row.name}"
-                            data-description="${row.description}"
+                            data-name="${escapeAttr(row.name)}"
+                            data-description="${escapeAttr(row.description)}"
                         >수정
                         </button>
                         <button
                             class="btn btn-sm btn-outline-danger delete-board"
                             data-id="${row.id}"
-                            data-name="${row.name}"
+                            data-name="${escapeAttr(row.name)}"
                         >삭제</button>
                     `;
                 }
@@ -238,4 +238,17 @@
             });
         });
     });
+
+    function escapeHtml(str) {
+        return String(str === undefined || str === null ? '' : str)
+            .replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;')
+            .replace(/'/g,'&#39;');
+    }
+    function escapeAttr(str) {
+        // HTML 속성값 컨텍스트 기준 이스케이프
+        return escapeHtml(str);
+    }
 </script>

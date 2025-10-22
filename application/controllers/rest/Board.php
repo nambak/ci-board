@@ -49,6 +49,12 @@ class Board extends RestController
         }
 
         try {
+            $id = (int) $id;
+
+            if ($id <= 0) {
+                $this->response(['message' => 'invalid id'], 400);
+            }
+
             $name = $this->put('name', true);
             $description = $this->put('description', true);
 
@@ -78,6 +84,12 @@ class Board extends RestController
         }
 
         try {
+            $id = (int) $id;
+
+            if ($id <= 0) {
+                $this->response(['message' => 'invalid id'], 400);
+            }
+
             // 게시판 존재 확인
             if (!$this->board_m->exists($id)) {
                 $this->response(['message' => 'board not found'], 404);
