@@ -80,6 +80,9 @@ class Auth extends RestController
             // Remember Token
             if ($remember) {
                 $token = bin2hex(random_bytes(32));
+                
+                // 토큰을 데이터베이스에 저장
+                $this->user_m->save_remember_token($user['id'], $token);
 
                 $this->input->set_cookie([
                     'name'     => 'remember_token',
