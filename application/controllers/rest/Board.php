@@ -20,6 +20,90 @@ class Board extends RestController
         ], 200);
     }
 
+    public function index_post()
+    {
+        if (!$this->session->userdata('user_id')) {
+            $this->response(['message' => 'unauthorized'], 401);
+        }
+
+        try {
+            $name = $this->post('name', true);
+            $description = $this->post('description', true);
+
+            if (!$name) {
+                $this->response(['message' => 'name required'], 400);
+            }
+
+            $id = $this->board_m->create($name, $description);
+            $this->response(['id' => $id], 201);
+        } catch (Exception $e) {
+            log_message('error', 'board.index_post: ' . $e->getMessage());
+            $this->response(['message' => 'server error'], 500);
+        }
+    }
+
+    public function index_put($id)
+    {
+        if (!$this->session->userdata('user_id')) {
+            $this->response(['message' => 'unauthorized'], 401);
+        }
+
+        try {
+            $id = (int) $id;
+
+            if ($id <= 0) {
+                $this->response(['message' => 'invalid id'], 400);
+            }
+
+            $name = $this->put('name', true);
+            $description = $this->put('description', true);
+
+            if (!$name) {
+                $this->response(['message' => 'name required'], 400);
+                return;
+            }
+
+            // 게시판 존재 확인
+            if (!$this->board_m->exists($id)) {
+                $this->response(['message' => 'board not found'], 404);
+                return;
+            }
+
+            $this->board_m->update($id, $name, $description);
+            $this->response(['message' => 'success'], 200);
+        } catch (Exception $e) {
+            log_message('error', 'board.index_post: ' . $e->getMessage());
+            $this->response(['message' => 'server error'], 500);
+        }
+    }
+
+    public function index_delete($id)
+    {
+        if (!$this->session->userdata('user_id')) {
+            $this->response(['message' => 'unauthorized'], 401);
+        }
+
+        try {
+            $id = (int) $id;
+
+            if ($id <= 0) {
+                $this->response(['message' => 'invalid id'], 400);
+            }
+
+            // 게시판 존재 확인
+            if (!$this->board_m->exists($id)) {
+                $this->response(['message' => 'board not found'], 404);
+                return;
+            }
+
+            $this->board_m->delete($id);
+            $this->response(['message' => 'success'], 200);
+        } catch (Exception $e) {
+            log_message('error', 'board.index_post: ' . $e->getMessage());
+            $this->response(['message' => 'server error'], 500);
+        }
+    }
+
     public function detail_get()
     {
         $this->load->model('post_m');
@@ -30,7 +114,7 @@ class Board extends RestController
         $this->response([
             'name' => $board[0]->name,
             'rows' => $posts,
-            'id' => $id
+            'id'   => $id
         ], 200);
     }
 }
