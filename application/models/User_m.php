@@ -79,10 +79,19 @@ class User_m extends CI_Model
     {
         try {
             // 데이터 유효성 검사
-            if (empty($data['email']) || empty($data['password']) || empty($data['name'])) {
+            if (empty(trim($data['email'])) || empty(trim($data['password'])) || empty(trim($data['name']))) {
                 return [
                     'success' => false,
                     'message' => '필수 정보가 누락되었습니다',
+                    'userId'  => null
+                ];
+            }
+
+            // 이메일 형식 검증
+            if (!filter_var(trim($data['email']), FILTER_VALIDATE_EMAIL)) {
+                return [
+                    'success' => false,
+                    'message' => '올바른 이메일 형식이 아닙니다',
                     'userId'  => null
                 ];
             }
