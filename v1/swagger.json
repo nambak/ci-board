@@ -985,132 +985,10 @@
         }
       }
     },
-    "/rest/auth/register": {
-      "post": {
-        "tags": ["Auth"],
-        "summary": "회원가입",
-        "description": "새로운 사용자를 등록합니다",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/x-www-form-urlencoded": {
-              "schema": {
-                "type": "object",
-                "required": ["name", "email", "password"],
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "minLength": 2,
-                    "maxLength": 50,
-                    "description": "사용자 이름"
-                  },
-                  "email": {
-                    "type": "string",
-                    "format": "email",
-                    "maxLength": 100,
-                    "description": "사용자 이메일"
-                  },
-                  "password": {
-                    "type": "string",
-                    "format": "password",
-                    "minLength": 6,
-                    "maxLength": 255,
-                    "description": "사용자 비밀번호"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "회원가입 성공",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "message": {
-                      "type": "string"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "user_id": {
-                          "type": "integer"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "email": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  }
-                },
-                "example": {
-                  "success": true,
-                  "message": "회원가입이 완료되었습니다.",
-                  "data": {
-                    "user_id": 123,
-                    "name": "홍길동",
-                    "email": "user@example.com"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "유효성 검사 실패 또는 이메일 중복",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "example": {
-                  "success": false,
-                  "message": "이미 사용 중인 이메일입니다.",
-                  "errors": {
-                    "email": "이미 사용 중인 이메일입니다."
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "서버 오류",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "example": {
-                  "success": false,
-                  "message": "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/rest/auth/check_email": {
       "get": {
-        "tags": ["Auth"],
-        "summary": "이메일 중복 확인",
-        "description": "회원가입 시 이메일 중복 여부를 확인합니다",
+        "summary": "이메일 중복 확인 (보안 강화)",
+        "description": "회원가입 시 이메일 중복을 확인합니다. 보안을 위해 Rate Limiting, CAPTCHA 검증, 인증 요구사항이 적용됩니다.",
         "parameters": [
           {
             "name": "email",
@@ -1119,293 +997,320 @@
             "description": "확인할 이메일 주소",
             "schema": {
               "type": "string",
-              "format": "email"
+              "format": "email",
+              "example": "user@example.com"
+            }
+          },
+          {
+            "name": "signup_token",
+            "in": "query",
+            "required": false,
+            "description": "회원가입 플로우 토큰 (비인증 사용자 필수)",
+            "schema": {
+              "type": "string",
+              "example": "abc123def456..."
+            }
+          },
+          {
+            "name": "captcha_id",
+            "in": "query",
+            "required": false,
+            "description": "CAPTCHA 챌린지 ID",
+            "schema": {
+              "type": "string",
+              "example": "captcha_123"
+            }
+          },
+          {
+            "name": "captcha_answer",
+            "in": "query",
+            "required": false,
+            "description": "CAPTCHA 답안",
+            "schema": {
+              "type": "string",
+              "example": "8"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "이메일 중복 확인 성공",
+            "description": "이메일 확인 성공",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "success": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "example": true
                     },
                     "exists": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "example": false
                     },
                     "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "available": {
-                    "value": {
-                      "success": true,
-                      "exists": false,
-                      "message": "사용 가능한 이메일입니다."
-                    }
-                  },
-                  "exists": {
-                    "value": {
-                      "success": true,
-                      "exists": true,
-                      "message": "이미 사용 중인 이메일입니다."
+                      "type": "string",
+                      "example": "사용 가능한 이메일입니다."
+                    },
+                    "rate_limit": {
+                      "type": "object",
+                      "properties": {
+                        "remaining": {
+                          "type": "integer",
+                          "example": 4
+                        },
+                        "reset_time": {
+                          "type": "integer",
+                          "example": 1625097600
+                        }
+                      }
+                    },
+                    "signup_flow": {
+                      "type": "object",
+                      "properties": {
+                        "remaining_checks": {
+                          "type": "integer",
+                          "example": 4
+                        }
+                      }
                     }
                   }
                 }
               }
             }
           },
-          "400": {
-            "description": "잘못된 요청",
+          "401": {
+            "description": "인증 필요 또는 유효하지 않은 토큰",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "success": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "example": false
                     },
                     "message": {
-                      "type": "string"
+                      "type": "string",
+                      "example": "이 기능은 회원가입 과정에서만 사용할 수 있습니다."
                     },
                     "exists": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "error_code": {
+                      "type": "string",
+                      "example": "AUTH_REQUIRED"
                     }
                   }
-                },
-                "example": {
-                  "success": false,
-                  "message": "올바른 이메일 형식이 아닙니다.",
-                  "exists": false
                 }
               }
             }
           },
-          "500": {
-            "description": "서버 오류",
+          "422": {
+            "description": "CAPTCHA 필요 또는 검증 실패",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "success": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "example": false
                     },
                     "message": {
-                      "type": "string"
+                      "type": "string",
+                      "example": "보안을 위해 인증이 필요합니다."
                     },
                     "exists": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "captcha_required": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "captcha": {
+                      "type": "object",
+                      "properties": {
+                        "question": {
+                          "type": "string",
+                          "example": "7 + 3 = ?"
+                        },
+                        "challenge_id": {
+                          "type": "string",
+                          "example": "abc123..."
+                        }
+                      }
+                    },
+                    "error_code": {
+                      "type": "string",
+                      "example": "CAPTCHA_REQUIRED"
                     }
                   }
-                },
-                "example": {
-                  "success": false,
-                  "message": "서버 오류가 발생했습니다.",
-                  "exists": false
                 }
               }
             }
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "Board": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "게시판 ID"
           },
-          "name": {
-            "type": "string",
-            "description": "게시판 이름"
-          },
-          "description": {
-            "type": "string",
-            "description": "게시판 설명"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "생성일시"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "수정일시"
-          }
-        }
-      },
-      "Post": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "게시글 ID"
-          },
-          "board_id": {
-            "type": "integer",
-            "description": "게시판 ID"
-          },
-          "user_id": {
-            "type": "integer",
-            "description": "작성자 ID"
-          },
-          "title": {
-            "type": "string",
-            "description": "게시글 제목"
-          },
-          "content": {
-            "type": "string",
-            "description": "게시글 내용"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "생성일시"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "수정일시"
-          }
-        }
-      },
-      "PostWithUser": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Post"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string",
-                "description": "작성자 이름"
-              },
-              "email": {
-                "type": "string",
-                "format": "email",
-                "description": "작성자 이메일"
+          "429": {
+            "description": "Rate Limit 초과",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "요청이 너무 많습니다. 잠시 후 다시 시도해주세요."
+                    },
+                    "exists": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "rate_limit": {
+                      "type": "object",
+                      "properties": {
+                        "reset_time": {
+                          "type": "integer",
+                          "example": 1625097600
+                        },
+                        "remaining": {
+                          "type": "integer",
+                          "example": 0
+                        }
+                      }
+                    }
+                  }
+                }
               }
-            }
-          }
-        ]
-      },
-      "Comment": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "댓글 ID"
-          },
-          "post_id": {
-            "type": "integer",
-            "description": "게시글 ID"
-          },
-          "writer_id": {
-            "type": "integer",
-            "description": "작성자 ID"
-          },
-          "comment": {
-            "type": "string",
-            "description": "댓글 내용"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "생성일시"
-          }
-        }
-      },
-      "CommentWithUser": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "댓글 ID"
-          },
-          "name": {
-            "type": "string",
-            "description": "작성자 이름"
-          },
-          "comment": {
-            "type": "string",
-            "description": "댓글 내용"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "생성일시"
-          },
-          "can_edit": {
-            "type": "boolean",
-            "description": "수정 가능 여부"
-          }
-        }
-      },
-      "User": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "사용자 ID"
-          },
-          "name": {
-            "type": "string",
-            "description": "사용자 이름"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "description": "사용자 이메일"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "생성일시"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "수정일시"
-          }
-        }
-      },
-      "ErrorResponse": {
-        "type": "object",
-        "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "message": {
-            "type": "string"
-          },
-          "errors": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
             }
           }
         }
       }
     },
-    "securitySchemes": {
-      "sessionAuth": {
-        "type": "apiKey",
-        "in": "cookie",
-        "name": "ci_session",
-        "description": "세션 기반 인증 (로그인 필요)"
+    "/rest/auth/generate_signup_token": {
+      "post": {
+        "summary": "회원가입 플로우 토큰 생성",
+        "description": "회원가입 과정에서 이메일 확인에 필요한 토큰을 생성합니다.",
+        "responses": {
+          "200": {
+            "description": "토큰 생성 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "회원가입 세션이 시작되었습니다."
+                    },
+                    "signup_token": {
+                      "type": "string",
+                      "example": "abc123def456..."
+                    },
+                    "expires_in": {
+                      "type": "integer",
+                      "example": 1800
+                    },
+                    "email_checks_allowed": {
+                      "type": "integer",
+                      "example": 5
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate Limit 초과",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "토큰 생성 요청이 너무 많습니다. 잠시 후 다시 시도해주세요."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rest/auth/generate_captcha": {
+      "get": {
+        "summary": "CAPTCHA 생성",
+        "description": "보안 검증용 CAPTCHA를 생성합니다.",
+        "responses": {
+          "200": {
+            "description": "CAPTCHA 생성 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "captcha": {
+                      "type": "object",
+                      "properties": {
+                        "question": {
+                          "type": "string",
+                          "example": "4 * 2 = ?"
+                        },
+                        "challenge_id": {
+                          "type": "string",
+                          "example": "def456..."
+                        }
+                      }
+                    },
+                    "expires_in": {
+                      "type": "integer",
+                      "example": 600
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate Limit 초과",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "CAPTCHA 요청이 너무 많습니다. 잠시 후 다시 시도해주세요."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
