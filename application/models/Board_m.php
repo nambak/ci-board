@@ -20,6 +20,16 @@ class Board_m extends CI_Model
         $result = $query->num_rows();
         return ($result > 0);
     }
+
+    public function create($name, $description = '')
+    {
+        $this->db->insert('boards', [
+            'name' => $name,
+            'description' => $description
+        ]);
+
+        return $this->db->insert_id();
+    }
 }
 
 

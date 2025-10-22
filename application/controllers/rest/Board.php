@@ -20,6 +20,24 @@ class Board extends RestController
         ], 200);
     }
 
+    public function index_post()
+    {
+        try {
+            $name = $this->post('name', true);
+            $description = $this->post('description', true);
+
+            if (!$name) {
+                $this->response(['message' => 'name required'], 400);
+                return;
+            }
+
+            $id = $this->board_m->create($name, $description);
+            $this->response(['id' => $id], 201);
+        } catch (Exception $e) {
+            $this->response(['message' => 'server error: ' . $e->getMessage()], 500);
+        }
+    }
+
     public function detail_get()
     {
         $this->load->model('post_m');
