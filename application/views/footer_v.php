@@ -5,7 +5,9 @@
         <small>Copyright by <em><a href="mailto:nambak80@gmail.com" class="text-secondary text-decoration-none">nambak80@gmail.com</a></em></small>
     </p>
 </footer>
-<?= $debugbarRenderer->render(); ?>
+<?php if($debugbarRenderer): ?>
+    <?= $debugbarRenderer->render(); ?>
+<?php endif; ?>
 </div>
 </div>
 </body>
