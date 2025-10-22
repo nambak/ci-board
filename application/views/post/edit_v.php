@@ -45,12 +45,9 @@
 
     function init(postId) {
         $.ajax({
-            url: '/rest/post/detail',
+            url: '/rest/post/' + postId,
             type: 'GET',
             dataType: 'json',
-            data: {
-                id: postId
-            },
             success: (data) => {
                 if (data) {
                     $(pageId + 'input[name=title]').val(data.title);
@@ -93,8 +90,8 @@
         }
 
         $.ajax({
-            url: '/rest/post/update?id=' + postId,
-            type: 'POST',
+            url: '/rest/post/' + postId,
+            type: 'PUT',
             data: {
                 title: title,
                 content: content,

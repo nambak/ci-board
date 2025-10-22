@@ -2,7 +2,7 @@
     <!-- 게시글 제목 -->
     <div class="row mb-4">
         <div class="col">
-            <h2 class="border-bottom pb-3" id="title"></h2>
+            <h2 class="border-bottom pb-3" id="title"><?= html_escape($currentPost->title) ?></h2>
         </div>
     </div>
     <!-- 게시글 정보 -->
@@ -10,9 +10,9 @@
         <div class="col">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <span class="me-3">작성자: <span id="writer"></span></span>
-                    <span class="me-3">작성일: <span id="createdAt"></span></span>
-                    <span>조회수: <span id="views"></span></span>
+                    <span class="me-3">작성자: <?= html_escape($currentPost->name) ?></span>
+                    <span class="me-3">작성일: <?= html_escape($currentPost->created_at) ?></span>
+                    <span>조회수: <?= html_escape($currentPost->views) ?></span>
                 </div>
             </div>
         </div>
@@ -21,7 +21,9 @@
     <div class="row mb-4">
         <div class="col">
             <div class="card">
-                <div class="card-body min-vh-50" id="content"></div>
+                <div class="card-body min-vh-50">
+                    <?= nl2br($currentPost->content); ?>
+                </div>
             </div>
         </div>
     </div>
@@ -31,12 +33,23 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <button id="redirectBoardListButton" class="btn btn-outline-secondary me-2">목록으로</button>
-                    <button id="redirectEditPost" class="btn btn-outline-primary me-2">수정</button>
-                    <button id="deletePost" class="btn btn-outline-danger">삭제</button>
+                    <?php if (is_post_author($currentPost->id)): ?>
+                        <button id="redirectEditPost" class="btn btn-outline-primary me-2">수정</button>
+                        <button id="deletePost" class="btn btn-outline-danger">삭제</button>
+                    <?php endif; ?>
                 </div>
                 <div>
-                    <button id="prevPostButton" class="btn btn-outline-primary me-2">이전글</button>
-                    <button id="nextPostButton" class="btn btn-outline-primary">다음글</button>
+                    <?php if($prevPostId): ?>
+                    <a href="/post/detail?id=<?= $prevPostId ?>" class="btn btn-outline-primary me-2">이전글</a>
+                    <?php else: ?>
+                    <button disabled class="btn btn-outline-primary me-2">이전글</button>
+                    <?php endif; ?>
+
+                    <?php if($nextPostId): ?>
+                    <a href="/post/detail?id=<?= $nextPostId ?>" class="btn btn-outline-primary">다음글</a>
+                    <?php else: ?>
+                    <button disabled class="btn btn-outline-primary">다음글</button>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -48,26 +61,28 @@
             <h5 class="mb-3">댓글</h5>
 
             <!-- 댓글 작성 폼 -->
-            <div class="card mb-3">
-                <div class="card-body">
-                    <div class="mb-3">
-                        <textarea
-                            name="comment"
-                            class="form-control"
-                            rows="3"
-                            placeholder="댓글을 입력하세요"
-                        ></textarea>
-                    </div>
-                    <div class="text-end">
-                        <button
-                            id="write_comment"
-                            type="button"
-                            class="btn btn-primary"
-                        >댓글 작성
-                        </button>
+            <?php if (is_logged_in()): ?>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <textarea
+                                name="comment"
+                                class="form-control"
+                                rows="3"
+                                placeholder="댓글을 입력하세요"
+                            ></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button
+                                id="write_comment"
+                                type="button"
+                                class="btn btn-primary"
+                            >댓글 작성
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            <?php endif; ?>
 
             <!-- 댓글 목록 -->
             <div id="comment_list">
@@ -84,6 +99,7 @@
 </article>
 <script defer>
     let pageId = '#post_detail ';
+    let userId = <?= isset($user_id) ? $user_id : 0 ?>;
 
     function initRedirectBoardListButton(boardId) {
         $(pageId + '#redirectBoardListButton').on('click', () => {
@@ -109,7 +125,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/rest/post/<?= $id ?>',
+                        url: '/rest/post/<?= $currentPost->id ?>',
                         type: 'DELETE',
                         dataType: 'json',
                         data: {
@@ -176,13 +192,13 @@
             url: '/rest/comment/save',
             type: 'POST',
             data: {
-                writer_id: 1,
+                writer_id: userId,
                 post_id: postId,
                 comment: comment.val(),
-                '<?= $this->security->get_csrf_token_name(); ?>': '<?= $this->security->get_csrf_hash(); ?>'
+                <?= $this->security->get_csrf_token_name(); ?>: '<?= $this->security->get_csrf_hash(); ?>',
             },
             success: (response) => {
-                getComments(postId)
+                getComments(postId);
 
                 // 저장 후 textarea 비움
                 comment.val('');
@@ -217,6 +233,13 @@
         }
 
         data.forEach((comment) => {
+            // 댓글 수정/삭제 버튼은 작성자만 표시
+            const editDeleteButtons = comment.can_edit ?
+                `<div>
+                    <button class="btn btn-sm text-primary">수정</button>
+                    <button class="btn btn-sm text-danger">삭제</button>
+                </div>` : '';
+
             const template = `<div class="card mb-2">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
@@ -224,10 +247,7 @@
                             <strong>${comment.name}</strong>
                             <small class="text-muted ms-2">${comment.created_at}</small>
                         </div>
-                        <div>
-                            <button class="btn btn-sm text-primary">수정</button>
-                            <button class="btn btn-sm text-danger">삭제</button>
-                        </div>
+                        ${editDeleteButtons}
                     </div>
                     <p class="mt-2 mb-0">${comment.comment}</p>
                 </div>
@@ -246,41 +266,15 @@
         });
     }
 
-    function getPostData(postId) {
-        $.ajax({
-            url: '/rest/post/detail',
-            type: 'GET',
-            dataType: 'json',
-            data: {
-                id: postId
-            },
-            success: (data) => {
-                if (data) {
-                    $(pageId + '#title').text(data.title);
-                    $(pageId + '#writer').text(data.name);
-                    $(pageId + '#createdAt').text(data.created_at);
-                    $(pageId + '#views').text(data.views);
-                    $(pageId + '#content').html(data.content);
-                }
-
-                initRedirectBoardListButton(data.board_id);
-                initRedirectPostEditButton(data.id);
-                initDeletePostButton(data.id);
-                initPrevNextPostButton(data);
-            },
-            error: (xhr) => {
-                if (xhr.status === 404) {
-                    window.location.href = '/errors/error_404';
-                }
-            }
-        });
-    }
-
     $(document).ready(() => {
-        const postId = <?= $id ?>;
+        const postId = <?= $currentPost->id ?>;
+        const boardId = <?= $currentPost->board_id ?>; // 게시판 ID 추가
 
-        getPostData(postId);
+        initRedirectBoardListButton(boardId);
+        initRedirectPostEditButton(postId);
+        initDeletePostButton();
         initCommentPostButton(postId);
         getComments(postId);
+
     });
 </script>

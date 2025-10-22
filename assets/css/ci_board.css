@@ -8,7 +8,7 @@
 
 body {
     color: #2e3440;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-family: "Noto Sans KR", Helvetica, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* dark 배경 관련 클래스 수정 */
@@ -45,4 +45,34 @@ body {
 
 .text-danger {
     color: #bf616a !important;
+}
+
+/* 404 Error Page Layout */
+.error-404-layout html,
+.error-404-layout body {
+    height: 100%;
+}
+
+.error-404-layout body {
+    display: flex;
+    flex-direction: column;
+}
+
+.error-404-layout #container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+}
+
+/* Error Pages Common Styles */
+.error-container {
+    border: 1px solid #990000;
+    padding-left: 20px;
+    margin: 0 0 10px 0;
+}
+
+.error-file-info {
+    margin-left: 10px;
 }
