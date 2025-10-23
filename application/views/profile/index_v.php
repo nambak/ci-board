@@ -48,7 +48,7 @@
                 <div class="card-footer">
                     <div class="d-flex justify-content-between">
                         <a href="/board" class="btn btn-secondary">목록으로</a>
-                        <button type="button" class="btn btn-primary" id="editProfileBtn">프로필 수정</button>
+                        <a href="/profile/edit" class="btn btn-primary">프로필 수정</a>
                     </div>
                 </div>
             </div>
@@ -61,15 +61,6 @@
 
     $(document).ready(() => {
         loadProfile();
-
-        // 프로필 수정 버튼 (향후 구현)
-        $(pageId + '#editProfileBtn').on('click', function() {
-            Swal.fire({
-                icon: 'info',
-                title: '준비 중',
-                text: '프로필 수정 기능은 준비 중입니다.'
-            });
-        });
     });
 
     function loadProfile() {

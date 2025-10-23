@@ -81,4 +81,79 @@ class User extends RestController
             ], self::HTTP_INTERNAL_ERROR);
         }
     }
+
+    /**
+     * 프로필 수정
+     * PUT /rest/user/profile
+     */
+    public function profile_put()
+    {
+        // 로그인 여부 확인
+        if (!$this->session->userdata('logged_in')) {
+            $this->response([
+                'success' => false,
+                'message' => '로그인이 필요합니다.'
+            ], self::HTTP_UNAUTHORIZED);
+            return;
+        }
+
+        try {
+            $user_id = $this->session->userdata('user_id');
+
+            // 입력 데이터 받기
+            $name = $this->put('name', true);
+
+            // 유효성 검사
+            $this->load->library('form_validation');
+            $this->form_validation->set_data(['name' => $name]);
+            $this->form_validation->set_rules('name', '이름', 'required|trim|min_length[2]|max_length[50]');
+
+            if (!$this->form_validation->run()) {
+                $errors = [];
+                if (form_error('name')) {
+                    $errors['name'] = strip_tags(form_error('name'));
+                }
+
+                $this->response([
+                    'success' => false,
+                    'message' => '입력값을 확인해주세요.',
+                    'errors'  => $errors
+                ], self::HTTP_UNPROCESSABLE_ENTITY);
+                return;
+            }
+
+            // 사용자 정보 업데이트
+            $update_data = [
+                'name' => trim($name)
+            ];
+
+            $result = $this->user_m->update($user_id, $update_data);
+
+            if ($result) {
+                // 세션 정보도 업데이트
+                $this->session->set_userdata('user_name', trim($name));
+
+                $this->response([
+                    'success' => true,
+                    'message' => '프로필이 수정되었습니다.',
+                    'data'    => [
+                        'name' => trim($name)
+                    ]
+                ], self::HTTP_OK);
+            } else {
+                $this->response([
+                    'success' => false,
+                    'message' => '프로필 수정에 실패했습니다.'
+                ], self::HTTP_INTERNAL_ERROR);
+            }
+
+        } catch (Exception $e) {
+            log_message('error', 'Profile update error: ' . $e->getMessage());
+
+            $this->response([
+                'success' => false,
+                'message' => '프로필 수정 중 오류가 발생했습니다.'
+            ], self::HTTP_INTERNAL_ERROR);
+        }
+    }
 }

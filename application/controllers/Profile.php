@@ -12,4 +12,9 @@ class Profile extends MY_Controller
     {
         $this->load->view('profile/index_v');
     }
+
+    public function edit()
+    {
+        $this->load->view('profile/edit_v');
+    }
 }
