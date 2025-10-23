@@ -86,28 +86,32 @@
                     // 날짜만 추출 (YYYY-MM-DD)
                     return row.created_at.split(' ')[0];
                 }
-            }, {
+            },
+            <?php if (is_logged_in()): ?>
+            {
                 field: 'actions',
                 title: '관리',
                 align: 'center',
                 halign: 'center',
                 formatter: function (value, row, index) {
                     return `
-                        <button
-                            class="btn btn-sm btn-outline-primary edit-board"
-                            data-id="${row.id}"
-                            data-name="${escapeAttr(row.name)}"
-                            data-description="${escapeAttr(row.description)}"
-                        >수정
-                        </button>
-                        <button
-                            class="btn btn-sm btn-outline-danger delete-board"
-                            data-id="${row.id}"
-                            data-name="${escapeAttr(row.name)}"
-                        >삭제</button>
+                    <button
+                        class="btn btn-sm btn-outline-primary edit-board"
+                        data-id="${row.id}"
+                        data-name="${escapeAttr(row.name)}"
+                        data-description="${escapeAttr(row.description)}"
+                    >수정
+                    </button>
+                    <button
+                        class="btn btn-sm btn-outline-danger delete-board"
+                        data-id="${row.id}"
+                        data-name="${escapeAttr(row.name)}"
+                    >삭제</button>
                     `;
                 }
-            }],
+            }
+            <?php endif; ?>
+            ],
             pagination: true,
             headerStyle: function (column) {
                 return {
