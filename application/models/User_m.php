@@ -167,20 +167,52 @@ class User_m extends CI_Model
     {
         try {
             $user = $this->get_by_username($username);
-            
+
             if (!$user) {
                 $user = $this->get_by_email($username);
             }
-            
+
             if ($user && password_verify($password, $user->password)) {
                 return $user;
             }
-            
+
             return false;
 
         } catch (Exception $e) {
             log_message('error', 'User authentication error: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Save remember token
+     */
+    public function save_remember_token($user_id, $token)
+    {
+        $data = [
+            'remember_token' => $token,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        $this->db->where('id', $user_id);
+        return $this->db->update('users', $data);
+    }
+
+    /**
+     * Remember 토큰으로 사용자 조회
+     *
+     * @param string $token Remember 토큰
+     * @return array|null 사용자 정보 또는 null
+     */
+    public function get_user_by_remember_token($token)
+    {
+        if (empty($token)) {
+            return null;
+        }
+
+        $this->db->where('remember_token', $token);
+        $query = $this->db->get('users');
+
+        return $query->row_array();
     }
 }

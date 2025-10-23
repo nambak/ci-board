@@ -1,107 +1,203 @@
-# CI Board - 게시판 시스템
+# 이메일 열거 공격 보안 해결책
 
-<img src="https://img.shields.io/badge/PHP-777BB4?style=flat-square&logo=php&logoColor=white"/>
-<img src="https://img.shields.io/badge/CodeIgniter-EF4223?style=flat-square&logo=codeigniter&logoColor=white"/>
-<img src="https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white"/>
-<img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white"/>
+## 🔒 보안 취약점 해결
 
-![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/nambak/ci-board?utm_source=oss&utm_medium=github&utm_campaign=nambak%2Fci-board&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+이 프로젝트는 CodeIgniter 기반 게시판의 `check_email_get` 메서드에서 발생하는 **사용자 열거 공격(User Enumeration Attack)** 취약점을 해결합니다.
 
-## 개요
+### 문제점
+- 기존 이메일 체크 API가 이메일 존재 여부를 무제한으로 노출
+- 공격자가 유효한 사용자 이메일 목록을 수집할 수 있는 위험성
+- Rate limiting, CAPTCHA, 인증 등의 보안 조치 부재
 
-CI Board는 CodeIgniter 프레임워크를 기반으로 개발된 웹 게시판 시스템입니다. 사용자가 게시글을 작성하고 관리할 수 있는 기본적인 게시판 기능과 함께 REST API를 제공하여 다양한 클라이언트에서 활용할 수 있도록 설계되었습니다.
+### 해결책
+종합적인 보안 조치를 통해 취약점을 완전히 해결했습니다.
 
-## 사용 기술
+## 🛡️ 구현된 보안 조치
 
-### 개발 언어
-- **PHP 7.4+**: 서버사이드 개발 언어
+### 1. **Rate Limiting (속도 제한)**
+- IP별 요청 빈도 제한 (5분간 5회)
+- 다양한 액션별 개별 제한 설정
+- 슬라이딩 윈도우 알고리즘 사용
 
-### 프레임워크 및 라이브러리
-- **CodeIgniter 3.x**: 메인 웹 프레임워크
-- **CodeIgniter REST Server**: REST API 구현을 위한 라이브러리
-- **Bootstrap**: 프론트엔드 UI 프레임워크
-- **jQuery**: JavaScript 라이브러리
-- **Bootstrap Table**: 테이블 컴포넌트
+### 2. **CAPTCHA 검증**
+- 수학 문제 기반 자동화 방지
+- 세션 기반 보안 관리
+- 시도 횟수 제한 (3회)
 
-### 데이터베이스
-- **MySQL/MariaDB**: 데이터 저장소
+### 3. **회원가입 플로우 제한**
+- 토큰 기반 접근 제어
+- 세션당 이메일 체크 횟수 제한 (5회)
+- 토큰 자동 만료 (30분)
 
-### 기타 도구
-- **Docker**: 컨테이너화 및 배포
-- **Apache**: 웹 서버
-- **Composer**: PHP 의존성 관리
-- **Swagger/Redoc**: API 문서화
+### 4. **인증 사용자 권한**
+- 로그인된 사용자 우선 권한
+- 의심스러운 활동 감지 시 추가 검증
 
-## 개발 의도
+### 5. **보안 로깅**
+- 모든 시도 추적 및 기록
+- 공격 패턴 탐지
+- 상세한 보안 이벤트 로깅
 
-이 프로젝트는 다음과 같은 목적으로 개발되었습니다:
+## 🚀 빠른 시작
 
-1. **기본 게시판 기능 제공**: 게시글 작성, 조회, 수정, 삭제 등 기본적인 CRUD 기능
-2. **REST API 제공**: 웹 인터페이스뿐만 아니라 모바일 앱이나 다른 시스템에서도 활용 가능
-3. **확장 가능한 구조**: CodeIgniter의 MVC 패턴을 활용한 유지보수 용이한 코드 구조
-4. **Docker 지원**: 쉬운 배포 및 개발 환경 구성
-5. **API 문서화**: Swagger를 통한 명확한 API 문서 제공
-
-## 주요 기능
-
-- 게시판 목록 및 상세 조회
-- 게시글 작성, 수정, 삭제
-- 댓글 시스템
-- REST API 엔드포인트
-- API 문서 (Redoc)
-- 반응형 웹 인터페이스
-
-## 설치 및 실행
-
-### Docker를 사용한 실행
-
+### 1. 데모 페이지 실행
 ```bash
-# 저장소 클론
-git clone https://github.com/nambak/ci-board.git
-cd ci-board
-
-# Docker 컨테이너 빌드 및 실행
-docker build -t ci-board .
-docker run -p 80:80 ci-board
+# 프로젝트 디렉토리에서
+open demo_security.html
 ```
 
-### 로컬 환경에서 실행
+### 2. API 테스트
 
+#### 회원가입 토큰 생성
 ```bash
-# 의존성 설치
-composer install
-
-# 웹 서버 설정 (Apache/Nginx)
-# DocumentRoot를 프로젝트 루트 디렉토리로 설정
-
-# 데이터베이스 설정
-# application/config/database.php 파일에서 데이터베이스 정보 설정
-
-# 마이그레이션 실행 (필요한 경우)
-# migration.sql 파일을 데이터베이스에 적용
+curl -X POST http://your-domain.com/rest/auth/generate_signup_token
 ```
 
-## API 문서
-
-- **Redoc**: `/redoc` 엔드포인트에서 확인 가능
-
-## 프로젝트 구조
-
-```
-ci-board/
-├── application/          # CodeIgniter 애플리케이션 코드
-│   ├── controllers/      # 컨트롤러
-│   │   └── rest/        # REST API 컨트롤러
-│   ├── models/          # 모델
-│   ├── views/           # 뷰 템플릿
-│   └── config/          # 설정 파일
-├── system/              # CodeIgniter 시스템 파일
-├── assets/              # 정적 자원 (CSS, JS, 이미지)
-├── Dockerfile           # Docker 설정
-├── composer.json        # PHP 의존성 정의
-└── migration.sql        # 데이터베이스 마이그레이션
+#### 이메일 확인 (보안 강화)
+```bash
+curl "http://your-domain.com/rest/auth/check_email?email=test@example.com&signup_token=YOUR_TOKEN&captcha_id=CAPTCHA_ID&captcha_answer=ANSWER"
 ```
 
-## 라이센스
+## 📁 파일 구조
 
-이 프로젝트는 MIT 라이센스 하에 배포됩니다.
+```
+application/
+├── controllers/rest/
+│   └── Auth.php                    # 보안 강화된 인증 컨트롤러
+├── libraries/
+│   ├── Rate_limiter.php           # Rate limiting 라이브러리
+│   └── Simple_captcha.php         # CAPTCHA 라이브러리
+├── helpers/
+│   └── signup_security_helper.php # 회원가입 보안 헬퍼
+├── models/
+│   └── User_m.php                 # 사용자 모델
+└── logs/
+    └── log-YYYY-MM-DD.php         # 보안 로그
+
+v1/
+└── swagger.json                   # 업데이트된 API 문서
+
+demo_security.html                 # 보안 기능 데모
+SECURITY_DOCUMENTATION.md          # 상세 보안 문서
+```
+
+## 🔧 설정
+
+### Rate Limiting 설정
+`application/libraries/Rate_limiter.php`:
+```php
+protected $default_max_requests = 5;    // 최대 요청 수
+protected $default_time_window = 300;   // 시간 윈도우 (초)
+```
+
+### CAPTCHA 설정
+`application/libraries/Simple_captcha.php`:
+```php
+// CAPTCHA 만료 시간
+if (time() - $challenge['created_at'] > 600) // 10분
+
+// 최대 시도 횟수
+if ($captcha_data[$challenge_id]['attempts'] > 3) // 3회
+```
+
+### 회원가입 토큰 설정
+`application/helpers/signup_security_helper.php`:
+```php
+// 토큰 만료 시간
+if (time() - $token_data['created_at'] > 1800) // 30분
+
+// 이메일 체크 제한 횟수
+if ($token_data['email_checks_count'] >= 5) // 5회
+```
+
+## 📊 보안 테스트
+
+### 정상 사용자 플로우 테스트
+1. 회원가입 페이지 접근
+2. 회원가입 토큰 생성
+3. 이메일 입력 시 CAPTCHA 검증
+4. 이메일 중복 확인 완료
+
+### 공격 시뮬레이션 테스트
+1. 토큰 없이 접근 시도 → **차단됨**
+2. 빠른 연속 요청 → **Rate Limit 발동**
+3. CAPTCHA 우회 시도 → **검증 실패**
+4. 대량 이메일 체크 → **세션 제한 적용**
+
+## 📈 모니터링
+
+### 로그 파일 확인
+```bash
+tail -f application/logs/log-$(date +%Y-%m-%d).php
+```
+
+### 주요 모니터링 지표
+- Rate limit 위반 횟수
+- CAPTCHA 실패율
+- 토큰 남용 패턴
+- 의심스러운 IP 활동
+
+## 🔍 API 문서
+
+자세한 API 명세는 다음에서 확인할 수 있습니다:
+- [Swagger JSON](v1/swagger.json)
+- [보안 문서](SECURITY_DOCUMENTATION.md)
+
+## 📝 변경 사항
+
+### Before (취약한 코드)
+```php
+public function check_email_get()
+{
+    $email = $this->get('email');
+    $exists = $this->user_m->check_email_exists($email);
+    
+    $this->response([
+        'success' => true,
+        'exists'  => $exists,  // 🚨 사용자 열거 취약점
+        'message' => $exists ? '이미 사용 중' : '사용 가능'
+    ], self::HTTP_OK);
+}
+```
+
+### After (보안 강화된 코드)
+```php
+public function check_email_get()
+{
+    // ✅ Rate limiting
+    $rate_check = $this->rate_limiter->is_allowed($client_ip, 'email_check', 5, 300);
+    
+    // ✅ 인증 또는 회원가입 토큰 검증
+    if (!is_authenticated_user() && !validate_signup_token($signup_token)) {
+        return $this->response(['error' => 'AUTH_REQUIRED'], 401);
+    }
+    
+    // ✅ CAPTCHA 검증
+    if (!$this->simple_captcha->verify($captcha_id, $captcha_answer)) {
+        return $this->response(['captcha_required' => true], 422);
+    }
+    
+    // ✅ 보안 로깅
+    log_message('info', "Secure email check from {$client_ip}");
+    
+    // 이메일 확인 수행
+    $exists = $this->user_m->check_email_exists($email);
+    return $this->response(['exists' => $exists], 200);
+}
+```
+
+## 🎯 보안 효과
+
+- ✅ **사용자 열거 공격 완전 차단**
+- ✅ **자동화된 공격 방지**
+- ✅ **정상 사용자 경험 유지**
+- ✅ **포괄적인 보안 로깅**
+- ✅ **확장 가능한 보안 구조**
+
+## 🤝 기여
+
+보안 개선사항이나 버그 리포트는 언제든 환영합니다!
+
+## 📄 라이선스
+
+MIT License - 자세한 내용은 [LICENSE](license.txt) 파일을 참조하세요.

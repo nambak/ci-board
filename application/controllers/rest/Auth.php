@@ -52,7 +52,7 @@ class Auth extends RestController
         $remember = $this->post('remember', true);
 
         // 사용자 확인
-        $user = $this->user_m->get_user_by_email($email);
+        $user = $this->user_m->get_by_email($email);
 
         // 사용자가 존재하지 않는 경우
         if (!$user) {
@@ -66,12 +66,12 @@ class Auth extends RestController
         }
 
         // 로그인 검증
-        if (password_verify($password, $user['password'])) {
+        if (password_verify($password, $user->password)) {
             // 로그인 성공 - 세션 설정
             $sessionData = [
-                'user_id'    => $user['id'],
-                'user_email' => $user['email'],
-                'user_name'  => $user['name'],
+                'user_id'    => $user->id,
+                'user_email' => $user->email,
+                'user_name'  => $user->name,
                 'logged_in'  => true
             ];
 
@@ -80,9 +80,9 @@ class Auth extends RestController
             // Remember Token
             if ($remember) {
                 $token = bin2hex(random_bytes(32));
-                
+
                 // 토큰을 데이터베이스에 저장
-                $this->user_m->save_remember_token($user['id'], $token);
+                $this->user_m->save_remember_token($user->id, $token);
 
                 $this->input->set_cookie([
                     'name'     => 'remember_token',
@@ -97,9 +97,9 @@ class Auth extends RestController
                 'success' => true,
                 'message' => '로그인되었습니다.',
                 'user'    => [
-                    'id'    => $user['id'],
-                    'email' => $user['email'],
-                    'name'  => $user['name']
+                    'id'    => $user->id,
+                    'email' => $user->email,
+                    'name'  => $user->name,
                 ]
             ], self::HTTP_OK);
         } else {
@@ -116,7 +116,7 @@ class Auth extends RestController
 
     /**
      * 이메일 중복 확인 (보안 강화)
-     * 
+     *
      * 보안 조치:
      * 1. Rate limiting (IP별 5분간 5회 제한)
      * 2. CAPTCHA 검증 (자동화 방지)
@@ -139,14 +139,14 @@ class Auth extends RestController
             $rate_check = $this->rate_limiter->is_allowed($client_ip, 'email_check', 5, 300);
             if (!$rate_check['allowed']) {
                 log_message('warning', "Rate limit exceeded for email check from IP {$client_ip}");
-                
+
                 $this->response([
-                    'success' => false,
-                    'message' => '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
-                    'exists'  => false,
+                    'success'    => false,
+                    'message'    => '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
+                    'exists'     => false,
                     'rate_limit' => [
                         'reset_time' => $rate_check['reset_time'],
-                        'remaining' => $rate_check['remaining']
+                        'remaining'  => $rate_check['remaining']
                     ]
                 ], self::HTTP_TOO_MANY_REQUESTS);
                 return;
@@ -155,72 +155,72 @@ class Auth extends RestController
             // 2. 접근 권한 검사 (인증된 사용자 또는 유효한 회원가입 플로우)
             $is_authenticated = is_authenticated_user();
             $signup_token_valid = false;
-            
+
             if (!$is_authenticated) {
                 // 비인증 사용자는 유효한 회원가입 토큰이 필요
                 if (!$signup_token) {
                     log_message('warning', "Email check attempted without authentication or signup token from IP {$client_ip}");
-                    
+
                     $this->response([
-                        'success' => false,
-                        'message' => '이 기능은 회원가입 과정에서만 사용할 수 있습니다.',
-                        'exists'  => false,
+                        'success'    => false,
+                        'message'    => '이 기능은 회원가입 과정에서만 사용할 수 있습니다.',
+                        'exists'     => false,
                         'error_code' => 'AUTH_REQUIRED'
                     ], self::HTTP_UNAUTHORIZED);
                     return;
                 }
-                
+
                 // 회원가입 토큰 검증
                 $token_validation = validate_signup_token($signup_token, true);
                 if (!$token_validation['valid']) {
                     log_message('warning', "Invalid signup token for email check from IP {$client_ip}: " . $token_validation['error']);
-                    
+
                     $this->response([
-                        'success' => false,
-                        'message' => $token_validation['error'],
-                        'exists'  => false,
+                        'success'    => false,
+                        'message'    => $token_validation['error'],
+                        'exists'     => false,
                         'error_code' => 'INVALID_TOKEN'
                     ], self::HTTP_UNAUTHORIZED);
                     return;
                 }
-                
+
                 $signup_token_valid = true;
             }
 
             // 3. CAPTCHA 검증 (비인증 사용자는 필수, 인증 사용자도 의심스러운 활동 시 필요)
             $captcha_required = $this->simple_captcha->is_required($client_ip, 'email_check');
-            
+
             if (!$is_authenticated || $captcha_required) {
                 if (!$captcha_challenge_id || !$captcha_answer) {
                     // CAPTCHA 생성 및 요구
                     $captcha = $this->simple_captcha->generate();
-                    
+
                     $this->response([
-                        'success' => false,
-                        'message' => '보안을 위해 인증이 필요합니다.',
-                        'exists'  => false,
+                        'success'          => false,
+                        'message'          => '보안을 위해 인증이 필요합니다.',
+                        'exists'           => false,
                         'captcha_required' => true,
-                        'captcha' => $captcha,
-                        'error_code' => 'CAPTCHA_REQUIRED'
+                        'captcha'          => $captcha,
+                        'error_code'       => 'CAPTCHA_REQUIRED'
                     ], self::HTTP_UNPROCESSABLE_ENTITY);
                     return;
                 }
-                
+
                 // CAPTCHA 검증
                 $captcha_result = $this->simple_captcha->verify($captcha_challenge_id, $captcha_answer);
                 if (!$captcha_result['valid']) {
                     log_message('warning', "CAPTCHA verification failed for email check from IP {$client_ip}: " . $captcha_result['error']);
-                    
+
                     // 실패 시 새로운 CAPTCHA 생성
                     $new_captcha = $this->simple_captcha->generate();
-                    
+
                     $this->response([
-                        'success' => false,
-                        'message' => $captcha_result['error'],
-                        'exists'  => false,
+                        'success'          => false,
+                        'message'          => $captcha_result['error'],
+                        'exists'           => false,
                         'captcha_required' => true,
-                        'captcha' => $new_captcha,
-                        'error_code' => 'CAPTCHA_FAILED'
+                        'captcha'          => $new_captcha,
+                        'error_code'       => 'CAPTCHA_FAILED'
                     ], self::HTTP_UNPROCESSABLE_ENTITY);
                     return;
                 }
@@ -257,11 +257,11 @@ class Auth extends RestController
             $this->simple_captcha->reset_failed_attempts($client_ip, 'email_check');
 
             $response_data = [
-                'success' => true,
-                'exists'  => $exists,
-                'message' => $exists ? '이미 사용 중인 이메일입니다.' : '사용 가능한 이메일입니다.',
+                'success'    => true,
+                'exists'     => $exists,
+                'message'    => $exists ? '이미 사용 중인 이메일입니다.' : '사용 가능한 이메일입니다.',
                 'rate_limit' => [
-                    'remaining' => $rate_check['remaining'] - 1,
+                    'remaining'  => $rate_check['remaining'] - 1,
                     'reset_time' => $rate_check['reset_time']
                 ]
             ];
@@ -387,12 +387,12 @@ class Auth extends RestController
     {
         try {
             $client_ip = $this->rate_limiter->get_client_ip();
-            
+
             // Rate limiting for token generation
             $rate_check = $this->rate_limiter->is_allowed($client_ip, 'signup_token', 3, 600); // 3 tokens per 10 minutes
             if (!$rate_check['allowed']) {
                 log_message('warning', "Rate limit exceeded for signup token generation from IP {$client_ip}");
-                
+
                 $this->response([
                     'success' => false,
                     'message' => '토큰 생성 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.'
@@ -401,18 +401,18 @@ class Auth extends RestController
             }
 
             $token = generate_signup_token();
-            
+
             $this->response([
-                'success' => true,
-                'message' => '회원가입 세션이 시작되었습니다.',
-                'signup_token' => $token,
-                'expires_in' => 1800, // 30 minutes
+                'success'              => true,
+                'message'              => '회원가입 세션이 시작되었습니다.',
+                'signup_token'         => $token,
+                'expires_in'           => 1800, // 30 minutes
                 'email_checks_allowed' => 5
             ], self::HTTP_OK);
-            
+
         } catch (Exception $e) {
             log_message('error', 'Signup token generation error: ' . $e->getMessage());
-            
+
             $this->response([
                 'success' => false,
                 'message' => '서버 오류가 발생했습니다.'
@@ -427,7 +427,7 @@ class Auth extends RestController
     {
         try {
             $client_ip = $this->rate_limiter->get_client_ip();
-            
+
             // Rate limiting for CAPTCHA generation
             $rate_check = $this->rate_limiter->is_allowed($client_ip, 'captcha_gen', 10, 300); // 10 per 5 minutes
             if (!$rate_check['allowed']) {
@@ -439,16 +439,16 @@ class Auth extends RestController
             }
 
             $captcha = $this->simple_captcha->generate();
-            
+
             $this->response([
-                'success' => true,
-                'captcha' => $captcha,
+                'success'    => true,
+                'captcha'    => $captcha,
                 'expires_in' => 600 // 10 minutes
             ], self::HTTP_OK);
-            
+
         } catch (Exception $e) {
             log_message('error', 'CAPTCHA generation error: ' . $e->getMessage());
-            
+
             $this->response([
                 'success' => false,
                 'message' => '서버 오류가 발생했습니다.'
