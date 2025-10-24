@@ -28,12 +28,16 @@ class Article extends RestController
 
     public function index_put($id)
     {
+        if (!$this->session->userdata('user_id')) {
+            $this->response(['message' => 'unauthorized'], 401);
+        }
+
         try {
             $title = $this->put('title', true);
             $content = $this->put('content', true);
 
             // 게시글 존재 확인
-            $post = $this->post_m->get($id);
+            $post = $this->article_m->get($id);
 
             if (!$post) {
                 $this->response('post not found', 404);
@@ -76,21 +80,6 @@ class Article extends RestController
 
             $result = $this->article_m->store($boardId, $userId, $title, $content);
             $this->response(['id' => $result], 200);
-        } catch (Exception $e) {
-            $this->response('server error: ' . $e->getMessage(), 500);
-        }
-    }
-
-    public function index_get($id)
-    {
-        try {
-            $post = $this->post_m->get($id);
-
-            if (!$post) {
-                $this->response('post not found', 404);
-            }
-
-            $this->response($post, 200);
         } catch (Exception $e) {
             $this->response('server error: ' . $e->getMessage(), 500);
         }

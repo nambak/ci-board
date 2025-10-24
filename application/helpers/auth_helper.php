@@ -41,10 +41,10 @@ function get_user_info()
 
 /**
  * 사용자가 특정 게시글의 작성자인지 확인
- * @param int $post_id
+ * @param int $article_id
  * @return bool
  */
-function is_post_author($post_id)
+function is_post_author($article_id)
 {
     $CI =& get_instance();
     $current_user_id = get_user_id();
@@ -54,16 +54,16 @@ function is_post_author($post_id)
     }
 
     // 게시글 작성자 확인
-    $CI->load->model('post_m');
-    $post = $CI->post_m->get($post_id);
+    $CI->load->model('article_m');
+    $article = $CI->article_m->get($article_id);
 
-    return $post && $post->user_id == $current_user_id;
+    return $article && $article->user_id == $current_user_id;
 }
 
 /**
  * 사용자가 특정 댓글의 작성자인지 확인
  * @param int $comment_id
- * @return bool
+ *  @return bool
  */
 function is_comment_author($comment_id)
 {

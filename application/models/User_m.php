@@ -43,11 +43,23 @@ class User_m extends CI_Model
     }
 
     /**
+     * Check if email exists in database
+     *
+     * @param string $email Email address to check
+     * @return bool True if email exists, false otherwise
+     */
+    public function check_email_exists($email)
+    {
+        $query = $this->db->get_where('users', ['email' => $email]);
+        return $query->num_rows() > 0;
+    }
+
+    /**
      * Get user by username
      */
-    public function get_by_username($username)
+    public function get_by_username($name)
     {
-        $query = $this->db->get_where('users', ['username' => $username]);
+        $query = $this->db->get_where('users', ['name' => $name]);
         return $query->row();
     }
 
@@ -58,12 +70,12 @@ class User_m extends CI_Model
     {
         try {
             // Validate required fields
-            if (empty($data['username']) || empty($data['email']) || empty($data['password'])) {
+            if (empty($data['name']) || empty($data['email']) || empty($data['password'])) {
                 throw new Exception('Missing required fields: username, email, password');
             }
 
             // Check if username already exists
-            if ($this->get_by_username($data['username'])) {
+            if ($this->get_by_username($data['name'])) {
                 throw new Exception('Username already exists: ' . $data['username']);
             }
 
@@ -97,14 +109,14 @@ class User_m extends CI_Model
             }
 
             // Additional validation checks
-            if (preg_match('/[^a-zA-Z0-9_]/', $data['username'] ?? '')) {
-                throw new Exception('Username contains invalid characters: ' . ($data['username'] ?? 'no username'));
+            if (preg_match('/[^a-zA-Z0-9_]/', $data['name'] ?? '')) {
+                throw new Exception('Username contains invalid characters: ' . ($data['name'] ?? 'no name'));
             }
 
             // Check for various database constraint violations
             if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
-                if (strpos($e->getMessage(), 'username') !== false) {
-                    throw new Exception('Registration failed: Username "' . $data['username'] . '" is already taken');
+                if (strpos($e->getMessage(), 'name') !== false) {
+                    throw new Exception('Registration failed: name "' . $data['name'] . '" is already taken');
                 }
                 if (strpos($e->getMessage(), 'email') !== false) {
                     throw new Exception('Registration failed: Email "' . $data['email'] . '" is already registered');

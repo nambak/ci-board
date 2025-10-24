@@ -64,10 +64,10 @@
     }
 
     function initConfirmButton(articleId) {
-        $(pageId + '#confirmEdit').on('click', () => updatePost(articleId));
+        $(pageId + '#confirmEdit').on('click', () => updateArticle(articleId));
     }
 
-    function updatePost(postId) {
+    function updateArticle(articleId) {
         const title = $(pageId + 'input[name=title]').val();
         const content = $(pageId + 'textarea[name=content]').val();
 
@@ -90,12 +90,11 @@
         }
 
         $.ajax({
-            url: '/rest/article/update?id=' + postId,
-            type: 'POST',
+            url: `/rest/article/${articleId}`,
+            type: 'PUT',
             data: {
                 title: title,
                 content: content,
-                '<?= $this->security->get_csrf_token_name(); ?>': '<?= $this->security->get_csrf_hash(); ?>'
             },
             success: (response) => {
                 if (response === 'success') {
@@ -104,7 +103,7 @@
                         icon: 'success'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            location.href = `/article/${postId}`;
+                            location.href = `/article/${articleId}`;
                         }
                     });
                 }

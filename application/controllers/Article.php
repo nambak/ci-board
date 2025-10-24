@@ -24,19 +24,19 @@ class Article extends MY_Controller
             return;
         }
 
-        $currentPost = $this->article_m->get($id);
+        $currentArticle = $this->article_m->get($id);
 
-        if (!$currentPost) {
+        if (!$currentArticle) {
             show_404();
             return;
         }
 
-        $currentBoardId = $currentPost->board_id;
+        $currentBoardId = $currentArticle->board_id;
         $prevPost = $this->article_m->getPrevious($currentBoardId, $id);
         $nextPost = $this->article_m->getNext($currentBoardId, $id);
 
         $data = [
-            'currentPost' => $currentPost,
+            'currentPost' => $currentArticle,
             'prevPostId'  => $prevPost ? $prevPost->id : null,
             'nextPostId'  => $nextPost ? $nextPost->id : null,
             'user_id'     => $this->session->userdata('user_id'),
@@ -45,11 +45,21 @@ class Article extends MY_Controller
         $this->load->view('article/detail_v', $data);
     }
 
-    public function edit()
+    public function edit($id = null)
     {
-        $queryParams['id'] = $this->input->get('id', true);
+        if ($id === null) {
+            show_404();
+            return;
+        }
 
-        $this->load->view('article/edit_v', $queryParams);
+        $currentArticle = $this->article_m->get($id);
+
+        if (!$currentArticle) {
+            show_404();
+            return;
+        }
+
+        $this->load->view('article/edit_v', compact('id'));
     }
 
     /**

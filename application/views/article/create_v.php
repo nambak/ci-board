@@ -71,7 +71,7 @@
         }
 
         $.ajax({
-            url: '/rest/article/create
+            url: '/rest/article/create',
             type: 'POST',
             data: {
                 board_id: boardId,
@@ -86,7 +86,7 @@
                     icon: 'success'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        location.href = `/post/detail?id=${response.id}`;
+                        location.href = `/article/${response.id}`;
                     }
                 });
             },

@@ -32,3 +32,6 @@ bin/
 vendor/
 
 /application/logs/
+/application/cache/
+/CLAUDE.md
+/.claude/
