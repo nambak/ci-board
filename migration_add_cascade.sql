@@ -40,10 +40,10 @@ FOREIGN KEY (board_id) REFERENCES boards(id)
 ON DELETE CASCADE
 ON UPDATE CASCADE;
 
--- comments 테이블: post_id에 CASCADE 설정
+-- comments 테이블: article_id에 CASCADE 설정
 ALTER TABLE comments
 ADD CONSTRAINT fk_comments_post
-FOREIGN KEY (post_id) REFERENCES articles(id)
+FOREIGN KEY (article_id) REFERENCES articles(id)
 ON DELETE CASCADE
 ON UPDATE CASCADE;
 
@@ -61,13 +61,13 @@ PREPARE stmt FROM @s;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
--- post_id 인덱스
+-- article_id 인덱스
 SET @s = (SELECT IF(
     (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
      WHERE TABLE_SCHEMA = DATABASE()
      AND TABLE_NAME = 'comments'
-     AND INDEX_NAME = 'idx_comments_post_id') = 0,
-    'CREATE INDEX idx_comments_post_id ON comments(post_id)',
+     AND INDEX_NAME = 'idx_comments_article_id') = 0,
+    'CREATE INDEX idx_comments_article_id ON comments(article_id)',
     'SELECT 1'
 ));
 PREPARE stmt FROM @s;
