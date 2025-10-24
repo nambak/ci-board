@@ -14,15 +14,20 @@ class Article extends RestController
     public function index_get($id)
     {
         try {
+            if ($id === null || (int) $id < 1) {
+                $this->response(['message' => 'invalid id'], 400);
+            }
+
             $article = $this->article_m->get($id);
 
             if (!$article) {
-                $this->response('not found', 404);
+                $this->response(['message' => 'not found'], 404);
             } else {
                 $this->response($article, 200);
             }
         } catch (Exception $e) {
-            $this->response('server error: ' . $e->getMessage(), 500);
+            log_message('error', 'Article::index_get error: '.$e->getMessage());
+            $this->response(['message' => 'server error'], 500);
         }
     }
 
