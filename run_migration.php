@@ -22,12 +22,12 @@ if (!file_exists($migrationFile)) {
     die("Error: Migration file '{$migrationFile}' not found.\n");
 }
 
-// 데이터베이스 설정 (database.php에서 가져옴)
+// 데이터베이스 설정 (환경 변수에서 가져옴)
 $dbConfig = [
-    'host' => 'host.docker.internal',
-    'username' => 'root',
-    'password' => '',
-    'database' => 'ci'
+    'host'     => getenv('DB_HOST') ?: 'localhost',
+    'username' => getenv('DB_USERNAME') ?: 'root',
+    'password' => getenv('DB_PASSWORD') ?: '',
+    'database' => getenv('DB_DATABASE') ?: 'ci'
 ];
 
 echo "Connecting to database...\n";
