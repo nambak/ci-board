@@ -15,7 +15,8 @@
 		"chriskacerguis/codeigniter-restserver": "*",
 		"fakerphp/faker": "*",
       "ext-json": "*",
-		"maximebf/debugbar": "^1.22"
+		"maximebf/debugbar": "^1.22",
+      "ext-ctype": "*"
     },
 	"suggest": {
 		"paragonie/random_compat": "Provides better randomness in PHP 5.x"

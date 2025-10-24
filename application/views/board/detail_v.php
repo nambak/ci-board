@@ -19,7 +19,7 @@
     $(document).ready(() => {
         initPostList();
         $(pageId + '#writePost').on('click', () => {
-            location.href = '/post/create?board_id=<?= $id ?>';
+            location.href = '/article/create?board_id=<?= $id ?>';
         });
     });
 
@@ -36,7 +36,7 @@
                 field: 'title',
                 title: '제목',
                 formatter: (value, row, index) => {
-                    return `<a href="/post/detail?id=${row.id}">${row.title}</a>`;
+                    return `<a href="/article/${row.id}">${row.title}</a>`;
                 }
             }, {
                 field: 'views',

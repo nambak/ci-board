@@ -1,8 +1,8 @@
 <article class="container mt-5" id="post_edit">
-    <form method="post" action="/rest/post/create?board_id=<?= $board_id ?>">
+    <form method="post" action="/rest/post/create">
         <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
         <input type="hidden" name="board_id" value="<?= $board_id ?>">
-        
+
         <!-- 게시글 제목 -->
         <div class="row mb-2">
             <div class="col">
@@ -71,7 +71,7 @@
         }
 
         $.ajax({
-            url: '/rest/post/create',
+            url: '/rest/article/create',
             type: 'POST',
             data: {
                 board_id: boardId,
@@ -86,7 +86,7 @@
                     icon: 'success'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        location.href = `/post/detail?id=${response.id}`;
+                        location.href = `/article/${response.id}`;
                     }
                 });
             },

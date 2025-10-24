@@ -40,13 +40,13 @@
                 </div>
                 <div>
                     <?php if($prevPostId): ?>
-                    <a href="/post/detail?id=<?= $prevPostId ?>" class="btn btn-outline-primary me-2">이전글</a>
+                    <a href="/article/<?= $prevPostId ?>" class="btn btn-outline-primary me-2">이전글</a>
                     <?php else: ?>
                     <button disabled class="btn btn-outline-primary me-2">이전글</button>
                     <?php endif; ?>
 
                     <?php if($nextPostId): ?>
-                    <a href="/post/detail?id=<?= $nextPostId ?>" class="btn btn-outline-primary">다음글</a>
+                    <a href="/article/<?= $nextPostId ?>" class="btn btn-outline-primary">다음글</a>
                     <?php else: ?>
                     <button disabled class="btn btn-outline-primary">다음글</button>
                     <?php endif; ?>
@@ -109,7 +109,7 @@
 
     function initRedirectPostEditButton(postId) {
         $(pageId + '#redirectEditPost').on('click', () => {
-            location.href = `/post/edit?id=${postId}`;
+            location.href = `/article/edit?id=${postId}`;
         });
     }
 
@@ -125,7 +125,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/rest/post/<?= $currentPost->id ?>',
+                        url: '/rest/article/<?= $currentPost->id ?>',
                         type: 'DELETE',
                         dataType: 'json',
                         data: {
@@ -176,7 +176,7 @@
         }
     }
 
-    function saveComment(postId) {
+    function saveComment(articleId) {
         const comment = $(pageId + "textarea[name=comment]");
 
         if (!comment.val().trim()) {
@@ -192,13 +192,13 @@
             url: '/rest/comment/save',
             type: 'POST',
             data: {
-                writer_id: userId,
-                post_id: postId,
+                writer_id: 1,
+                article_id: articleId,
                 comment: comment.val(),
                 <?= $this->security->get_csrf_token_name(); ?>: '<?= $this->security->get_csrf_hash(); ?>',
             },
             success: (response) => {
-                getComments(postId);
+                getComments(articleId)
 
                 // 저장 후 textarea 비움
                 comment.val('');
@@ -209,12 +209,12 @@
         });
     }
 
-    function getComments(postId) {
+    function getComments(articleId) {
         $.ajax({
             url: `/rest/comment`,
             type: 'GET',
             data: {
-                post_id: postId,
+                article_id: articleId,
             },
             success: (response) => {
                 generateCommentList(response.data);
@@ -268,12 +268,16 @@
 
     $(document).ready(() => {
         const postId = <?= $currentPost->id ?>;
-        const boardId = <?= $currentPost->board_id ?>; // 게시판 ID 추가
+        const boardId = <?= $currentPost->board_id ?>;
 
         initRedirectBoardListButton(boardId);
+        <?php if (is_post_author($currentPost->id)): ?>
         initRedirectPostEditButton(postId);
         initDeletePostButton();
+        <?php endif; ?>
+        <?php if (is_logged_in()): ?>
         initCommentPostButton(postId);
+        <?php endif; ?>
         getComments(postId);
 
     });

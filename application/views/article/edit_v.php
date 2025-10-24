@@ -1,7 +1,7 @@
 <article class="container mt-5" id="post_edit">
-    <form method="post" action="/rest/post/update?id=<?= $id ?>">
+    <form method="post" action="/rest/article/update?id=<?= $id ?>">
         <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
-        
+
         <!-- 게시글 제목 -->
         <div class="row mb-2">
             <div class="col">
@@ -37,15 +37,15 @@
 <script defer>
     let pageId = '#post_edit ';
 
-    function initCancelButton(postId) {
+    function initCancelButton(articleId) {
         $(pageId + '#cancelButton').on('click', () => {
-            location.href = `/post/detail?id=${postId}`;
+            location.href = `/article/${articleId}`;
         });
     }
 
-    function init(postId) {
+    function init(articleId) {
         $.ajax({
-            url: '/rest/post/' + postId,
+            url: `/rest/article/${articleId}`,
             type: 'GET',
             dataType: 'json',
             success: (data) => {
@@ -63,11 +63,11 @@
         });
     }
 
-    function initConfirmButton(postId) {
-        $(pageId + '#confirmEdit').on('click', () => updatePost(postId));
+    function initConfirmButton(articleId) {
+        $(pageId + '#confirmEdit').on('click', () => updateArticle(articleId));
     }
 
-    function updatePost(postId) {
+    function updateArticle(articleId) {
         const title = $(pageId + 'input[name=title]').val();
         const content = $(pageId + 'textarea[name=content]').val();
 
@@ -90,12 +90,11 @@
         }
 
         $.ajax({
-            url: '/rest/post/' + postId,
+            url: `/rest/article/${articleId}`,
             type: 'PUT',
             data: {
                 title: title,
                 content: content,
-                '<?= $this->security->get_csrf_token_name(); ?>': '<?= $this->security->get_csrf_hash(); ?>'
             },
             success: (response) => {
                 if (response === 'success') {
@@ -104,7 +103,7 @@
                         icon: 'success'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            location.href = `/post/detail?id=${postId}`;
+                            location.href = `/article/${articleId}`;
                         }
                     });
                 }

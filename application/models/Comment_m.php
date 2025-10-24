@@ -8,17 +8,17 @@ class Comment_m extends CI_Model
      *
      * 지정된 게시글 ID와 작성자 ID, 댓글 내용을 기반으로 comments 테이블에 새로운 레코드를 추가합니다.
      *
-     * @param int $postId 댓글이 달릴 게시글의 ID
+     * @param int $articleId 댓글이 달릴 게시글의 ID
      * @param string $comment 댓글 내용
      * @param int $writerId 댓글 작성자의 사용자 ID
      * @return void
      */
-    public function create($postId, $comment, $writerId)
+    public function create($articleId, $comment, $writerId)
     {
         $this->db->insert('comments', [
-            'post_id'   => $postId,
-            'writer_id' => $writerId,
-            'comment'   => $comment
+            'article_id' => $articleId,
+            'writer_id'  => $writerId,
+            'comment'    => $comment
         ]);
     }
 
@@ -33,7 +33,7 @@ class Comment_m extends CI_Model
         $query = $this->db->select('comments.*, users.name')
             ->from('comments')
             ->join('users', 'users.id = comments.writer_id')
-            ->where('comments.post_id', $id)
+            ->where('comments.article_id', $id)
             ->get();
 
         return $query->result();

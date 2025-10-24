@@ -9,7 +9,7 @@ class Comment extends RestController
     {
         parent::__construct();
         $this->load->model('comment_m');
-        $this->load->model('post_m');
+        $this->load->model('article_m');
     }
 
     /**
@@ -17,7 +17,7 @@ class Comment extends RestController
      */
     public function index_get()
     {
-        $result = $this->comment_m->fetchByPost($this->get('post_id', true));
+        $result = $this->comment_m->fetchByPost($this->get('article_id', true));
         $current_user_id = get_user_id();
 
         $data = array_map(function ($comment) use ($current_user_id) {
@@ -38,22 +38,30 @@ class Comment extends RestController
      */
     public function save_post()
     {
-        $postId = $this->post('post_id', true);
+        $articleId = $this->post('article_id', true);
         $comment = $this->post('comment', true);
         $writerId = get_user_id(); // 현재 로그인된 사용자 ID 사용
 
-        if (!$postId || !trim($comment) || !$writerId) {
-            $this->response('invalid request', 400);
+        if (!ctype_digit((string)$articleId) || (int)$articleId <= 0) {
+            $this->response(['message' => 'invalid article_id'], 400);
         }
 
-        $post = $this->post_m->get($postId);
+        if (!is_string($comment) || trim($comment) === '') {
+            $this->response(['message' => 'comment required'], 400);
+        }
 
-        if (!$post) {
-            $this->response('post not found', 404);
+        if (!$writerId) {
+            $this->response(['message' => 'unauthorized'], 401);
+        }
+
+        $article = $this->article_m->get($articleId);
+
+        if (!$article) {
+            $this->response('article not found', 404);
         }
 
         try {
-            $this->comment_m->create($postId, $comment, $writerId);
+            $this->comment_m->create($articleId, $comment, $writerId);
             $this->response('success', 200);
         } catch (Exception $e) {
             $this->response('server error: ' . $e->getMessage(), 500);
