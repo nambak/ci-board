@@ -52,7 +52,14 @@ defined('BASEPATH') || exit('No direct script access allowed');
 $route['default_controller'] = 'board';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = false;
+
+// Article routes - /article/123 형태의 URI를 지원
+$route['article/(:num)'] = 'article/index/$1';
+
+// REST API routes
 $route['rest/board/:num'] = 'rest/board/$1';
+
+// Auth routes
 $route['login'] = 'auth/login';
 $route['register'] = 'auth/register';
 $route['logout'] = 'auth/logout';

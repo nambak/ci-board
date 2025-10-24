@@ -9,7 +9,7 @@ class Comment extends RestController
     {
         parent::__construct();
         $this->load->model('comment_m');
-        $this->load->model('post_m');
+        $this->load->model('article_m');
     }
 
     /**
@@ -17,7 +17,7 @@ class Comment extends RestController
      */
     public function index_get()
     {
-        $result = $this->comment_m->fetchByPost($this->get('post_id', true));
+        $result = $this->comment_m->fetchByPost($this->get('article_id', true));
 
         $data = array_map(function ($comment) {
             return [
@@ -35,22 +35,22 @@ class Comment extends RestController
      */
     public function save_post()
     {
-        $postId = $this->post('post_id', true);
+        $articleId = $this->post('article_id', true);
         $comment = $this->post('comment', true);
         $writerId = $this->post('writer_id', true);
 
-        if (!$postId || !trim($comment) || !$writerId) {
+        if (!$articleId || !trim($comment) || !$writerId) {
             $this->response('invalid request', 400);
         }
 
-        $post = $this->post_m->get($postId);
+        $post = $this->article_m->get($articleId);
 
         if (!$post) {
             $this->response('post not found', 404);
         }
 
         try {
-            $this->comment_m->create($postId, $comment, $writerId);
+            $this->comment_m->create($articleId, $comment, $writerId);
             $this->response('success', 200);
         } catch (Exception $e) {
             $this->response('server error: ' . $e->getMessage(), 500);

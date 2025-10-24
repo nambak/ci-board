@@ -22,9 +22,9 @@ class Board extends RestController
 
     public function detail_get()
     {
-        $this->load->model('post_m');
+        $this->load->model('article_m');
         $id = $this->get('id', true);
-        $posts = $this->post_m->fetchByBoardId($id);
+        $posts = $this->article_m->fetchByBoardId($id);
         $board = $this->board_m->get($id);
 
         $this->response([

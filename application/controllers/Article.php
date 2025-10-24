@@ -1,19 +1,30 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Post extends MY_Controller
+class Article extends MY_Controller
 {
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('post_m');
+        $this->load->model('article_m');
 
     }
 
-    public function detail()
+    /**
+     * 게시글 상세 정보를 표시합니다.
+     *
+     * URI 세그먼트에서 게시글 ID를 받아옵니다 (예: /article/1)
+     *
+     * @param int $id 게시글 ID
+     */
+    public function index($id = null)
     {
-        $currentPostId = $this->input->get('id', true);
-        $currentPost = $this->post_m->get($currentPostId);
+        if ($id === null) {
+            show_404();
+            return;
+        }
+
+        $currentPost = $this->article_m->get($id);
 
         if (!$currentPost) {
             show_404();
@@ -21,8 +32,8 @@ class Post extends MY_Controller
         }
 
         $currentBoardId = $currentPost->board_id;
-        $prevPost = $this->post_m->getPrevious($currentBoardId, $currentPostId);
-        $nextPost = $this->post_m->getNext($currentBoardId, $currentPostId);
+        $prevPost = $this->article_m->getPrevious($currentBoardId, $id);
+        $nextPost = $this->article_m->getNext($currentBoardId, $id);
 
         $data = [
             'currentPost' => $currentPost,
@@ -30,14 +41,15 @@ class Post extends MY_Controller
             'nextPostId'  => $nextPost ? $nextPost->id : null,
         ];
 
-        $this->load->view('post/detail_v', $data);
+        $this->load->view('article/detail_v', $data);
     }
+
 
     public function edit()
     {
         $queryParams['id'] = $this->input->get('id', true);
 
-        $this->load->view('post/edit_v', $queryParams);
+        $this->load->view('article/edit_v', $queryParams);
     }
 
     /**
@@ -49,6 +61,6 @@ class Post extends MY_Controller
     {
         $queryParams['board_id'] = $this->input->get('board_id', true);
 
-        $this->load->view('post/create_v', $queryParams);
+        $this->load->view('article/create_v', $queryParams);
     }
 }

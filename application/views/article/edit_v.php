@@ -3,7 +3,7 @@
     <div class="row mb-2">
         <div class="col">
             <h2 class="border-bottom pb-3">
-                <input type="text" class="form-control" id="title" name="title" placeholder="제목">
+                <input type="text" class="form-control" id="title" name="title">
             </h2>
         </div>
     </div>
@@ -11,7 +11,7 @@
     <div class="row mb-4">
         <div class="col">
             <div class="card">
-                <textarea class="form-control" id="content" rows="10" name="content" placeholder="내용"></textarea>
+                <textarea class="form-control" id="content" rows="10" name="content"></textarea>
             </div>
         </div>
     </div>
@@ -21,7 +21,7 @@
             <div class="d-flex justify-content-end">
                 <div>
                     <button id="cancelButton" class="btn btn-outline-secondary me-2">취소</button>
-                    <button id="confirmSave" class="btn btn-primary me-2">저장</button>
+                    <button id="confirmEdit" class="btn btn-primary me-2">수정</button>
                 </div>
             </div>
         </div>
@@ -30,17 +30,37 @@
 <script defer>
     let pageId = '#post_edit ';
 
-    function initCancelButton(boardId) {
+    function initCancelButton(articleId) {
         $(pageId + '#cancelButton').on('click', () => {
-            location.href = `/board/detail?id=${boardId}`;
+            location.href = `/article/${articleId}`;
         });
     }
 
-    function initSaveButton(boardId) {
-        $(pageId + '#confirmSave').on('click', () => savePost(boardId));
+    function init(articleId) {
+        $.ajax({
+            url: `/rest/article/${articleId}`,
+            type: 'GET',
+            dataType: 'json',
+            success: (data) => {
+                if (data) {
+                    $(pageId + 'input[name=title]').val(data.title);
+                    $(pageId + 'textarea[name=content]').val(data.content);
+                }
+            },
+            error: (error) => {
+                Swal.fire({
+                    title: `${error.status} ${error.statusText}`,
+                    icon: 'error'
+                });
+            }
+        });
     }
 
-    function savePost(boardId) {
+    function initConfirmButton(articleId) {
+        $(pageId + '#confirmEdit').on('click', () => updatePost(articleId));
+    }
+
+    function updatePost(postId) {
         const title = $(pageId + 'input[name=title]').val();
         const content = $(pageId + 'textarea[name=content]').val();
 
@@ -63,22 +83,23 @@
         }
 
         $.ajax({
-            url: '/rest/post/create?board_id=' + boardId,
+            url: '/rest/article/update?id=' + postId,
             type: 'POST',
             data: {
-                board_id: boardId,
                 title: title,
                 content: content
             },
             success: (response) => {
-                Swal.fire({
-                    title: '저장되었습니다.',
-                    icon: 'success'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        location.href = `/post/detail?id=${response.id}`;
-                    }
-                });
+                if (response === 'success') {
+                    Swal.fire({
+                        title: '수정되었습니다.',
+                        icon: 'success'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.href = `/article/${postId}`;
+                        }
+                    });
+                }
             },
             error: (error) => {
                 Swal.fire({
@@ -90,7 +111,8 @@
     }
 
     $(document).ready(() => {
-        initCancelButton(<?= $board_id ?>);
-        initSaveButton(<?= $board_id ?>);
+        initCancelButton(<?= $id ?>);
+        initConfirmButton(<?= $id ?>);
+        init(<?= $id ?>);
     });
 </script>

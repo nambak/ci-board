@@ -33,18 +33,20 @@
             <div class="d-flex justify-content-between">
                 <div>
                     <button id="redirectBoardListButton" class="btn btn-outline-secondary me-2">목록으로</button>
-                    <button id="redirectEditPost" class="btn btn-outline-primary me-2">수정</button>
-                    <button id="deletePost" class="btn btn-outline-danger">삭제</button>
+                    <?php if (is_post_author($currentPost->id)): ?>
+                        <button id="redirectEditPost" class="btn btn-outline-primary me-2">수정</button>
+                        <button id="deletePost" class="btn btn-outline-danger">삭제</button>
+                    <?php endif; ?>
                 </div>
                 <div>
                     <?php if($prevPostId): ?>
-                    <a href="/post/detail?id=<?= $prevPostId ?>" class="btn btn-outline-primary me-2">이전글</a>
+                    <a href="/article/<?= $prevPostId ?>" class="btn btn-outline-primary me-2">이전글</a>
                     <?php else: ?>
                     <button disabled class="btn btn-outline-primary me-2">이전글</button>
                     <?php endif; ?>
 
                     <?php if($nextPostId): ?>
-                    <a href="/post/detail?id=<?= $nextPostId ?>" class="btn btn-outline-primary">다음글</a>
+                    <a href="/article/<?= $nextPostId ?>" class="btn btn-outline-primary">다음글</a>
                     <?php else: ?>
                     <button disabled class="btn btn-outline-primary">다음글</button>
                     <?php endif; ?>
@@ -59,26 +61,28 @@
             <h5 class="mb-3">댓글</h5>
 
             <!-- 댓글 작성 폼 -->
-            <div class="card mb-3">
-                <div class="card-body">
-                    <div class="mb-3">
-                        <textarea
-                            name="comment"
-                            class="form-control"
-                            rows="3"
-                            placeholder="댓글을 입력하세요"
-                        ></textarea>
-                    </div>
-                    <div class="text-end">
-                        <button
-                            id="write_comment"
-                            type="button"
-                            class="btn btn-primary"
-                        >댓글 작성
-                        </button>
+            <?php if (is_logged_in()): ?>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <textarea
+                                name="comment"
+                                class="form-control"
+                                rows="3"
+                                placeholder="댓글을 입력하세요"
+                            ></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button
+                                id="write_comment"
+                                type="button"
+                                class="btn btn-primary"
+                            >댓글 작성
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
+            <?php endif; ?>
 
             <!-- 댓글 목록 -->
             <div id="comment_list">
@@ -104,7 +108,7 @@
 
     function initRedirectPostEditButton(postId) {
         $(pageId + '#redirectEditPost').on('click', () => {
-            location.href = `/post/edit?id=${postId}`;
+            location.href = `/article/edit?id=${postId}`;
         });
     }
 
@@ -120,7 +124,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/rest/post/<?= $currentPost->id ?>',
+                        url: '/rest/article/<?= $currentPost->id ?>',
                         type: 'DELETE',
                         dataType: 'json',
                         success: (data) => {
@@ -168,7 +172,7 @@
         }
     }
 
-    function saveComment(postId) {
+    function saveComment(articleId) {
         const comment = $(pageId + "textarea[name=comment]");
 
         if (!comment.val().trim()) {
@@ -185,11 +189,11 @@
             type: 'POST',
             data: {
                 writer_id: 1,
-                post_id: postId,
+                article_id: articleId,
                 comment: comment.val(),
             },
             success: (response) => {
-                getComments(postId)
+                getComments(articleId)
 
                 // 저장 후 textarea 비움
                 comment.val('');
@@ -200,12 +204,12 @@
         });
     }
 
-    function getComments(postId) {
+    function getComments(articleId) {
         $.ajax({
             url: `/rest/comment`,
             type: 'GET',
             data: {
-                post_id: postId,
+                article_id: articleId,
             },
             success: (response) => {
                 generateCommentList(response.data);
@@ -255,8 +259,16 @@
 
     $(document).ready(() => {
         const postId = <?= $currentPost->id ?>;
+        const boardId = <?= $currentPost->board_id ?>;
 
+        initRedirectBoardListButton(boardId);
+        <?php if (is_post_author($currentPost->id)): ?>
+        initRedirectPostEditButton(postId);
+        initDeletePostButton();
+        <?php endif; ?>
+        <?php if (is_logged_in()): ?>
         initCommentPostButton(postId);
+        <?php endif; ?>
         getComments(postId);
     });
 </script>

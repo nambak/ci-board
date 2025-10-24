@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Post_m extends CI_Model
+class Article_m extends CI_Model
 {
     /**
      * 지정된 게시판 ID에 해당하는 모든 게시글을 최신순으로 조회합니다.
@@ -12,7 +12,7 @@ class Post_m extends CI_Model
     public function fetchByBoardId($boardId)
     {
         $this->db->select('*');
-        $this->db->from('posts');
+        $this->db->from('articles');
         $this->db->where('board_id', $boardId);
         $this->db->order_by('id', 'DESC');
         $query = $this->db->get();
@@ -22,10 +22,10 @@ class Post_m extends CI_Model
 
     public function get($id)
     {
-        $this->db->select('posts.*, users.name, users.email');
-        $this->db->from('posts');
-        $this->db->join('users', 'users.id = posts.user_id');
-        $this->db->where('posts.id', $id);
+        $this->db->select('articles.*, users.name, users.email');
+        $this->db->from('articles');
+        $this->db->join('users', 'users.id = articles.user_id');
+        $this->db->where('articles.id', $id);
         $query = $this->db->get();
 
         return $query->row();
@@ -35,14 +35,14 @@ class Post_m extends CI_Model
     {
         $this->db->where('id', $id);
 
-        return $this->db->update('posts', ['title' => $title, 'content' => $content]);
+        return $this->db->update('articles', ['title' => $title, 'content' => $content]);
     }
 
     public function delete($id)
     {
         $this->db->where('id', $id);
 
-        return $this->db->delete('posts');
+        return $this->db->delete('articles');
     }
 
     /**
@@ -55,7 +55,7 @@ class Post_m extends CI_Model
      */
     public function store($boardId, $title, $content)
     {
-        $this->db->insert('posts', [
+        $this->db->insert('articles', [
             'board_id' => $boardId,
             'user_id'  => 1,
             'title'    => $title,
@@ -75,7 +75,7 @@ class Post_m extends CI_Model
     public function getPrevious($boardId, $id)
     {
         $this->db->select('*');
-        $this->db->from('posts');
+        $this->db->from('articles');
         $this->db->where('id <', $id);
         $this->db->where('board_id', $boardId);
         $this->db->order_by('id', 'DESC');
@@ -95,7 +95,7 @@ class Post_m extends CI_Model
     public function getNext($boardId, $id)
     {
         $this->db->select('*');
-        $this->db->from('posts');
+        $this->db->from('articles');
         $this->db->where('id >', $id);
         $this->db->where('board_id', $boardId);
         $this->db->order_by('id', 'ASC');
