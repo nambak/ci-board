@@ -46,10 +46,10 @@ class Comment extends RestController
             $this->response('invalid request', 400);
         }
 
-        $post = $this->article_m->get($articleId);
+        $article = $this->article_m->get($articleId);
 
-        if (!$post) {
-            $this->response('post not found', 404);
+        if (!$article) {
+            $this->response('article not found', 404);
         }
 
         try {
