@@ -1,5 +1,5 @@
 <article class="container mt-5" id="post_edit">
-    <form method="post" action="/rest/post/update?id=<?= $id ?>">
+    <form method="post" action="/rest/article/update?id=<?= $id ?>">
         <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
 
         <!-- 게시글 제목 -->
