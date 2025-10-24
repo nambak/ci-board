@@ -42,7 +42,7 @@ ON UPDATE CASCADE;
 
 -- comments 테이블: article_id에 CASCADE 설정
 ALTER TABLE comments
-ADD CONSTRAINT fk_comments_post
+ADD CONSTRAINT fk_comments_article
 FOREIGN KEY (article_id) REFERENCES articles(id)
 ON DELETE CASCADE
 ON UPDATE CASCADE;
