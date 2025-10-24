@@ -8,7 +8,7 @@ class Article extends RestController
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('article_m');;
+        $this->load->model('article_m');
     }
 
     public function index_get($id)
