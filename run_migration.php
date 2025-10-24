@@ -40,6 +40,9 @@ $mysqli = new mysqli(
     $dbConfig['database']
 );
 
+// 문자셋 설정
+$mysqli->set_charset('utf8mb4');
+
 // 연결 확인
 if ($mysqli->connect_error) {
     die("Connection failed: " . $mysqli->connect_error . "\n");
