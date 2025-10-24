@@ -16,9 +16,9 @@ class Comment_m extends CI_Model
     public function create($articleId, $comment, $writerId)
     {
         $this->db->insert('comments', [
-            'post_id'   => $articleId,
-            'writer_id' => $writerId,
-            'comment'   => $comment
+            'article_id' => $articleId,
+            'writer_id'  => $writerId,
+            'comment'    => $comment
         ]);
     }
 
@@ -33,7 +33,7 @@ class Comment_m extends CI_Model
         $query = $this->db->select('comments.*, users.name')
             ->from('comments')
             ->join('users', 'users.id = comments.writer_id')
-            ->where('comments.post_id', $id)
+            ->where('comments.article_id', $id)
             ->get();
 
         return $query->result();
