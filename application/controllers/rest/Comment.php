@@ -42,8 +42,16 @@ class Comment extends RestController
         $comment = $this->post('comment', true);
         $writerId = get_user_id(); // 현재 로그인된 사용자 ID 사용
 
-        if (!$articleId || !trim($comment) || !$writerId) {
-            $this->response('invalid request', 400);
+        if (!ctype_digit((string)$articleId) || (int)$articleId <= 0) {
+            $this->response(['message' => 'invalid article_id'], 400);
+        }
+
+        if (!is_string($comment) || trim($comment) === '') {
+            $this->response(['message' => 'comment required'], 400);
+        }
+
+        if (!$writerId) {
+            $this->response(['message' => 'unauthorized'], 401);
         }
 
         $article = $this->article_m->get($articleId);
