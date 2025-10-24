@@ -18,12 +18,15 @@ class Comment extends RestController
     public function index_get()
     {
         $result = $this->comment_m->fetchByPost($this->get('article_id', true));
+        $current_user_id = get_user_id();
 
-        $data = array_map(function ($comment) {
+        $data = array_map(function ($comment) use ($current_user_id) {
             return [
+                'id'         => $comment->id,
                 'name'       => $this->security->xss_clean($comment->name),
                 'comment'    => $this->security->xss_clean($comment->comment),
-                'created_at' => $this->security->xss_clean($comment->created_at)
+                'created_at' => $this->security->xss_clean($comment->created_at),
+                'can_edit'   => $current_user_id && $comment->writer_id == $current_user_id
             ];
         }, $result);
 
@@ -37,7 +40,7 @@ class Comment extends RestController
     {
         $articleId = $this->post('article_id', true);
         $comment = $this->post('comment', true);
-        $writerId = $this->post('writer_id', true);
+        $writerId = get_user_id(); // 현재 로그인된 사용자 ID 사용
 
         if (!$articleId || !trim($comment) || !$writerId) {
             $this->response('invalid request', 400);

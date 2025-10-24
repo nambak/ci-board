@@ -7,6 +7,7 @@
                 </div>
                 <div class="card-body">
                     <form id="registerForm" method="post" action="/register">
+                        <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
                         <div class="mb-3">
                             <label for="name" class="form-label">이름 <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="name" name="name" required>
@@ -207,6 +208,7 @@
                 email: email,
             },
             dataType: 'json',
+            timeout: 10000, // 10초 타임아웃 설정
             success: function (response) {
                 if (response.exists) {
                     $('#email').addClass('is-invalid');
@@ -219,7 +221,12 @@
             error: function (xhr, status, error) {
                 let message = '이메일 중복 확인 중 오류가 발생했습니다.';
 
-                if (xhr.status === 500) {
+                // 네트워크 오류나 타임아웃 처리
+                if (status === 'timeout') {
+                    message = '요청 시간이 초과되었습니다. 다시 시도해주세요.';
+                } else if (status === 'error' && xhr.status === 0) {
+                    message = '네트워크 연결을 확인해주세요.';
+                } else if (xhr.status === 500) {
                     message = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
                 } else if (xhr.status === 400) {
                     message = '올바른 이메일 형식이 아닙니다.';

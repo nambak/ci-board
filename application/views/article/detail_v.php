@@ -2,7 +2,7 @@
     <!-- 게시글 제목 -->
     <div class="row mb-4">
         <div class="col">
-            <h2 class="border-bottom pb-3" id="title"><?= $currentPost->title ?></h2>
+            <h2 class="border-bottom pb-3" id="title"><?= html_escape($currentPost->title) ?></h2>
         </div>
     </div>
     <!-- 게시글 정보 -->
@@ -10,9 +10,9 @@
         <div class="col">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <span class="me-3">작성자: <?= $currentPost->name ?></span>
-                    <span class="me-3">작성일: <?= $currentPost->created_at ?></span>
-                    <span>조회수: <?= $currentPost->views ?></span>
+                    <span class="me-3">작성자: <?= html_escape($currentPost->name) ?></span>
+                    <span class="me-3">작성일: <?= html_escape($currentPost->created_at) ?></span>
+                    <span>조회수: <?= html_escape($currentPost->views) ?></span>
                 </div>
             </div>
         </div>
@@ -22,7 +22,7 @@
         <div class="col">
             <div class="card">
                 <div class="card-body min-vh-50">
-                    <?= $currentPost->content ?>
+                    <?= nl2br($currentPost->content); ?>
                 </div>
             </div>
         </div>
@@ -99,6 +99,7 @@
 </article>
 <script defer>
     let pageId = '#post_detail ';
+    let userId = <?= isset($user_id) ? $user_id : 0 ?>;
 
     function initRedirectBoardListButton(boardId) {
         $(pageId + '#redirectBoardListButton').on('click', () => {
@@ -127,6 +128,9 @@
                         url: '/rest/article/<?= $currentPost->id ?>',
                         type: 'DELETE',
                         dataType: 'json',
+                        data: {
+                            '<?= $this->security->get_csrf_token_name(); ?>': '<?= $this->security->get_csrf_hash(); ?>'
+                        },
                         success: (data) => {
                             $(pageId + '#redirectBoardListButton').click();
                         },
@@ -191,6 +195,7 @@
                 writer_id: 1,
                 article_id: articleId,
                 comment: comment.val(),
+                <?= $this->security->get_csrf_token_name(); ?>: '<?= $this->security->get_csrf_hash(); ?>',
             },
             success: (response) => {
                 getComments(articleId)
@@ -228,6 +233,13 @@
         }
 
         data.forEach((comment) => {
+            // 댓글 수정/삭제 버튼은 작성자만 표시
+            const editDeleteButtons = comment.can_edit ?
+                `<div>
+                    <button class="btn btn-sm text-primary">수정</button>
+                    <button class="btn btn-sm text-danger">삭제</button>
+                </div>` : '';
+
             const template = `<div class="card mb-2">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
@@ -235,10 +247,7 @@
                             <strong>${comment.name}</strong>
                             <small class="text-muted ms-2">${comment.created_at}</small>
                         </div>
-                        <div>
-                            <button class="btn btn-sm text-primary">수정</button>
-                            <button class="btn btn-sm text-danger">삭제</button>
-                        </div>
+                        ${editDeleteButtons}
                     </div>
                     <p class="mt-2 mb-0">${comment.comment}</p>
                 </div>
@@ -270,5 +279,6 @@
         initCommentPostButton(postId);
         <?php endif; ?>
         getComments(postId);
+
     });
 </script>

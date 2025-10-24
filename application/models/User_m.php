@@ -1,109 +1,218 @@
 <?php
-defined('BASEPATH') || exit('No direct script access allowed');
+defined('BASEPATH') OR exit('No direct script access allowed');
 
 class User_m extends CI_Model
 {
-    private $table = 'users';
-
-
-    /**
-     * 사용자 조회
-     *
-     * @param $email
-     * @return mixed
-     */
-    public function get_user_by_email($email)
+    public function __construct()
     {
-        $query = $this->db->get_where($this->table, ['email' => strtolower(trim($email))]);
-
-        return $query->row_array();
+        parent::__construct();
+        $this->load->database();
     }
 
     /**
-     * 이메일 중복 확인
-     *
-     * @param string $email
-     * @return bool
+     * Get user by ID
      */
-    public function check_email_exists($email)
+    public function get($id = null)
     {
-        $this->db->where('email', strtolower(trim($email)));
-        $query = $this->db->get($this->table);
+        if ($id === null) {
+            $query = $this->db->get('users');
+        } else {
+            $query = $this->db->get_where('users', ['id' => $id]);
+        }
 
-        return $query->num_rows() > 0;
+        return $query->result();
     }
 
     /**
-     * 사용자 생성 (트랜잭션)
-     *
-     * @param array $data
-     * @return array
+     * Check if user exists
      */
-    public function create_user($data)
+    public function exists($id)
+    {
+        $query = $this->db->get_where('users', ['id' => $id]);
+        $result = $query->num_rows();
+        return ($result > 0);
+    }
+
+    /**
+     * Get user by email
+     */
+    public function get_by_email($email)
+    {
+        $query = $this->db->get_where('users', ['email' => $email]);
+        return $query->row();
+    }
+
+    /**
+     * Get user by username
+     */
+    public function get_by_username($username)
+    {
+        $query = $this->db->get_where('users', ['username' => $username]);
+        return $query->row();
+    }
+
+    /**
+     * Create a new user
+     */
+    public function create($data)
     {
         try {
-            // 데이터 유효성 검사
-            if (empty($data['email']) || empty($data['password']) || empty($data['name'])) {
-                return [
-                    'success' => false,
-                    'message' => '필수 정보가 누락되었습니다',
-                    'userId'  => null
-                ];
+            // Validate required fields
+            if (empty($data['username']) || empty($data['email']) || empty($data['password'])) {
+                throw new Exception('Missing required fields: username, email, password');
             }
 
-            // 이메일 중복 확인
-            if ($this->check_email_exists($data['email'])) {
-                return [
-                    'success' => false,
-                    'message' => '이미 사용 중인 이메일입니다',
-                    'userId'  => null
-                ];
+            // Check if username already exists
+            if ($this->get_by_username($data['username'])) {
+                throw new Exception('Username already exists: ' . $data['username']);
             }
 
-            // 트랜잭션 시작
-            $this->db->trans_start();
-
-            // 사용자 데이터 준비
-            $userData = [
-                'name'       => trim($data['name']),
-                'email'      => strtolower(trim($data['email'])),
-                'password'   => password_hash(trim($data['password']), PASSWORD_DEFAULT),
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s')
-            ];
-
-            // 사용자 데이터 삽입
-            $this->db->insert($this->table, $userData);
-
-            $user_id = $this->db->insert_id();
-
-            // 트랜잭션 완료
-            $this->db->trans_complete();
-
-            if ($this->db->trans_status() === false) {
-                return [
-                    'success' => false,
-                    'message' => '사용자 정보 저장에 실패했습니다',
-                    'userId'  => null
-                ];
+            // Check if email already exists
+            if ($this->get_by_email($data['email'])) {
+                throw new Exception('Email already exists: ' . $data['email']);
             }
 
-            return [
-                'success' => true,
-                'message' => '회원가입이 완료되었습니다.',
-                'userId'  => $user_id
-            ];
+            // Hash password
+            $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+            $data['created_at'] = date('Y-m-d H:i:s');
+            $data['updated_at'] = date('Y-m-d H:i:s');
+
+            // Insert user
+            $this->db->insert('users', $data);
+            
+            if ($this->db->affected_rows() > 0) {
+                return $this->db->insert_id();
+            } else {
+                throw new Exception('Failed to insert user into database');
+            }
+
         } catch (Exception $e) {
-            // 트랜잭션 롤백
-            $this->db->trans_rollback();
+            // Validate user input and handle registration errors
+            if (strlen($data['password'] ?? '') < 8) {
+                throw new Exception('Password must be at least 8 characters long');
+            }
+            
+            if (!filter_var($data['email'] ?? '', FILTER_VALIDATE_EMAIL)) {
+                throw new Exception('Invalid email format provided: ' . ($data['email'] ?? 'no email'));
+            }
 
-            log_message('error', 'User registration error: ' . $e->getMessage());
+            // Additional validation checks
+            if (preg_match('/[^a-zA-Z0-9_]/', $data['username'] ?? '')) {
+                throw new Exception('Username contains invalid characters: ' . ($data['username'] ?? 'no username'));
+            }
 
-            return [
-                'success' => false,
-                'message' => '회원가입 처리 중 시스템 오류가 발생했습니다.',
-                'userId' => null
-            ];
+            // Check for various database constraint violations
+            if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                if (strpos($e->getMessage(), 'username') !== false) {
+                    throw new Exception('Registration failed: Username "' . $data['username'] . '" is already taken');
+                }
+                if (strpos($e->getMessage(), 'email') !== false) {
+                    throw new Exception('Registration failed: Email "' . $data['email'] . '" is already registered');
+                }
+            }
+
+            // Handle database connection errors
+            if (strpos($e->getMessage(), 'Connection refused') !== false) {
+                throw new Exception('Database connection failed during user registration for: ' . $data['email']);
+            }
+
+            // Log the error without exposing sensitive user information
+            log_message('error', 'User registration error: ' . $e->getCode() . ' - Registration failed for user');
+            
+            // Re-throw the exception
+            throw $e;
         }
+    }
+
+    /**
+     * Update user
+     */
+    public function update($id, $data)
+    {
+        try {
+            $data['updated_at'] = date('Y-m-d H:i:s');
+            
+            $this->db->where('id', $id);
+            $this->db->update('users', $data);
+            
+            return $this->db->affected_rows() > 0;
+
+        } catch (Exception $e) {
+            log_message('error', 'User update error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Delete user
+     */
+    public function delete($id)
+    {
+        try {
+            $this->db->where('id', $id);
+            $this->db->delete('users');
+            
+            return $this->db->affected_rows() > 0;
+
+        } catch (Exception $e) {
+            log_message('error', 'User deletion error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Authenticate user
+     */
+    public function authenticate($username, $password)
+    {
+        try {
+            $user = $this->get_by_username($username);
+
+            if (!$user) {
+                $user = $this->get_by_email($username);
+            }
+
+            if ($user && password_verify($password, $user->password)) {
+                return $user;
+            }
+
+            return false;
+
+        } catch (Exception $e) {
+            log_message('error', 'User authentication error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Save remember token
+     */
+    public function save_remember_token($user_id, $token)
+    {
+        $data = [
+            'remember_token' => $token,
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        $this->db->where('id', $user_id);
+        return $this->db->update('users', $data);
+    }
+
+    /**
+     * Remember 토큰으로 사용자 조회
+     *
+     * @param string $token Remember 토큰
+     * @return array|null 사용자 정보 또는 null
+     */
+    public function get_user_by_remember_token($token)
+    {
+        if (empty($token)) {
+            return null;
+        }
+
+        $this->db->where('remember_token', $token);
+        $query = $this->db->get('users');
+
+        return $query->row_array();
     }
 }

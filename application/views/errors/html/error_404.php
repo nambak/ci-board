@@ -29,7 +29,7 @@ defined('BASEPATH') || exit('No direct script access allowed');
         }
     </style>
 </head>
-<body>
+<body class="error-404-layout">
 <div id="container">
     <div class="row w-100 justify-content-center">
         <div class="col-md-8 text-center">

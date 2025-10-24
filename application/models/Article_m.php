@@ -53,11 +53,11 @@ class Article_m extends CI_Model
      * @param string $content 게시글 내용.
      * @return int 생성된 게시글의 ID.
      */
-    public function store($boardId, $title, $content)
+    public function store($boardId, $userId, $title, $content)
     {
         $this->db->insert('articles', [
             'board_id' => $boardId,
-            'user_id'  => 1,
+            'user_id'  => $userId,
             'title'    => $title,
             'content'  => $content
         ]);

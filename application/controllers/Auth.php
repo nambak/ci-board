@@ -6,8 +6,8 @@ class Auth extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->library('session');
         $this->load->helper(['url', 'form']);
+        $this->load->library('session');
         $this->load->library('form_validation');
     }
 
@@ -20,7 +20,7 @@ class Auth extends MY_Controller
     {
         // 이미 로그인된 사용자는 메인 페이지로 리다이렉트
         if ($this->session->userdata('logged_in')) {
-            redirect('board');
+            redirect('/board', 'refresh');
         }
 
         $this->load->view('auth/login_v');
@@ -35,7 +35,7 @@ class Auth extends MY_Controller
     {
         // 이미 로그인된 사용자는 메인 페이지로 리다이렉트
         if ($this->session->userdata('logged_in')) {
-            redirect('board');
+            redirect('/board', 'refresh');
         }
 
         $this->load->view('auth/register_v');
@@ -49,8 +49,9 @@ class Auth extends MY_Controller
      */
     public function logout()
     {
-        $this->session->sess_destroy();
+         $this->session->sess_destroy();
 
-        redirect('login');
+         redirect('/login', 'refresh');
+
     }
 }

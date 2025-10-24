@@ -7,7 +7,7 @@ class Article extends MY_Controller
     {
         parent::__construct();
         $this->load->model('article_m');
-
+        $this->load->library('session');
     }
 
     /**
@@ -39,11 +39,11 @@ class Article extends MY_Controller
             'currentPost' => $currentPost,
             'prevPostId'  => $prevPost ? $prevPost->id : null,
             'nextPostId'  => $nextPost ? $nextPost->id : null,
+            'user_id'     => $this->session->userdata('user_id'),
         ];
 
         $this->load->view('article/detail_v', $data);
     }
-
 
     public function edit()
     {
@@ -59,7 +59,10 @@ class Article extends MY_Controller
      */
     public function create()
     {
-        $queryParams['board_id'] = $this->input->get('board_id', true);
+        $queryParams = [
+            'board_id' => $this->input->get('board_id', true),
+            'user_id'  => $this->session->userdata('user_id'),
+        ];
 
         $this->load->view('article/create_v', $queryParams);
     }

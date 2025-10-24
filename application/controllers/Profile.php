@@ -1,0 +1,20 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Profile extends MY_Controller
+{
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    public function index()
+    {
+        $this->load->view('profile/index_v');
+    }
+
+    public function edit()
+    {
+        $this->load->view('profile/edit_v');
+    }
+}
