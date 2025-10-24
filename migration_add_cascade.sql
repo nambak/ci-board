@@ -3,14 +3,14 @@
 -- 1. 기존 외래 키가 있다면 삭제 (에러 무시)
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 
--- posts 테이블의 외래 키 삭제 시도
+-- articles 테이블의 외래 키 삭제 시도
 SET @s = (SELECT IF(
     (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
      WHERE CONSTRAINT_SCHEMA = DATABASE()
-     AND TABLE_NAME = 'posts'
-     AND CONSTRAINT_NAME = 'fk_posts_board'
+     AND TABLE_NAME = 'articles'
+     AND CONSTRAINT_NAME = 'fk_articles_board'
      AND CONSTRAINT_TYPE = 'FOREIGN KEY') > 0,
-    'ALTER TABLE posts DROP FOREIGN KEY fk_posts_board',
+    'ALTER TABLE articles DROP FOREIGN KEY fk_articles_board',
     'SELECT 1'
 ));
 PREPARE stmt FROM @s;
@@ -33,9 +33,9 @@ DEALLOCATE PREPARE stmt;
 
 -- 2. CASCADE 옵션과 함께 외래 키 추가
 
--- posts 테이블: board_id에 CASCADE 설정
-ALTER TABLE posts
-ADD CONSTRAINT fk_posts_board
+-- articles 테이블: board_id에 CASCADE 설정
+ALTER TABLE articles
+ADD CONSTRAINT fk_articles_board
 FOREIGN KEY (board_id) REFERENCES boards(id)
 ON DELETE CASCADE
 ON UPDATE CASCADE;
@@ -43,7 +43,7 @@ ON UPDATE CASCADE;
 -- comments 테이블: post_id에 CASCADE 설정
 ALTER TABLE comments
 ADD CONSTRAINT fk_comments_post
-FOREIGN KEY (post_id) REFERENCES posts(id)
+FOREIGN KEY (post_id) REFERENCES articles(id)
 ON DELETE CASCADE
 ON UPDATE CASCADE;
 
@@ -52,9 +52,9 @@ ON UPDATE CASCADE;
 SET @s = (SELECT IF(
     (SELECT COUNT(*) FROM INFORMATION_SCHEMA.STATISTICS
      WHERE TABLE_SCHEMA = DATABASE()
-     AND TABLE_NAME = 'posts'
-     AND INDEX_NAME = 'idx_posts_board_id') = 0,
-    'CREATE INDEX idx_posts_board_id ON posts(board_id)',
+     AND TABLE_NAME = 'articles'
+     AND INDEX_NAME = 'idx_articles_board_id') = 0,
+    'CREATE INDEX idx_articles_board_id ON articles(board_id)',
     'SELECT 1'
 ));
 PREPARE stmt FROM @s;
