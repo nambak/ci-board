@@ -71,12 +71,12 @@ class User_m extends CI_Model
         try {
             // Validate required fields
             if (empty($data['name']) || empty($data['email']) || empty($data['password'])) {
-                throw new Exception('Missing required fields: username, email, password');
+                throw new Exception('Missing required fields: name, email, password');
             }
 
             // Check if username already exists
             if ($this->get_by_username($data['name'])) {
-                throw new Exception('Username already exists: ' . $data['username']);
+                throw new Exception('Username already exists: ' . $data['name']);
             }
 
             // Check if email already exists
