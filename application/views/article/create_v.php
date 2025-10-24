@@ -1,5 +1,5 @@
 <article class="container mt-5" id="post_edit">
-    <form method="post" action="/rest/post/create?board_id=<?= $board_id ?>">
+    <form method="post" action="/rest/post/create">
         <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
         <input type="hidden" name="board_id" value="<?= $board_id ?>">
 
