@@ -14,7 +14,7 @@ class Article extends RestController
     public function index_get($id)
     {
         try {
-            if ($id === null || (int) $id < 1) {
+            if ($id === null || (int)$id < 1) {
                 $this->response(['message' => 'invalid id'], 400);
             }
 
@@ -26,7 +26,7 @@ class Article extends RestController
                 $this->response($article, 200);
             }
         } catch (Exception $e) {
-            log_message('error', 'Article::index_get error: '.$e->getMessage());
+            log_message('error', 'Article::index_get error: ' . $e->getMessage());
             $this->response(['message' => 'server error'], 500);
         }
     }
@@ -81,7 +81,23 @@ class Article extends RestController
             $title = $this->input->post('title', true);
             $content = $this->input->post('content', true);
             $boardId = $this->input->post('board_id', true);
-            $userId = $this->input->post('user_id', true);
+            $userId = get_user_id();
+
+            if (!$userId) {
+                $this->response(['message' => 'unauthorized'], 401);
+            }
+
+            if ((int)$boardId <= 0) {
+                $this->response(['message' => 'invalid board_id'], 400);
+            }
+
+            if (!$title) {
+                $this->response(['message' => 'title required'], 400);
+            }
+
+            if (!$content) {
+                $this->response(['message' => 'content required'], 400);
+            }
 
             $result = $this->article_m->store($boardId, $userId, $title, $content);
             $this->response(['id' => $result], 200);
