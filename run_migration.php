@@ -48,26 +48,36 @@ if ($mysqli->connect_error) {
 echo "Connected successfully.\n";
 echo "Running migration: {$migrationFile}\n";
 
-// SQL 파일 읽기
-$sql = file_get_contents($migrationFile);
+// 트랜잭션 시작
+$mysqli->begin_transaction();
 
-// SQL 실행 (multi_query로 여러 쿼리 실행)
-if ($mysqli->multi_query($sql)) {
-    do {
-        // 결과 저장
-        if ($result = $mysqli->store_result()) {
-            $result->free();
-        }
+try {
+    // SQL 파일 읽기
+    $sql = file_get_contents($migrationFile);
 
-        // 에러 확인
-        if ($mysqli->errno) {
-            echo "Error: " . $mysqli->error . "\n";
-        }
-    } while ($mysqli->next_result());
+    // SQL 실행 (multi_query로 여러 쿼리 실행)
+    if ($mysqli->multi_query($sql)) {
+        do {
+            // 결과 저장
+            if ($result = $mysqli->store_result()) {
+                $result->free();
+            }
 
-    echo "Migration completed successfully!\n";
-} else {
-    echo "Error executing migration: " . $mysqli->error . "\n";
+            // 에러 확인
+            if ($mysqli->errno) {
+                throw new Exception($mysqli->error);
+            }
+        } while ($mysqli->next_result());
+
+        $mysqli->commit();
+        echo "Migration completed successfully!\n";
+    } else {
+        throw new Exception($mysqli->error);
+    }
+} catch (Exception $e) {
+    $mysqli->rollback();
+    echo "Error executing migration: " . $e->getMessage() . "\n";
+    exit(1);
 }
 
 $mysqli->close();
