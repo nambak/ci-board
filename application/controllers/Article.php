@@ -19,7 +19,7 @@ class Article extends MY_Controller
      */
     public function index($id = null)
     {
-        if ($id === null) {
+        if ($id === null || !ctype_digit((string)$id) || (int)$id <= 0) {
             show_404();
             return;
         }
