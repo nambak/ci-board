@@ -104,4 +104,16 @@ class Article_m extends CI_Model
         return $this->db->get()->row();
     }
 
+    /**
+     * 지정된 게시판의 총 게시글 수를 반환합니다.
+     *
+     * @param int $boardId 게시판의 고유 ID.
+     * @return int 게시글 총 개수.
+     */
+    public function countByBoardId($boardId)
+    {
+        $this->db->where('board_id', $boardId);
+        return $this->db->count_all_results('articles');
+    }
+
 }

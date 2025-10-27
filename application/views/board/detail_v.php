@@ -25,7 +25,7 @@
 
     function initPostList() {
         $(pageId + '#board_detail_table').bootstrapTable({
-            url: '/rest/board/detail',
+            url: '/rest/board/<?= $id ?>',
             columns: [{
                 field: 'id',
                 title: '번호',
@@ -67,11 +67,6 @@
             headerStyle: () => {
                 return {
                     classes: 'table-dark'
-                }
-            },
-            queryParams: (params) => {
-                return {
-                    id: <?= $id; ?>
                 }
             },
             onLoadSuccess: (data) => {
