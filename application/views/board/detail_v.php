@@ -52,7 +52,7 @@
                 title: '조회수',
                 halign: 'center',
                 align: 'right',
-                formater: (value, row, index) => {
+                formatter: (value, row, index) => {
                     return row.views;
                 }
             }, {
