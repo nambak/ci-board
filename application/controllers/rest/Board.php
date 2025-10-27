@@ -13,11 +13,25 @@ class Board extends RestController
         $this->load->model('board_m');
     }
 
-    public function index_get()
+    public function index_get($id = null)
     {
-        $this->response([
-            'rows' => $this->board_m->get()
-        ], 200);
+        if ($id === null) {
+            $this->response([
+                'rows' => $this->board_m->get(),
+            ], 200);
+        } else {
+            $this->load->model('article_m');
+            $posts = $this->article_m->fetchByBoardId($id);
+            $board = $this->board_m->get($id);
+            $total = $this->article_m->countByBoardId($id);
+
+            $this->response([
+                'total' => $total,
+                'name' => $board->name,
+                'rows' => $posts,
+                'id'   => $id
+            ], 200);
+        }
     }
 
     public function index_post()
@@ -102,19 +116,5 @@ class Board extends RestController
             log_message('error', 'board.index_post: ' . $e->getMessage());
             $this->response(['message' => 'server error'], 500);
         }
-    }
-
-    public function detail_get()
-    {
-        $this->load->model('article_m');
-        $id = $this->get('id', true);
-        $posts = $this->article_m->fetchByBoardId($id);
-        $board = $this->board_m->get($id);
-
-        $this->response([
-            'name' => $board[0]->name,
-            'rows' => $posts,
-            'id'   => $id
-        ], 200);
     }
 }

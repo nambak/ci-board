@@ -55,14 +55,6 @@
         $('#board_list_table').bootstrapTable({
             url: '/rest/board',
             columns: [{
-                field: 'id',
-                title: '번호',
-                align: 'right',
-                halign: 'center',
-                formatter: function (value, row, index) {
-                    return row.id;
-                }
-            }, {
                 field: 'name',
                 title: '제목',
                 halign: 'center',

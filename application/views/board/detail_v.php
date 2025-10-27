@@ -25,28 +25,40 @@
 
     function initPostList() {
         $(pageId + '#board_detail_table').bootstrapTable({
-            url: '/rest/board/detail',
+            url: '/rest/board/<?= $id ?>',
             columns: [{
                 field: 'id',
                 title: '번호',
+                halign: 'center',
+                align: 'right',
                 formatter: (value, row, index) => {
-                    return row.id;
+                    const table = $(pageId + '#board_detail_table').bootstrapTable('getOptions');
+                    const pageNumber = table.pageNumber || 1;
+                    const pageSize = table.pageSize || 10;
+                    const totalRows = table.totalRows || 0;
+
+                    return totalRows - (index + (pageNumber - 1) * pageSize);
                 }
             }, {
                 field: 'title',
                 title: '제목',
+                halign: 'center',
+                align: 'left',
                 formatter: (value, row, index) => {
                     return `<a href="/article/${row.id}">${row.title}</a>`;
                 }
             }, {
                 field: 'views',
                 title: '조회수',
-                formater: (value, row, index) => {
+                halign: 'center',
+                align: 'right',
+                formatter: (value, row, index) => {
                     return row.views;
                 }
             }, {
                 field: 'created_at',
                 title: '등록일',
+                align: 'center',
                 formatter: (value, row, index) => {
                     return row.created_at
                 }
@@ -55,11 +67,6 @@
             headerStyle: () => {
                 return {
                     classes: 'table-dark'
-                }
-            },
-            queryParams: (params) => {
-                return {
-                    id: <?= $id; ?>
                 }
             },
             onLoadSuccess: (data) => {
