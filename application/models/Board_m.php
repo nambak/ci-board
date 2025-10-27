@@ -7,11 +7,11 @@ class Board_m extends CI_Model
     {
         if ($id === null) {
             $query = $this->db->get('boards');
+            return $query->result();
         } else {
             $query = $this->db->get_where('boards', ['id' => $id]);
+            return $query->row();
         }
-
-        return $query->result();
     }
 
     public function exists($id)
