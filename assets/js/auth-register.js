@@ -6,7 +6,7 @@ const AuthRegister = {
     pageId: '#register_page ',
 
     initRegisterForm() {
-        $(this.pageId + '#registerForm').on('submit', function (e) {
+        $(this.pageId + '#registerForm').on('submit', (e) => {
             e.preventDefault();
 
             // 기존 에러 메시지 초기화
@@ -31,7 +31,7 @@ const AuthRegister = {
                 type: 'POST',
                 data: formData,
                 dataType: 'json',
-                success: function (response) {
+                success: (response) => {
                     if (response.success) {
                         Swal.fire({
                             icon: 'success',
@@ -44,7 +44,7 @@ const AuthRegister = {
                         });
                     }
                 },
-                error: function (xhr, status, error) {
+                error: (xhr, status, error) => {
                     let message = '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
 
                     if (xhr.status === 400 || xhr.status === 422) {
@@ -62,7 +62,7 @@ const AuthRegister = {
                         text: message
                     });
                 },
-                complete: function () {
+                complete: () => {
                     // 회원가입 버튼 활성화
                     $('#registerBtn').prop('disabled', false).text('회원가입');
                 }
@@ -77,7 +77,7 @@ const AuthRegister = {
     },
 
     showErrors(errors) {
-        $.each(errors, function (field, message) {
+        $.each(errors, (field, message) => {
             $('#' + field).addClass('is-invalid');
             $('#' + field + '-error').text(message);
         });
@@ -173,7 +173,7 @@ const AuthRegister = {
             },
             dataType: 'json',
             timeout: 10000, // 10초 타임아웃 설정
-            success: function (response) {
+            success: (response) => {
                 if (response.exists) {
                     $('#email').addClass('is-invalid');
                     $('#email-error').text('이미 사용 중인 이메일입니다.');
