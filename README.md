@@ -1,6 +1,6 @@
 # CI3Board
 
-CodeIgniter 3.x 기반의 한국어 웹 게시판 시스템입니다. 웹 인터페이스와 REST API를 모두 제공하여 사용자 인증, 게시판 관리, 게시글 작성, 댓글 기능을 지원합니다.
+CodeIgniter 3.x 기반의 게시판 서비스입니다. 웹 인터페이스와 REST API를 모두 제공하여 사용자 인증, 게시판 관리, 게시글 작성, 댓글 기능을 지원합니다.
 
 ## 주요 기능
 
@@ -8,8 +8,7 @@ CodeIgniter 3.x 기반의 한국어 웹 게시판 시스템입니다. 웹 인터
 - **게시판 시스템**: 다중 게시판 지원, 게시글 작성/수정/삭제
 - **댓글 기능**: 게시글에 대한 댓글 작성 및 관리
 - **REST API**: 모든 주요 기능에 대한 RESTful API 제공
-- **보안**: Rate Limiting, CAPTCHA, CSRF 보호, SQL Injection 방지
-- **API 문서화**: Swagger UI 및 Redoc 지원
+- **API 문서화**: Redoc 지원
 
 ## 기술 스택
 
@@ -17,7 +16,7 @@ CodeIgniter 3.x 기반의 한국어 웹 게시판 시스템입니다. 웹 인터
 - **데이터베이스**: MySQL/MariaDB
 - **REST API**: chriskacerguis/codeigniter-restserver
 - **디버깅**: PHP DebugBar (개발 환경)
-- **API 문서**: OpenAPI 3.0 (Swagger/Redoc)
+- **API 문서**: OpenAPI 3.0 (Redoc)
 
 ## 시작하기
 
@@ -104,78 +103,9 @@ application/
 
 ### API 문서 확인
 
-- **Swagger UI**: `http://localhost/swagger`
 - **Redoc**: `http://localhost/redoc`
 - **OpenAPI 스펙**: `assets/api.json`
 
-### 주요 API 엔드포인트
-
-#### 인증
-```bash
-# 회원가입
-POST /rest/auth/register
-
-# 로그인
-POST /rest/auth/login
-
-# 로그아웃
-POST /rest/auth/logout
-```
-
-#### 게시판
-```bash
-# 게시판 목록 조회
-GET /rest/board
-
-# 게시판 상세 조회
-GET /rest/board/{id}
-```
-
-#### 게시글
-```bash
-# 게시글 목록 조회
-GET /rest/article?board_id={board_id}
-
-# 게시글 상세 조회
-GET /rest/article/{id}
-
-# 게시글 작성
-POST /rest/article
-
-# 게시글 수정
-PUT /rest/article/{id}
-
-# 게시글 삭제
-DELETE /rest/article/{id}
-```
-
-#### 댓글
-```bash
-# 댓글 목록 조회
-GET /rest/comment?article_id={article_id}
-
-# 댓글 작성
-POST /rest/comment
-
-# 댓글 삭제
-DELETE /rest/comment/{id}
-```
-
-## 보안 기능
-
-### Rate Limiting
-IP별 요청 빈도 제한으로 무차별 대입 공격 방지
-- 이메일 체크: 5분간 5회
-- 로그인 시도: 15분간 5회
-
-### CAPTCHA
-수학 문제 기반 자동화 방지 시스템
-
-### CSRF 보호
-모든 폼 제출에 대한 CSRF 토큰 검증
-
-### SQL Injection 방지
-CodeIgniter 쿼리 빌더를 통한 안전한 데이터베이스 쿼리
 
 ## 개발
 
