@@ -1,4 +1,8 @@
-<article class="container mt-5" id="post_edit">
+<article class="container mt-5" id="post_edit"
+    data-board-id="<?= $board_id ?>"
+    data-user-id="<?= $user_id ?>"
+    data-csrf-token-name="<?= $this->security->get_csrf_token_name(); ?>"
+    data-csrf-hash="<?= $this->security->get_csrf_hash(); ?>">
     <form method="post" action="/rest/post/create">
         <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
         <input type="hidden" name="board_id" value="<?= $board_id ?>">
@@ -35,73 +39,4 @@
         </div>
     </form>
 </article>
-<script defer>
-    let pageId = '#post_edit ';
-
-    function initCancelButton(boardId) {
-        $(pageId + '#cancelButton').on('click', () => {
-            location.href = `/board/detail?id=${boardId}`;
-        });
-    }
-
-    function initSaveButton(boardId) {
-        $(pageId + '#confirmSave').on('click', () => savePost(boardId));
-    }
-
-    function savePost(boardId) {
-        const title = $(pageId + 'input[name=title]').val().trim();
-        const content = $(pageId + 'textarea[name=content]').val().trim();
-
-        if (!title) {
-            Swal.fire({
-                icon: 'warning',
-                text: '제목을 입력해 주세요.'
-            });
-
-            return false;
-        }
-
-        if (!content) {
-            Swal.fire({
-                icon: 'warning',
-                text: '내용을 입력해 주세요.'
-            });
-
-            return false;
-        }
-
-        $.ajax({
-            url: '/rest/article/create',
-            type: 'POST',
-            data: {
-                board_id: boardId,
-                title: title,
-                content: content,
-                user_id: <?= $user_id ?>,
-                <?= $this->security->get_csrf_token_name(); ?>: '<?= $this->security->get_csrf_hash(); ?>',
-            },
-            success: (response) => {
-                Swal.fire({
-                    title: '저장되었습니다.',
-                    icon: 'success'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        location.href = `/article/${response.id}`;
-                    }
-                });
-            },
-            error: (error) => {
-                Swal.fire({
-                    title: '오류',
-                    html: error.responseJSON.message,
-                    icon: 'error'
-                });
-            }
-        });
-    }
-
-    $(document).ready(() => {
-        initCancelButton(<?= $board_id ?>);
-        initSaveButton(<?= $board_id ?>);
-    });
-</script>
+<script src="/assets/js/article-create.js" defer></script>

@@ -32,13 +32,13 @@ class Article extends MY_Controller
         }
 
         $currentBoardId = $currentArticle->board_id;
-        $prevPost = $this->article_m->getPrevious($currentBoardId, $id);
-        $nextPost = $this->article_m->getNext($currentBoardId, $id);
+        $prevArticle = $this->article_m->getPrevious($currentBoardId, $id);
+        $nextArticle = $this->article_m->getNext($currentBoardId, $id);
 
         $data = [
-            'currentPost' => $currentArticle,
-            'prevPostId'  => $prevPost ? $prevPost->id : null,
-            'nextPostId'  => $nextPost ? $nextPost->id : null,
+            'currentArticle' => $currentArticle,
+            'prevArticleId'  => $prevArticle ? $prevArticle->id : null,
+            'nextArticleId'  => $nextArticle ? $nextArticle->id : null,
             'user_id'     => $this->session->userdata('user_id'),
         ];
 
