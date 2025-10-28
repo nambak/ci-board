@@ -204,12 +204,19 @@ const AuthRegister = {
         });
     },
 
-    init() {
+    init(csrfTokenName, csrfToken) {
+        this.csrfTokenName = csrfTokenName;
+        this.csrfToken = csrfToken;
+
         this.initRegisterForm();
         this.initValidation();
     }
 }
 
 $(document).ready(() => {
-    AuthRegister.init()
+    const form = $('#register_page');
+    const csrfTokenName = form.data('csrf-token-name');
+    const csrfToken = form.data('csrf-token');
+
+    AuthRegister.init(csrfTokenName, csrfToken)
 });
