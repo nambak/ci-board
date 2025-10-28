@@ -135,6 +135,15 @@ const ArticleDetail = {
         })
     },
 
+    escapeHtml(html) {
+        return String(str === undefined || str === null ? '' : str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
+
     /**
      * 댓글 목록 HTML 생성
      */
@@ -157,12 +166,12 @@ const ArticleDetail = {
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
                             <div>
-                                <strong>${comment.name}</strong>
+                                <strong>${this.escapeHtml(comment.name)}</strong>
                                 <small class="text-muted ms-2">${comment.created_at}</small>
                             </div>
                             ${editDeleteButtons}
                         </div>
-                        <p class="mt-2 mb-0">${comment.comment}</p>
+                        <p class="mt-2 mb-0">${this.escapeHtml(comment.comment)}</p>
                     </div>
                 </div>`;
 
