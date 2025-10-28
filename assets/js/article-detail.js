@@ -233,7 +233,5 @@ $(document).ready(() => {
     const isArticleAuthor = form.data('is-article-author');
     const isLoggedIn = form.data('is-logged-in');
 
-    console.log(boardId);
-
     ArticleDetail.init(articleId, userId, csrfTokenName, csrfHash, boardId, isArticleAuthor, isLoggedIn);
 });
