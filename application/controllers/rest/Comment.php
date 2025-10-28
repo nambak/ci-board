@@ -67,4 +67,93 @@ class Comment extends RestController
             $this->response('server error: ' . $e->getMessage(), 500);
         }
     }
+
+    /**
+     * 댓글을 수정하는 REST API 엔드포인트
+     */
+    public function index_put($id)
+    {
+        $currentUserId = get_user_id();
+
+        if (!$currentUserId) {
+            $this->response(['message' => 'unauthorized'], 401);
+            return;
+        }
+
+        $id = (int) $id;
+        if ($id <= 0) {
+            $this->response(['message' => 'invalid id'], 400);
+            return;
+        }
+
+        $comment = $this->put('comment', true);
+
+        if (!is_string($comment) || trim($comment) === '') {
+            $this->response(['message' => 'comment required'], 400);
+            return;
+        }
+
+        // 댓글 조회
+        $existingComment = $this->comment_m->get($id);
+
+        if (!$existingComment) {
+            $this->response(['message' => 'comment not found'], 404);
+            return;
+        }
+
+        // 작성자 확인
+        if ($existingComment->writer_id != $currentUserId) {
+            $this->response(['message' => 'forbidden'], 403);
+            return;
+        }
+
+        try {
+            $this->comment_m->update($id, $comment);
+            $this->response(['message' => 'success'], 200);
+        } catch (Exception $e) {
+            log_message('error', 'Comment update error: ' . $e->getMessage());
+            $this->response(['message' => 'server error'], 500);
+        }
+    }
+
+    /**
+     * 댓글을 삭제하는 REST API 엔드포인트
+     */
+    public function index_delete($id)
+    {
+        $currentUserId = get_user_id();
+
+        if (!$currentUserId) {
+            $this->response(['message' => 'unauthorized'], 401);
+            return;
+        }
+
+        $id = (int) $id;
+        if ($id <= 0) {
+            $this->response(['message' => 'invalid id'], 400);
+            return;
+        }
+
+        // 댓글 조회
+        $existingComment = $this->comment_m->get($id);
+
+        if (!$existingComment) {
+            $this->response(['message' => 'comment not found'], 404);
+            return;
+        }
+
+        // 작성자 확인
+        if ($existingComment->writer_id != $currentUserId) {
+            $this->response(['message' => 'forbidden'], 403);
+            return;
+        }
+
+        try {
+            $this->comment_m->delete($id);
+            $this->response(['message' => 'success'], 200);
+        } catch (Exception $e) {
+            log_message('error', 'Comment delete error: ' . $e->getMessage());
+            $this->response(['message' => 'server error'], 500);
+        }
+    }
 }

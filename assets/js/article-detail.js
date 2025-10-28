@@ -158,11 +158,11 @@ const ArticleDetail = {
             // 댓글 수정/삭제 버튼은 작성자만 표시
             const editDeleteButtons = comment.can_edit ?
                 `<div>
-                        <button class="btn btn-sm text-primary">수정</button>
-                        <button class="btn btn-sm text-danger">삭제</button>
+                        <button class="btn btn-sm text-primary edit-comment-btn" data-comment-id="${comment.id}">수정</button>
+                        <button class="btn btn-sm text-danger delete-comment-btn" data-comment-id="${comment.id}">삭제</button>
                     </div>` : '';
 
-            const template = `<div class="card mb-2">
+            const template = `<div class="card mb-2 comment-item" data-comment-id="${comment.id}">
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
                             <div>
@@ -171,7 +171,16 @@ const ArticleDetail = {
                             </div>
                             ${editDeleteButtons}
                         </div>
-                        <p class="mt-2 mb-0">${this.escapeHtml(comment.comment)}</p>
+                        <div class="comment-content mt-2">
+                            <p class="mb-0 comment-text">${this.escapeHtml(comment.comment)}</p>
+                            <div class="comment-edit-form" style="display: none;">
+                                <textarea class="form-control mb-2" rows="3">${this.escapeHtml(comment.comment)}</textarea>
+                                <div class="text-end">
+                                    <button class="btn btn-sm btn-secondary cancel-edit-btn">취소</button>
+                                    <button class="btn btn-sm btn-primary save-edit-btn">저장</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>`;
 
@@ -179,6 +188,140 @@ const ArticleDetail = {
         });
 
         $('#comment_list').html(html);
+
+        // 이벤트 핸들러 등록
+        this.initCommentEditButtons();
+    },
+
+    /**
+     * 댓글 수정 버튼 이벤트 초기화
+     */
+    initCommentEditButtons() {
+        // 수정 버튼 클릭
+        $('.edit-comment-btn').on('click', (event) => {
+            const commentId = $(event.currentTarget).data('comment-id');
+            this.enterEditMode(commentId);
+        });
+
+        // 취소 버튼 클릭
+        $('.cancel-edit-btn').on('click', (event) => {
+            const $commentItem = $(event.currentTarget).closest('.comment-item');
+            const commentId = $commentItem.data('comment-id');
+            this.exitEditMode(commentId);
+        });
+
+        // 저장 버튼 클릭
+        $('.save-edit-btn').on('click', (event) => {
+            const $commentItem = $(event.currentTarget).closest('.comment-item');
+            const commentId = $commentItem.data('comment-id');
+            this.updateComment(commentId);
+        });
+
+        // 삭제 버튼 클릭
+        $('.delete-comment-btn').on('click', (event) => {
+            const commentId = $(event.currentTarget).data('comment-id');
+            this.deleteComment(commentId);
+        });
+    },
+
+    /**
+     * 댓글 수정 모드 진입
+     */
+    enterEditMode(commentId) {
+        const $commentItem = $(`.comment-item[data-comment-id="${commentId}"]`);
+        $commentItem.find('.comment-text').hide();
+        $commentItem.find('.comment-edit-form').show();
+        $commentItem.find('.edit-comment-btn, .delete-comment-btn').prop('disabled', true);
+    },
+
+    /**
+     * 댓글 수정 모드 종료
+     */
+    exitEditMode(commentId) {
+        const $commentItem = $(`.comment-item[data-comment-id="${commentId}"]`);
+        $commentItem.find('.comment-text').show();
+        $commentItem.find('.comment-edit-form').hide();
+        $commentItem.find('.edit-comment-btn, .delete-comment-btn').prop('disabled', false);
+    },
+
+    /**
+     * 댓글 수정 저장
+     */
+    updateComment(commentId) {
+        const $commentItem = $(`.comment-item[data-comment-id="${commentId}"]`);
+        const $textarea = $commentItem.find('.comment-edit-form textarea');
+        const newComment = $textarea.val().trim();
+
+        if (!newComment) {
+            Swal.fire({
+                icon: 'warning',
+                text: '댓글 내용이 없습니다.'
+            });
+            return;
+        }
+
+        const updateData = {};
+        updateData[this.csrfTokenName] = this.csrfHash;
+        updateData['comment'] = newComment;
+
+        $.ajax({
+            url: `/rest/comment/${commentId}`,
+            type: 'PUT',
+            data: updateData,
+            success: (response) => {
+                Swal.fire({
+                    icon: 'success',
+                    text: '댓글이 수정되었습니다.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+
+                // 댓글 목록 새로고침
+                this.getComments();
+            },
+            error: (error) => {
+                this.displayError(error);
+            }
+        });
+    },
+
+    /**
+     * 댓글 삭제
+     */
+    deleteComment(commentId) {
+        Swal.fire({
+            title: '댓글을 삭제하시겠습니까?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: '삭제',
+            cancelButtonText: '취소'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const deleteData = {};
+                deleteData[this.csrfTokenName] = this.csrfHash;
+
+                $.ajax({
+                    url: `/rest/comment/${commentId}`,
+                    type: 'DELETE',
+                    data: deleteData,
+                    success: (response) => {
+                        Swal.fire({
+                            icon: 'success',
+                            text: '댓글이 삭제되었습니다.',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+
+                        // 댓글 목록 새로고침
+                        this.getComments();
+                    },
+                    error: (error) => {
+                        this.displayError(error);
+                    }
+                });
+            }
+        });
     },
 
     /**
