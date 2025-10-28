@@ -85,23 +85,24 @@ const AuthRegister = {
 
     initValidation() {
         // 비밀번호 확인 실시간 검증
-        $('#password_confirm').on('input', function () {
+        $('#password_confirm').on('input', () => {
             const password = $('#password').val();
-            const passwordConfirm = $(this).val();
+            const passwordConfirm = $('#password_confirm').val();
+
 
             if (passwordConfirm && password !== passwordConfirm) {
-                $(this).addClass('is-invalid');
+                $('#password_confirm').addClass('is-invalid');
                 $('#password_confirm-error').text('비밀번호가 일치하지 않습니다.');
             } else {
-                $(this).removeClass('is-invalid');
+                $('#password_confirm').removeClass('is-invalid');
                 $('#password_confirm-error').text('');
             }
         });
 
         // 이메일 중복 확인 (디바운스 적용)
         let emailTimeout;
-        $('#email').on('input', function () {
-            const email = $(this).val();
+        $('#email').on('input', () => {
+            const email = $('#email').val();
 
             clearTimeout(emailTimeout);
 
