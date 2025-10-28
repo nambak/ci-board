@@ -136,7 +136,7 @@ const ArticleDetail = {
     },
 
     escapeHtml(html) {
-        return String(str === undefined || str === null ? '' : str)
+        return String(html === undefined || html === null ? '' : html)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')

@@ -60,7 +60,7 @@ class Article extends RestController
 
             $this->response(['message' => 'success'], 200);
         } catch (Exception $e) {
-            $this->response(['message' => 'server error: ' . $e->getMessage(), 500]);
+            $this->response(['message' => 'server error: ' . $e->getMessage()], 500);
         }
     }
 
@@ -71,7 +71,7 @@ class Article extends RestController
             $this->response('success', 200);
 
         } catch (Exception $e) {
-            $this->response(['message' => 'server error: ' . $e->getMessage(), 500]);
+            $this->response(['message' => 'server error: ' . $e->getMessage()], 500);
         }
     }
 
