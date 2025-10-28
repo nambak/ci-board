@@ -1,4 +1,4 @@
-<article class="container my-5" id="board_detail">
+<article class="container my-5" id="board_detail" data-board-id="<?=$id?>">
     <div class="row mb-4">
         <h1 id="title"></h1>
     </div>
@@ -13,71 +13,4 @@
         </div>
     </div>
 </article>
-<script defer>
-    const pageId = '#board_detail ';
-
-    $(document).ready(() => {
-        initPostList();
-        $(pageId + '#writePost').on('click', () => {
-            location.href = '/article/create?board_id=<?= $id ?>';
-        });
-    });
-
-    function initPostList() {
-        $(pageId + '#board_detail_table').bootstrapTable({
-            url: '/rest/board/<?= $id ?>',
-            columns: [{
-                field: 'id',
-                title: '번호',
-                halign: 'center',
-                align: 'right',
-                formatter: (value, row, index) => {
-                    const table = $(pageId + '#board_detail_table').bootstrapTable('getOptions');
-                    const pageNumber = table.pageNumber || 1;
-                    const pageSize = table.pageSize || 10;
-                    const totalRows = table.totalRows || 0;
-
-                    return totalRows - (index + (pageNumber - 1) * pageSize);
-                }
-            }, {
-                field: 'title',
-                title: '제목',
-                halign: 'center',
-                align: 'left',
-                formatter: (value, row, index) => {
-                    return `<a href="/article/${row.id}">${row.title}</a>`;
-                }
-            }, {
-                field: 'views',
-                title: '조회수',
-                halign: 'center',
-                align: 'right',
-                formatter: (value, row, index) => {
-                    return row.views;
-                }
-            }, {
-                field: 'created_at',
-                title: '등록일',
-                align: 'center',
-                formatter: (value, row, index) => {
-                    return row.created_at
-                }
-            }],
-            pagination: true,
-            headerStyle: () => {
-                return {
-                    classes: 'table-dark'
-                }
-            },
-            onLoadSuccess: (data) => {
-                let title = '게시판';
-
-                if (data && data.name) {
-                    title = data.name;
-                }
-
-                $(pageId + '#title').text(title)
-            }
-        });
-    }
-</script>
+<script src="/assets/js/board-detail.js" defer></script>

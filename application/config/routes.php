@@ -54,7 +54,8 @@ $route['404_override'] = '';
 $route['translate_uri_dashes'] = false;
 
 // Article routes - /article/123 형태의 URI를 지원
-$route['article/(:num)'] = 'article/index/$1';
+$route['article/(:num)/edit'] = 'article/edit/$1';  // /article/20/edit
+$route['article/(:num)'] = 'article/index/$1';      // /article/20
 
 // Auth routes
 $route['login'] = 'auth/login';

@@ -45,22 +45,22 @@ class Article extends RestController
             $post = $this->article_m->get($id);
 
             if (!$post) {
-                $this->response('post not found', 404);
+                $this->response(['message' => 'post not found'], 404);
             }
 
             if (!$title) {
-                $this->response('title required', 400);
+                $this->response(['message' => 'title required'], 400);
             }
 
             if (!$content) {
-                $this->response('content required', 400);
+                $this->response(['message' => 'content required'], 400);
             }
 
             $this->article_m->update($id, $title, $content);
 
-            $this->response('success', 200);
+            $this->response(['message' => 'success'], 200);
         } catch (Exception $e) {
-            $this->response('server error: ' . $e->getMessage(), 500);
+            $this->response(['message' => 'server error: ' . $e->getMessage()], 500);
         }
     }
 
@@ -71,7 +71,7 @@ class Article extends RestController
             $this->response('success', 200);
 
         } catch (Exception $e) {
-            $this->response('server error: ' . $e->getMessage(), 500);
+            $this->response(['message' => 'server error: ' . $e->getMessage()], 500);
         }
     }
 
@@ -102,7 +102,7 @@ class Article extends RestController
             $result = $this->article_m->store($boardId, $userId, $title, $content);
             $this->response(['id' => $result], 200);
         } catch (Exception $e) {
-            $this->response('server error: ' . $e->getMessage(), 500);
+            $this->response(['message' => 'server error: ' . $e->getMessage()], 500);
         }
     }
 }

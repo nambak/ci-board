@@ -44,7 +44,7 @@ function get_user_info()
  * @param int $article_id
  * @return bool
  */
-function is_post_author($article_id)
+function is_article_author($article_id)
 {
     $CI =& get_instance();
     $current_user_id = get_user_id();

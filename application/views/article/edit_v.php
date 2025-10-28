@@ -1,4 +1,5 @@
-<article class="container mt-5" id="post_edit">
+<article class="container mt-5" id="post_edit"
+    data-article-id="<?= $id ?>">
     <form method="post" action="/rest/article/update?id=<?= $id ?>">
         <input type="hidden" name="<?= $this->security->get_csrf_token_name(); ?>" value="<?= $this->security->get_csrf_hash(); ?>">
 
@@ -34,92 +35,4 @@
         </div>
     </form>
 </article>
-<script defer>
-    let pageId = '#post_edit ';
-
-    function initCancelButton(articleId) {
-        $(pageId + '#cancelButton').on('click', () => {
-            location.href = `/article/${articleId}`;
-        });
-    }
-
-    function init(articleId) {
-        $.ajax({
-            url: `/rest/article/${articleId}`,
-            type: 'GET',
-            dataType: 'json',
-            success: (data) => {
-                if (data) {
-                    $(pageId + 'input[name=title]').val(data.title);
-                    $(pageId + 'textarea[name=content]').val(data.content);
-                }
-            },
-            error: (error) => {
-                Swal.fire({
-                    title: `${error.status} ${error.statusText}`,
-                    icon: 'error'
-                });
-            }
-        });
-    }
-
-    function initConfirmButton(articleId) {
-        $(pageId + '#confirmEdit').on('click', () => updateArticle(articleId));
-    }
-
-    function updateArticle(articleId) {
-        const title = $(pageId + 'input[name=title]').val();
-        const content = $(pageId + 'textarea[name=content]').val();
-
-        if (!title) {
-            Swal.fire({
-                icon: 'warning',
-                text: '제목을 입력해 주세요.'
-            });
-
-            return false;
-        }
-
-        if (!content) {
-            Swal.fire({
-                icon: 'warning',
-                text: '내용을 입력해 주세요.'
-            });
-
-            return false;
-        }
-
-        $.ajax({
-            url: `/rest/article/${articleId}`,
-            type: 'PUT',
-            data: {
-                title: title,
-                content: content,
-            },
-            success: (response) => {
-                if (response === 'success') {
-                    Swal.fire({
-                        title: '수정되었습니다.',
-                        icon: 'success'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            location.href = `/article/${articleId}`;
-                        }
-                    });
-                }
-            },
-            error: (error) => {
-                Swal.fire({
-                    title: `${error.status} ${error.statusText}`,
-                    icon: 'error'
-                });
-            }
-        });
-    }
-
-    $(document).ready(() => {
-        initCancelButton(<?= $id ?>);
-        initConfirmButton(<?= $id ?>);
-        init(<?= $id ?>);
-    });
-</script>
+<script src="/assets/js/article-edit.js" defer></script>
