@@ -33,8 +33,8 @@ const ArticleEdit = {
     },
 
     updateArticle() {
-        const title = $(this.pageId + 'input[name=title]').val();
-        const content = $(this.pageId + 'textarea[name=content]').val();
+        const title = $(this.pageId + 'input[name=title]').val().trim();
+        const content = $(this.pageId + 'textarea[name=content]').val().trim();
 
         if (!title) {
             Swal.fire({
