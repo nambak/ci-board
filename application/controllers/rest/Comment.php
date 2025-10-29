@@ -153,8 +153,13 @@ class Comment extends RestController
         }
 
         try {
-            $this->comment_m->delete($id);
-            $this->response(['message' => 'success'], 200);
+            $result = $this->comment_m->delete($id);
+            if ($result) {
+                $this->response(['message' => 'success'], 200);
+            } else {
+                $this->response(['message' => 'delete failed'], 500);
+            }
+
         } catch (Exception $e) {
             log_message('error', 'Comment delete error: ' . $e->getMessage());
             $this->response(['message' => 'server error'], 500);
