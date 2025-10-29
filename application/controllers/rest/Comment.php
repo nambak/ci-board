@@ -80,7 +80,7 @@ class Comment extends RestController
             return;
         }
 
-        $id = (int) $id;
+        $id = (int)$id;
         if ($id <= 0) {
             $this->response(['message' => 'invalid id'], 400);
             return;
@@ -108,8 +108,12 @@ class Comment extends RestController
         }
 
         try {
-            $this->comment_m->update($id, $comment);
-            $this->response(['message' => 'success'], 200);
+            $result = $this->comment_m->update($id, $comment);
+            if ($result) {
+                $this->response(['message' => 'success'], 200);
+            } else {
+                $this->response(['message' => 'update failed'], 500);
+            }
         } catch (Exception $e) {
             log_message('error', 'Comment update error: ' . $e->getMessage());
             $this->response(['message' => 'server error'], 500);
@@ -128,7 +132,7 @@ class Comment extends RestController
             return;
         }
 
-        $id = (int) $id;
+        $id = (int)$id;
         if ($id <= 0) {
             $this->response(['message' => 'invalid id'], 400);
             return;
