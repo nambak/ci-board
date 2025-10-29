@@ -8,7 +8,7 @@ class Article extends MY_Controller
         parent::__construct();
         $this->load->model('article_m');
         $this->load->library('session');
-        $this->load->library('ArticleService', null, 'article_service');
+        $this->load->library('services/ArticleService', null, 'article_service');
     }
 
     /**

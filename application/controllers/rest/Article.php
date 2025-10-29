@@ -10,7 +10,7 @@ class Article extends RestController
         parent::__construct();
         $this->load->model('article_m');
         $this->load->library('session');
-        $this->load->library('ArticleService', null, 'article_service');
+        $this->load->library('services/ArticleService', null, 'article_service');
     }
 
     public function index_get($id)
