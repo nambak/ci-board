@@ -6,6 +6,11 @@ class ArticleService
 {
     private $CI;
 
+    /**
+     * 세션에 저장할 조회 기록의 최대 개수
+     */
+    private const MAX_VIEWED_ARTICLES = 100;
+
     public function __construct()
     {
         $this->CI =& get_instance();
@@ -29,6 +34,11 @@ class ArticleService
         if (!in_array($articleId, $viewedArticles, true)) {
             if ($this->CI->article_m->incrementViewCount($articleId)) {
                 $viewedArticles[] = $articleId;
+
+                // FIFO 방식: 최대 개수 초과 시 가장 오래된 항목 제거
+                if (count($viewedArticles) > self::MAX_VIEWED_ARTICLES) {
+                    array_shift($viewedArticles);
+                }
 
                 return true;
             }
