@@ -116,4 +116,17 @@ class Article_m extends CI_Model
         return $this->db->count_all_results('articles');
     }
 
+    /**
+     * 게시글의 조회수를 1 증가시킵니다.
+     *
+     * @param int $id 게시글 ID.
+     * @return bool 업데이트 성공 여부.
+     */
+    public function incrementViewCount($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->set('views', 'views + 1', false);
+        return $this->db->update('articles');
+    }
+
 }

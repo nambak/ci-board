@@ -9,6 +9,7 @@ class Article extends RestController
     {
         parent::__construct();
         $this->load->model('article_m');
+        $this->load->library('session');
     }
 
     public function index_get($id)
@@ -22,9 +23,22 @@ class Article extends RestController
 
             if (!$article) {
                 $this->response(['message' => 'not found'], 404);
-            } else {
-                $this->response($article, 200);
             }
+
+            // 세션 기반 조회수 증가 처리
+            $viewedArticles = $this->session->userdata('viewed_articles');
+            if (!is_array($viewedArticles)) {
+                $viewedArticles = [];
+            }
+
+            // 해당 게시글을 이번 세션에서 본 적이 없으면 조회수 증가
+            if (!in_array($id, $viewedArticles)) {
+                $this->article_m->incrementViewCount($id);
+                $viewedArticles[] = $id;
+                $this->session->set_userdata('viewed_articles', $viewedArticles);
+            }
+
+            $this->response($article, 200);
         } catch (Exception $e) {
             log_message('error', 'Article::index_get error: ' . $e->getMessage());
             $this->response(['message' => 'server error'], 500);

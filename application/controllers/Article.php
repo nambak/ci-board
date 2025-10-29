@@ -31,6 +31,19 @@ class Article extends MY_Controller
             return;
         }
 
+        // 세션 기반 조회수 증가 처리
+        $viewedArticles = $this->session->userdata('viewed_articles');
+        if (!is_array($viewedArticles)) {
+            $viewedArticles = [];
+        }
+
+        // 해당 게시글을 이번 세션에서 본 적이 없으면 조회수 증가
+        if (!in_array($id, $viewedArticles)) {
+            $this->article_m->incrementViewCount($id);
+            $viewedArticles[] = $id;
+            $this->session->set_userdata('viewed_articles', $viewedArticles);
+        }
+
         $currentBoardId = $currentArticle->board_id;
         $prevArticle = $this->article_m->getPrevious($currentBoardId, $id);
         $nextArticle = $this->article_m->getNext($currentBoardId, $id);
