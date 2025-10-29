@@ -83,7 +83,14 @@ class Comment_m extends CI_Model
      */
     public function delete($id)
     {
-        $this->db->where('id', $id);
-        return $this->db->delete('comments');
+        try {
+            $this->db->where('id', $id);
+            $this->db->delete('comments');
+
+            return $this->db->affected_rows() > 0;
+        } catch (Exception $e) {
+            log_message('error', 'Comment deletion error: ' . $e->getMessage());
+            throw $e;
+        }
     }
 }
