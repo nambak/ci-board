@@ -8,6 +8,7 @@ class Article extends MY_Controller
         parent::__construct();
         $this->load->model('article_m');
         $this->load->library('session');
+        $this->load->library('ArticleService', null, 'article_service');
     }
 
     /**
@@ -32,16 +33,9 @@ class Article extends MY_Controller
         }
 
         // 세션 기반 조회수 증가 처리
-        $viewedArticles = $this->session->userdata('viewed_articles');
-        if (!is_array($viewedArticles)) {
-            $viewedArticles = [];
-        }
-
-        // 해당 게시글을 이번 세션에서 본 적이 없으면 조회수 증가
-        if (!in_array($id, $viewedArticles)) {
-            $this->article_m->incrementViewCount($id);
-            $viewedArticles[] = $id;
-            $this->session->set_userdata('viewed_articles', $viewedArticles);
+        $viewArticles = $this->session->userdata('viewed_articles');
+        if ($this->article_service->incrementViewCountIfNotViewd($id, $viewArticles)) {
+            $this->session->set_userdata('viewed_articles', $viewArticles);
         }
 
         $currentBoardId = $currentArticle->board_id;
