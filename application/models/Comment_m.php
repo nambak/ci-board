@@ -62,11 +62,18 @@ class Comment_m extends CI_Model
      */
     public function update($id, $comment)
     {
-        $this->db->where('id', $id);
-        return $this->db->update('comments', [
-            'comment' => $comment,
-            'updated_at' => date('Y-m-d H:i:s')
-        ]);
+        try {
+            $this->db->where('id', $id);
+            $this->db->update('comments', [
+                'comment'    => $comment,
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+
+            return $this->db->affected_rows() > 0;
+        } catch (Exception $e) {
+            log_message('error', 'Comment update error: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     /**
