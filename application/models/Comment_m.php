@@ -53,4 +53,44 @@ class Comment_m extends CI_Model
 
         return $query->row();
     }
+
+    /**
+     * 댓글 수정
+     * @param int $id 댓글 ID
+     * @param string $comment 수정할 댓글 내용
+     * @return bool
+     */
+    public function update($id, $comment)
+    {
+        try {
+            $this->db->where('id', $id);
+            $this->db->update('comments', [
+                'comment'    => $comment,
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+
+            return $this->db->affected_rows() > 0;
+        } catch (Exception $e) {
+            log_message('error', 'Comment update error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * 댓글 삭제
+     * @param int $id 댓글 ID
+     * @return bool
+     */
+    public function delete($id)
+    {
+        try {
+            $this->db->where('id', $id);
+            $this->db->delete('comments');
+
+            return $this->db->affected_rows() > 0;
+        } catch (Exception $e) {
+            log_message('error', 'Comment deletion error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
 }
