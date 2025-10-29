@@ -34,7 +34,7 @@ class Article extends MY_Controller
 
         // 세션 기반 조회수 증가 처리
         $viewArticles = $this->session->userdata('viewed_articles');
-        if ($this->article_service->incrementViewCountIfNotViewd($id, $viewArticles)) {
+        if ($this->article_service->incrementViewCount($id, $viewArticles)) {
             $this->session->set_userdata('viewed_articles', $viewArticles);
         }
 

@@ -28,7 +28,7 @@ class Article extends RestController
 
             // 세션 기반 조회수 증가 처리
             $viewedArticles = $this->session->userdata('viewed_articles');
-            if ($this->article_service->incrementViewCountIfNotViewd($id, $viewedArticles)) {
+            if ($this->article_service->incrementViewCount($id, $viewedArticles)) {
                 $this->session->set_userdata('viewed_articles', $viewedArticles);
             }
 
