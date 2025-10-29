@@ -8,6 +8,7 @@ class Article extends MY_Controller
         parent::__construct();
         $this->load->model('article_m');
         $this->load->library('session');
+        $this->load->library('services/ArticleService', null, 'article_service');
     }
 
     /**
@@ -29,6 +30,12 @@ class Article extends MY_Controller
         if (!$currentArticle) {
             show_404();
             return;
+        }
+
+        // 세션 기반 조회수 증가 처리
+        $viewArticles = $this->session->userdata('viewed_articles');
+        if ($this->article_service->incrementViewCount($id, $viewArticles)) {
+            $this->session->set_userdata('viewed_articles', $viewArticles);
         }
 
         $currentBoardId = $currentArticle->board_id;

@@ -9,6 +9,8 @@ class Article extends RestController
     {
         parent::__construct();
         $this->load->model('article_m');
+        $this->load->library('session');
+        $this->load->library('services/ArticleService', null, 'article_service');
     }
 
     public function index_get($id)
@@ -22,9 +24,15 @@ class Article extends RestController
 
             if (!$article) {
                 $this->response(['message' => 'not found'], 404);
-            } else {
-                $this->response($article, 200);
             }
+
+            // 세션 기반 조회수 증가 처리
+            $viewedArticles = $this->session->userdata('viewed_articles');
+            if ($this->article_service->incrementViewCount($id, $viewedArticles)) {
+                $this->session->set_userdata('viewed_articles', $viewedArticles);
+            }
+
+            $this->response($article, 200);
         } catch (Exception $e) {
             log_message('error', 'Article::index_get error: ' . $e->getMessage());
             $this->response(['message' => 'server error'], 500);
