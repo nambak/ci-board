@@ -65,7 +65,7 @@
     <!-- 댓글 영역 -->
     <div class="row">
         <div class="col">
-            <h5 class="mb-3">댓글</h5>
+            <h5 class="mb-3" id="comment-title">댓글</h5>
 
             <!-- 댓글 작성 폼 -->
             <?php if (is_logged_in()): ?>
