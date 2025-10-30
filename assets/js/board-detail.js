@@ -37,7 +37,12 @@ const BoardDetail = {
                 title: '작성자',
                 align: 'center',
                 formatter: (value, row, index) => {
-                    return `<a href="/user/${row.user_id}">${row.author}</a>`
+                    const escapedAuthor = $('<div>').text(row.author || '알 수 없음').html();
+                    const userId = parseInt(row.user_id, 10);
+                    if (userId > 0) {
+                        return `<a href="/user/${userId}">${escapedAuthor}</a>`;
+                    }
+                    return escapedAuthor;
                 }
             }, {
                 field: 'views',
