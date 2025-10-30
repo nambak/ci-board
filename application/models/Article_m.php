@@ -5,19 +5,29 @@ class Article_m extends CI_Model
 {
     /**
      * 지정된 게시판 ID에 해당하는 모든 게시글을 최신순으로 조회합니다.
+     * 각 게시글의 댓글 수도 함께 조회합니다.
      *
      * @param int $boardId 게시판의 고유 ID.
-     * @return array 게시글 객체 배열.
+     * @return array 게시글 객체 배열 (comment_count 포함).
      */
     public function fetchByBoardId($boardId)
     {
-        $this->db->select('*');
+        $this->db->select('articles.*, COUNT(comments.id) as comment_count');
         $this->db->from('articles');
-        $this->db->where('board_id', $boardId);
-        $this->db->order_by('id', 'DESC');
+        $this->db->join('comments', 'comments.article_id = articles.id', 'left');
+        $this->db->where('articles.board_id', $boardId);
+        $this->db->group_by('articles.id');
+        $this->db->order_by('articles.id', 'DESC');
         $query = $this->db->get();
 
-        return $query->result();
+        $result = $query->result();
+
+        // comment_count를 정수값으로 변환
+        foreach ($result as &$row) {
+            $row->comment_count = (int)$row->comment_count;
+        }
+
+        return $result;
     }
 
     public function get($id)

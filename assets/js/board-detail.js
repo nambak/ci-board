@@ -23,8 +23,14 @@ const BoardDetail = {
                 title: '제목',
                 halign: 'center',
                 align: 'left',
+                width: 70,
+                widthUnit: '%',
                 formatter: (value, row, index) => {
-                    return `<a href="/article/${row.id}">${row.title}</a>`;
+                    let title = `<a href="/article/${row.id}">${row.title}</a>`
+                    if (row.comment_count > 0) {
+                        title += `<span style="font-size: 0.8rem;">(${row.comment_count})</span>`
+                    }
+                    return title;
                 }
             }, {
                 field: 'views',

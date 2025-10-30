@@ -154,6 +154,9 @@ const ArticleDetail = {
             return false;
         }
 
+        // 댓글 수 표시
+        $("#comment-title").html(`댓글 <span class="comment-count">(${data.length})</span>`);
+
         data.forEach((comment) => {
             // 댓글 수정/삭제 버튼은 작성자만 표시
             const editDeleteButtons = comment.can_edit ?
