@@ -17,7 +17,7 @@
                         <p class="form-control-plaintext border-bottom pb-2" id="userName">로딩 중...</p>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-3" id="emailSection" style="display: none;">
                         <label class="form-label fw-bold text-muted">이메일</label>
                         <p class="form-control-plaintext border-bottom pb-2" id="userEmail">로딩 중...</p>
                     </div>
@@ -48,7 +48,7 @@
                 <div class="card-footer">
                     <div class="d-flex justify-content-between">
                         <a href="/board" class="btn btn-secondary">목록으로</a>
-                        <a href="/profile/edit" class="btn btn-primary">프로필 수정</a>
+                        <a href="/profile/edit" class="btn btn-primary" id="editButton" style="display: none;">프로필 수정</a>
                     </div>
                 </div>
             </div>
@@ -58,14 +58,19 @@
 
 <script defer>
     const pageId = '#profile_page ';
+    const userId = <?php echo isset($user_id) ? (int)$user_id : 'null'; ?>;
 
     $(document).ready(() => {
-        loadProfile();
+        if (userId) {
+            loadProfile(userId);
+        } else {
+            showError('사용자 정보를 찾을 수 없습니다.');
+        }
     });
 
-    function loadProfile() {
+    function loadProfile(id) {
         $.ajax({
-            url: '/rest/user/profile',
+            url: `/rest/user/${id}`,
             type: 'GET',
             dataType: 'json',
             success: function(response) {
@@ -74,8 +79,13 @@
 
                     // 사용자 정보 표시
                     $('#userName').text(user.name || '-');
-                    $('#userEmail').text(user.email || '-');
                     $('#createdAt').text(user.created_at ? formatDate(user.created_at) : '-');
+
+                    // 이메일은 본인 프로필일 때만 표시
+                    if (user.email) {
+                        $('#userEmail').text(user.email);
+                        $('#emailSection').show();
+                    }
 
                     // 아바타 이니셜 설정
                     if (user.name) {
@@ -85,20 +95,18 @@
                     // 활동 통계
                     $('#postCount').text(user.post_count || 0);
                     $('#commentCount').text(user.comment_count || 0);
+
+                    // 본인 프로필이면 수정 버튼 표시
+                    if (user.is_owner) {
+                        $('#editButton').show();
+                    }
                 } else {
                     showError('프로필 정보를 불러올 수 없습니다.');
                 }
             },
             error: function(xhr) {
-                if (xhr.status === 401) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: '로그인 필요',
-                        text: '로그인이 필요한 서비스입니다.',
-                        confirmButtonText: '로그인'
-                    }).then(() => {
-                        location.href = '/login?redirect=' + encodeURIComponent(location.pathname);
-                    });
+                if (xhr.status === 404) {
+                    showError('사용자를 찾을 수 없습니다.');
                 } else {
                     showError('프로필 정보를 불러오는 중 오류가 발생했습니다.');
                 }
@@ -114,7 +122,6 @@
 
     function showError(message) {
         $('#userName').text('-');
-        $('#userEmail').text('-');
         $('#createdAt').text('-');
 
         Swal.fire({

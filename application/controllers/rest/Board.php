@@ -21,14 +21,14 @@ class Board extends RestController
             ], 200);
         } else {
             $this->load->model('article_m');
-            $posts = $this->article_m->fetchByBoardId($id);
+            $articles = $this->article_m->fetchByBoardId($id);
             $board = $this->board_m->get($id);
             $total = $this->article_m->countByBoardId($id);
 
             $this->response([
                 'total' => $total,
                 'name' => $board->name,
-                'rows' => $posts,
+                'rows' => $articles,
                 'id'   => $id
             ], 200);
         }

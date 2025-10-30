@@ -12,9 +12,10 @@ class Article_m extends CI_Model
      */
     public function fetchByBoardId($boardId)
     {
-        $this->db->select('articles.*, COUNT(comments.id) as comment_count');
+        $this->db->select('articles.*, users.name as author, COUNT(comments.id) as comment_count');
         $this->db->from('articles');
         $this->db->join('comments', 'comments.article_id = articles.id', 'left');
+        $this->db->join('users', 'users.id = articles.user_id');
         $this->db->where('articles.board_id', $boardId);
         $this->db->group_by('articles.id');
         $this->db->order_by('articles.id', 'DESC');

@@ -75,6 +75,67 @@ class User extends RestController
     }
 
     /**
+     * 특정 사용자 프로필 조회 (공개)
+     * GET /rest/user/{id}
+     */
+    public function index_get($id = null)
+    {
+        if (!$id) {
+            $this->response([
+                'success' => false,
+                'message' => '사용자 ID가 필요합니다.'
+            ], self::HTTP_BAD_REQUEST);
+            return;
+        }
+
+        try {
+            // 사용자 정보 조회
+            $users = $this->User_m->get($id);
+
+            if (empty($users)) {
+                $this->response([
+                    'success' => false,
+                    'message' => '사용자 정보를 찾을 수 없습니다.'
+                ], self::HTTP_NOT_FOUND);
+                return;
+            }
+
+            $user = $users[0];
+
+            // 공개 가능한 정보만 응답
+            $response_data = [
+                'id'            => $user->id,
+                'name'          => $user->name,
+                'created_at'    => $user->created_at,
+                'post_count'    => $this->Article_m->countByUserId($id),
+                'comment_count' => $this->Comment_m->countByUserId($id)
+            ];
+
+            // 본인 프로필이면 이메일도 포함
+            $current_user_id = $this->session->userdata('user_id');
+            if ($current_user_id == $id) {
+                $response_data['email'] = $user->email;
+                $response_data['is_owner'] = true;
+            } else {
+                $response_data['is_owner'] = false;
+            }
+
+            $this->response([
+                'success' => true,
+                'data'    => $response_data
+            ], self::HTTP_OK);
+
+        } catch (Exception $e) {
+            log_message('error', 'User profile fetch error: ' . $e->getMessage());
+
+            $this->response([
+                'success' => false,
+                'message' => '사용자 정보를 불러오는 중 오류가 발생했습니다.'
+            ], self::HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    /**
      * 프로필 수정
      * PUT /rest/user/profile
      */
