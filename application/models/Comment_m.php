@@ -97,7 +97,7 @@ class Comment_m extends CI_Model
     /*
      * 작성한 댓글 수 조회
      *
-     * @param int $useId
+     * @param int $userId
      * @return int
     */
     public function countByUserId($userId)
