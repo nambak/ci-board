@@ -80,13 +80,15 @@ class User extends RestController
      */
     public function index_get($id = null)
     {
-        if (!$id) {
+        if (!$id || !is_numeric($id) || (int)$id <= 0) {
             $this->response([
                 'success' => false,
                 'message' => '사용자 ID가 필요합니다.'
             ], self::HTTP_BAD_REQUEST);
             return;
         }
+
+        $id = (int)$id;
 
         try {
             // 사용자 정보 조회
