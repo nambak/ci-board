@@ -93,4 +93,17 @@ class Comment_m extends CI_Model
             throw $e;
         }
     }
+
+    /*
+     * 작성한 댓글 수 조회
+     *
+     * @param int $useId
+     * @return int
+    */
+    public function countByUserId($userId)
+    {
+        $this->db->where('writer_id', $userId);
+        return $this->db->count_all_results('comments');
+
+    }
 }

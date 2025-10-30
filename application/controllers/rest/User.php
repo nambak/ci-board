@@ -13,9 +13,9 @@ class User extends RestController
 
         $this->load->library('session');
         $this->load->helper(['auth']);
-        $this->load->model('user_m');
-        $this->load->model('post_m');
-        $this->load->model('comment_m');
+        $this->load->model('User_m');
+        $this->load->model('Article_m');
+        $this->load->model('Comment_m');
     }
 
     /**
@@ -37,7 +37,7 @@ class User extends RestController
             $user_id = $this->session->userdata('user_id');
 
             // 사용자 정보 조회
-            $users = $this->user_m->get($user_id);
+            $users = $this->User_m->get($user_id);
 
             if (empty($users)) {
                 $this->response([
@@ -49,22 +49,14 @@ class User extends RestController
 
             $user = $users[0];
 
-            // 작성한 글 수 조회
-            $this->db->where('user_id', $user_id);
-            $post_count = $this->db->count_all_results('posts');
-
-            // 작성한 댓글 수 조회
-            $this->db->where('writer_id', $user_id);
-            $comment_count = $this->db->count_all_results('comments');
-
             // 응답 데이터 구성
             $response_data = [
                 'id'            => $user->id,
                 'name'          => $user->name,
                 'email'         => $user->email,
                 'created_at'    => $user->created_at,
-                'post_count'    => $post_count,
-                'comment_count' => $comment_count
+                'post_count'    => $this->Article_m->countByUserId($user_id),
+                'comment_count' => $this->Comment_m->countByUserId($user_id)
             ];
 
             $this->response([
