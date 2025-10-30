@@ -113,7 +113,7 @@ class User extends RestController
 
             // 본인 프로필이면 이메일도 포함
             $current_user_id = $this->session->userdata('user_id');
-            if ($current_user_id == $id) {
+            if ($current_user_id === (int)$id) {
                 $response_data['email'] = $user->email;
                 $response_data['is_owner'] = true;
             } else {
