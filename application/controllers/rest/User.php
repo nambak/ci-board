@@ -119,7 +119,7 @@ class User extends RestController
                 'name' => trim($name)
             ];
 
-            $result = $this->user_m->update($user_id, $update_data);
+            $result = $this->User_m->update($user_id, $update_data);
 
             if ($result) {
                 // 세션 정보도 업데이트
