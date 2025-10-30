@@ -129,4 +129,17 @@ class Article_m extends CI_Model
         return $this->db->update('articles');
     }
 
+    /**
+     * 사용자가 작성한 글 수 조회
+     *
+     * @param int $userId
+     * @return int
+     */
+    public function countByUserId($userId)
+    {
+        $this->db->where('user_id', $userId);
+
+        return $this->db->count_all_results('articles');
+    }
+
 }
