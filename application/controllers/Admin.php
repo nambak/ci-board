@@ -10,7 +10,12 @@ class Admin extends MY_Controller
 
     public function index()
     {
-        $this->load->view('admin/index_v');
+        $data['total_users'] = $this->db->count_all('users');
+        $data['total_boards'] = $this->db->count_all('boards');
+        $data['total_articles'] = $this->db->count_all('articles');
+        $data['total_comments'] = $this->db->count_all('comments');
+
+        $this->load->view('admin/index_v', $data);
     }
 
     /**

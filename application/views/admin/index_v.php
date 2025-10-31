@@ -8,7 +8,7 @@
                 <div class="card text-white bg-primary">
                     <div class="card-body">
                         <h5 class="card-title">전체 사용자</h5>
-                        <p class="card-text display-6">0</p>
+                        <p class="card-text text-end display-6"><?= $total_users ?></p>
                     </div>
                 </div>
             </div>
@@ -16,7 +16,7 @@
                 <div class="card text-white bg-success">
                     <div class="card-body">
                         <h5 class="card-title">전체 게시판</h5>
-                        <p class="card-text display-6">0</p>
+                        <p class="card-text text-end display-6"><?= $total_boards ?></p>
                     </div>
                 </div>
             </div>
@@ -24,7 +24,7 @@
                 <div class="card text-white bg-info">
                     <div class="card-body">
                         <h5 class="card-title">전체 게시글</h5>
-                        <p class="card-text display-6">0</p>
+                        <p class="card-text text-end display-6"><?= $total_articles ?></p>
                     </div>
                 </div>
             </div>
@@ -32,7 +32,7 @@
                 <div class="card text-white bg-warning">
                     <div class="card-body">
                         <h5 class="card-title">전체 댓글</h5>
-                        <p class="card-text display-6">0</p>
+                        <p class="card-text text-end display-6"><?= $total_comments ?></p>
                     </div>
                 </div>
             </div>
