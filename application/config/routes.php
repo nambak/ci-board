@@ -57,6 +57,10 @@ $route['translate_uri_dashes'] = false;
 $route['article/(:num)/edit'] = 'article/edit/$1';  // /article/20/edit
 $route['article/(:num)'] = 'article/index/$1';      // /article/20
 
+// User routes
+$route['profile'] = 'user/profile';            // /profile (본인 프로필)
+$route['user/(:num)'] = 'user/index/$1';      // /user/1
+
 // Auth routes
 $route['login'] = 'auth/login';
 $route['register'] = 'auth/register';

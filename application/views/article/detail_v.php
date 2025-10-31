@@ -17,7 +17,11 @@
         <div class="col">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <span class="me-3">작성자: <?= html_escape($currentArticle->name) ?></span>
+                    <span class="me-3">작성자:
+                        <a href="/user/<?= $currentArticle->user_id ?>">
+                            <?= html_escape($currentArticle->name) ?>
+                        </a>
+                    </span>
                     <span class="me-3">작성일: <?= html_escape($currentArticle->created_at) ?></span>
                     <span>조회수: <?= html_escape($currentArticle->views) ?></span>
                 </div>

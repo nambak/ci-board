@@ -23,7 +23,7 @@ const BoardDetail = {
                 title: '제목',
                 halign: 'center',
                 align: 'left',
-                width: 70,
+                width: 60,
                 widthUnit: '%',
                 formatter: (value, row, index) => {
                     let title = `<a href="/article/${row.id}">${row.title}</a>`
@@ -31,6 +31,18 @@ const BoardDetail = {
                         title += `<span style="font-size: 0.8rem;">(${row.comment_count})</span>`
                     }
                     return title;
+                }
+            }, {
+                field: 'author',
+                title: '작성자',
+                align: 'center',
+                formatter: (value, row, index) => {
+                    const escapedAuthor = $('<div>').text(row.author || '알 수 없음').html();
+                    const userId = parseInt(row.user_id, 10);
+                    if (userId > 0) {
+                        return `<a href="/user/${userId}">${escapedAuthor}</a>`;
+                    }
+                    return escapedAuthor;
                 }
             }, {
                 field: 'views',
