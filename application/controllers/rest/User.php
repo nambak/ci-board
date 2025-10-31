@@ -111,10 +111,11 @@ class User extends RestController
                 'created_at'    => $user->created_at,
                 'post_count'    => $this->Article_m->countByUserId($id),
                 'comment_count' => $this->Comment_m->countByUserId($id)
-            ];
+             ];
 
-            // 본인 프로필이면 이메일도 포함
-            $current_user_id = $this->session->userdata('user_id');
+            // 본인 프로필 여부
+            $current_user_id = (int) $this->session->userdata('user_id');
+
             if ($current_user_id && $current_user_id === (int)$id) {
                 $response_data['email'] = $user->email;
                 $response_data['is_owner'] = true;
