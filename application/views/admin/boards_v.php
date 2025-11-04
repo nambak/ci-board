@@ -1,8 +1,10 @@
 <div class="admin-content p-4">
     <div class="container-fluid" id="admin-user">
         <h1 class="mb-4">게시판 관리</h1>
-
         <div class="row mt-4">
+            <div class="col-12 mb-3 text-end">
+                <button class="btn btn-primary">게시판 생성</button>
+            </div>
             <div class="col-12">
                 <table class="table table-striped" id="board-list"></table>
             </div>
