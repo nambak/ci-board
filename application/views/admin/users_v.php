@@ -58,6 +58,17 @@
         url: '/rest/user',
         columns: columns,
         pagination: true,
+        sidePagination: 'server',
+        pageSize: 10,
+        pageList: [10, 25, 50, 100],
+        queryParams: (params) => {
+            return {
+                limit: params.limit,
+                offset: params.offset,
+                sort: params.sort || 'id',
+                order: params.order || 'desc'
+            };
+        },
         headerStyle: (column) => {
             return {
                 classes: 'table-dark'

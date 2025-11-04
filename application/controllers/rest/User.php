@@ -94,12 +94,16 @@ class User extends RestController
                     return;
                 }
 
-                $per_page = (int)$this->get('per_page') ?: 20;
-                $per_page = max(1, min(100, $per_page));
-                $page = max(1, (int)$this->get('page') ?: 1);
-                $offset = ($page - 1) * $per_page;
+                // bootstrap-table 페이지네이션 파라미터
+                $limit = (int)$this->get('limit') ?: 10;
+                $offset = (int)$this->get('offset') ?: 0;
+                $sort = $this->get('sort') ?: 'id';
+                $order = strtoupper($this->get('order') ?: 'DESC');
 
-                $users = $this->User_m->get_all_with_counts('id', 'DESC', $per_page, $offset);
+                // limit 범위 제한
+                $limit = max(1, min(100, $limit));
+
+                $users = $this->User_m->get_all_with_counts($sort, $order, $limit, $offset);
                 $responseData = [];
 
                 foreach ($users as $user) {
@@ -110,16 +114,14 @@ class User extends RestController
                         'created_at'    => $user->created_at,
                         'article_count' => (int)$user->article_count,
                         'comment_count' => (int)$user->comment_count,
-                        'page'          => $page,
-                        'per_page'      => $per_page,
                         'is_owner'      => $current_user_id && $current_user_id === (int)$user->id
                     ];
                 }
 
+                // bootstrap-table 형식 응답 (success 필드 제거)
                 $this->response([
-                    'success' => true,
-                    'rows'    => $responseData,
-                    'total'   => $this->User_m->count(),
+                    'rows'  => $responseData,
+                    'total' => $this->User_m->count(),
                 ], self::HTTP_OK);
                 return;
             }
