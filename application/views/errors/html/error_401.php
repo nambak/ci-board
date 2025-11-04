@@ -38,7 +38,7 @@ defined('BASEPATH') || exit('No direct script access allowed');
                     <h1 class="display-1 text-danger fw-bold mb-0">401</h1>
                     <h2 class="display-6 fw-normal text-dark mb-4">접근 권한 오류</h2>
                     <p class="lead text-muted mb-5">
-                        죄송합니다. 요청하신 페이지에 접근할 수  없습니다.<br>
+                        죄송합니다. 요청하신 페이지에 접근할 수 없습니다.<br>
                         로그인하거나 관리자에게 접근 권한을 요청하세요.
                     </p>
                     <div class="d-grid gap-2 d-sm-block">
