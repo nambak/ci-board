@@ -94,7 +94,7 @@ class User extends RestController
                     return;
                 }
 
-                $users = $this->User_m->get_all('id', 'DESC');
+                $users = $this->User_m->get_all_with_counts('id', 'DESC');
                 $responseData = [];
 
                 foreach ($users as $user) {
@@ -103,8 +103,8 @@ class User extends RestController
                         'name'          => $user->name,
                         'email'         => $user->email,
                         'created_at'    => $user->created_at,
-                        'article_count' => $this->Article_m->countByUserId($user->id),
-                        'comment_count' => $this->Comment_m->countByUserId($user->id),
+                        'article_count' => (int)$user->article_count,
+                        'comment_count' => (int)$user->comment_count,
                         'is_owner'      => $current_user_id && $current_user_id === (int)$user->id
                     ];
                 }

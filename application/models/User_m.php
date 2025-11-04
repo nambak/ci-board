@@ -251,4 +251,14 @@ class User_m extends CI_Model
         $query = $this->db->get('users');
         return $query->result();
     }
+
+    public function get_all_with_counts($order_by = 'id', $order_direction = 'DESC')
+    {
+        $this->db->select('users.*, 
+        (SELECT COUNT(*) FROM articles WHERE articles.user_id = users.id) as article_count,
+        (SELECT COUNT(*) FROM comments WHERE comments.writer_id = users.id) as comment_count');
+        $this->db->order_by($order_by, $order_direction);
+        $query = $this->db->get('users');
+        return $query->result();
+    }
 }
