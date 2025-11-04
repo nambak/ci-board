@@ -3,15 +3,21 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Board_m extends CI_Model
 {
-    public function get($id = null)
+    public function get($id)
     {
-        if ($id === null) {
-            $query = $this->db->get('boards');
-            return $query->result();
-        } else {
-            $query = $this->db->get_where('boards', ['id' => $id]);
-            return $query->row();
-        }
+        $query = $this->db->get_where('boards', ['id' => $id]);
+
+        return $query->row();
+    }
+
+    public function get_all_with_articles_count()
+    {
+        $this->db->select('boards.*, 
+        (SELECT COUNT(*) FROM articles WHERE articles.board_id = boards.id) as article_count');
+        $this->db->order_by('id', 'DESC');
+        $query = $this->db->get('boards');
+
+        return $query->result();
     }
 
     public function exists($id)
