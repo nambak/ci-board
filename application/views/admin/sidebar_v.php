@@ -27,11 +27,6 @@
                     <i class="bi bi-chat-dots"></i> 댓글 관리
                 </a>
             </li>
-            <li class="nav-item mb-2">
-                <a href="/admin/settings" class="nav-link text-white">
-                    <i class="bi bi-gear"></i> 설정
-                </a>
-            </li>
         </ul>
     </div>
 </aside>

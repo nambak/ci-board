@@ -27,10 +27,12 @@ class Admin extends MY_Controller
      */
     public function index()
     {
-        $data['total_users'] = $this->db->count_all('users');
-        $data['total_boards'] = $this->db->count_all('boards');
-        $data['total_articles'] = $this->db->count_all('articles');
-        $data['total_comments'] = $this->db->count_all('comments');
+        $this->load->model(['user_m', 'board_m', 'article_m', 'comment_m']);
+
+        $data['total_users'] = $this->user_m->count();
+        $data['total_boards'] = $this->board_m->count();
+        $data['total_articles'] = $this->article_m->count();
+        $data['total_comments'] = $this->comment_m->count();
 
         $this->load->view('admin/index_v', $data);
     }
