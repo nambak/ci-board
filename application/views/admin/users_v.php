@@ -10,7 +10,7 @@
     </div>
 </div>
 
-<script defer>
+<script>
     const columns = [{
         field: 'no',
         title: '번호',
@@ -55,7 +55,7 @@
 
     // 테이블 초기화
     $('#user-list').bootstrapTable({
-        url: '/rest/user',
+        url: '<?= site_url('rest/user') ?>',
         columns: columns,
         pagination: true,
         sidePagination: 'server',
@@ -73,6 +73,13 @@
             return {
                 classes: 'table-dark'
             }
+        },
+        onLoadError: (status, res) => {
+            Swal.fire({
+                icon: 'error',
+                title: '오류',
+                text: '사용자 목록을 불러오는 중 오류가 발생했습니다.'
+            });
         }
     });
 </script>
