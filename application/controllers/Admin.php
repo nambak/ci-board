@@ -6,6 +6,18 @@ class Admin extends MY_Controller
     public function __construct()
     {
         parent::__construct();
+
+        $this->load->helper('auth');
+
+        // 로그인 체크
+        if (!is_logged_in()) {
+            redirect('auth/login');
+        }
+
+        // 관리자 권한 체크
+        if (!is_admin()) {
+            show_error('접근 권한이 없습니다.', 401, '401 Unauthorized');
+        }
     }
 
     /**

@@ -72,6 +72,7 @@ class Auth extends RestController
                 'user_id'    => $user->id,
                 'user_email' => $user->email,
                 'user_name'  => $user->name,
+                'role'       => $user->role,
                 'logged_in'  => true
             ];
 
@@ -146,9 +147,9 @@ class Auth extends RestController
             $exists = $this->user_m->check_email_exists($email);
 
             $response_data = [
-                'success'    => true,
-                'exists'     => $exists,
-                'message'    => $exists ? '이미 사용 중인 이메일입니다.' : '사용 가능한 이메일입니다.',
+                'success' => true,
+                'exists'  => $exists,
+                'message' => $exists ? '이미 사용 중인 이메일입니다.' : '사용 가능한 이메일입니다.',
             ];
 
             $this->response($response_data, self::HTTP_OK);

@@ -113,3 +113,14 @@ function do_logout()
     $CI =& get_instance();
     $CI->session->unset_userdata(['user_id', 'user_info']);
 }
+
+/**
+ * 사용자가 관리자 권한이 있는지 확인
+ * @return bool
+ */
+function is_admin()
+{
+    $CI =& get_instance();
+    $role = $CI->session->userdata('role');
+    return isset($role) && $role === 'admin';
+}
