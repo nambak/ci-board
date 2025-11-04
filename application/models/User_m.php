@@ -237,4 +237,18 @@ class User_m extends CI_Model
     {
         return $this->db->count_all('users');
     }
+
+    /**
+     * 전체 사용자 목록 조회
+     *
+     * @param string $order_by 정렬 기준 (기본값: 'id')
+     * @param string $order_direction 정렬 방향 (기본값: 'DESC')
+     * @return array
+     */
+    public function get_all($order_by = 'id', $order_direction = 'DESC')
+    {
+        $this->db->order_by($order_by, $order_direction);
+        $query = $this->db->get('users');
+        return $query->result();
+    }
 }

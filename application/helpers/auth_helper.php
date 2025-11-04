@@ -82,39 +82,6 @@ function is_comment_author($comment_id)
 }
 
 /**
- * 로그인 처리
- * @param string $email
- * @param string $password
- * @return bool
- */
-function do_login($email, $password)
-{
-    $CI =& get_instance();
-    $CI->load->model('user_m');
-
-    $user = $CI->user_m->get_by_email($email);
-
-    if ($user && $user->password === $password) { // 실제 프로젝트에서는 해시 비교 필요
-        $CI->session->set_userdata([
-            'user_id'   => $user->id,
-            'user_info' => $user
-        ]);
-        return true;
-    }
-
-    return false;
-}
-
-/**
- * 로그아웃 처리
- */
-function do_logout()
-{
-    $CI =& get_instance();
-    $CI->session->unset_userdata(['user_id', 'user_info']);
-}
-
-/**
  * 사용자가 관리자 권한이 있는지 확인
  * @return bool
  */
