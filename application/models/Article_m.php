@@ -153,4 +153,14 @@ class Article_m extends CI_Model
         return $this->db->count_all_results('articles');
     }
 
+    /**
+     * 전체 게시글 수 조회
+     *
+     * @return int
+     */
+    public function count()
+    {
+        return $this->db->count_all('articles');
+    }
+
 }

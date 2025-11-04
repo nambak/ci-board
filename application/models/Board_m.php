@@ -53,6 +53,16 @@ class Board_m extends CI_Model
         $this->db->where('id', $id);
         return $this->db->delete('boards');
     }
+
+    /**
+     * 전체 게시판 수 조회
+     *
+     * @return int
+     */
+    public function count()
+    {
+        return $this->db->count_all('boards');
+    }
 }
 
 

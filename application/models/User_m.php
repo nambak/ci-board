@@ -227,4 +227,14 @@ class User_m extends CI_Model
 
         return $query->row_array();
     }
+
+    /**
+     * 전체 사용자 수 조회
+     *
+     * @return int
+     */
+    public function count()
+    {
+        return $this->db->count_all('users');
+    }
 }
