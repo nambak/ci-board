@@ -74,8 +74,9 @@
             type: 'GET',
             dataType: 'json',
             success: function(response) {
-                if (response.success && response.data) {
-                    const user = response.data;
+                console.log(response);
+                if (response.success && response.rows) {
+                    const user = response.rows[0];
 
                     // 사용자 정보 표시
                     $('#userName').text(user.name || '-');

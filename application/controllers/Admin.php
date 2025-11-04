@@ -8,6 +8,11 @@ class Admin extends MY_Controller
         parent::__construct();
     }
 
+    /**
+     * 관리자 대시보드
+     *
+     * @return void
+     */
     public function index()
     {
         $data['total_users'] = $this->db->count_all('users');
@@ -16,6 +21,17 @@ class Admin extends MY_Controller
         $data['total_comments'] = $this->db->count_all('comments');
 
         $this->load->view('admin/index_v', $data);
+    }
+
+
+    /**
+     * 관리자 → 사용자 관리
+     *
+     * @return void
+     */
+    public function users()
+    {
+        $this->load->view('admin/users_v');
     }
 
     /**

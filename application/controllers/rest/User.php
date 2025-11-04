@@ -80,19 +80,17 @@ class User extends RestController
      */
     public function index_get($id = null)
     {
-        if (!$id || !is_numeric($id) || (int)$id <= 0) {
-            $this->response([
-                'success' => false,
-                'message' => '사용자 ID가 필요합니다.'
-            ], self::HTTP_BAD_REQUEST);
-            return;
-        }
-
         $id = (int)$id;
 
         try {
             // 사용자 정보 조회
-            $users = $this->User_m->get($id);
+            if (!$id || !is_numeric($id) || $id <= 0) {
+                $this->db->order_by('users.id', 'DESC');
+                $users = $this->db->get('users')->result();
+            } else {
+                $users = $this->User_m->get($id);
+            }
+
 
             if (empty($users)) {
                 $this->response([
@@ -102,30 +100,26 @@ class User extends RestController
                 return;
             }
 
-            $user = $users[0];
+            $responseData = [];
+            $current_user_id = (int)$this->session->userdata('user_id');
 
             // 공개 가능한 정보만 응답
-            $response_data = [
-                'id'            => $user->id,
-                'name'          => $user->name,
-                'created_at'    => $user->created_at,
-                'post_count'    => $this->Article_m->countByUserId($id),
-                'comment_count' => $this->Comment_m->countByUserId($id)
-             ];
-
-            // 본인 프로필 여부
-            $current_user_id = (int) $this->session->userdata('user_id');
-
-            if ($current_user_id && $current_user_id === (int)$id) {
-                $response_data['email'] = $user->email;
-                $response_data['is_owner'] = true;
-            } else {
-                $response_data['is_owner'] = false;
+            foreach ($users as $user) {
+                $responseData[] = [
+                    'id'            => $user->id,
+                    'name'          => $user->name,
+                    'email'         => $user->email,
+                    'created_at'    => $user->created_at,
+                    'article_count' => $this->Article_m->countByUserId($user->id),
+                    'comment_count' => $this->Comment_m->countByUserId($user->id),
+                    'is_owner'      => $current_user_id && $current_user_id === $id
+                ];
             }
 
             $this->response([
                 'success' => true,
-                'data'    => $response_data
+                'rows'    => $responseData,
+                'total'   => $this->db->count_all('users'),
             ], self::HTTP_OK);
 
         } catch (Exception $e) {
