@@ -75,23 +75,59 @@ class User extends RestController
     }
 
     /**
-     * 특정 사용자 프로필 조회 (공개)
-     * GET /rest/user/{id}
+     * 사용자 프로필 조회 (공개)
+     * GET /rest/user/{id} - 특정 사용자 조회
+     * GET /rest/user - 전체 사용자 목록 조회 (관리자 전용)
      */
     public function index_get($id = null)
     {
-        if (!$id || !is_numeric($id) || (int)$id <= 0) {
-            $this->response([
-                'success' => false,
-                'message' => '사용자 ID가 필요합니다.'
-            ], self::HTTP_BAD_REQUEST);
-            return;
-        }
-
-        $id = (int)$id;
-
         try {
-            // 사용자 정보 조회
+            $current_user_id = (int)$this->session->userdata('user_id');
+
+            // ID가 제공되지 않은 경우: 전체 사용자 목록 조회 (관리자 전용)
+            if (!$id) {
+                if (!is_admin()) {
+                    $this->response([
+                        'success' => false,
+                        'message' => '접근 권한이 없습니다.'
+                    ], self::HTTP_UNAUTHORIZED);
+                    return;
+                }
+
+                // bootstrap-table 페이지네이션 파라미터
+                $limit = (int)$this->get('limit') ?: 10;
+                $offset = (int)$this->get('offset') ?: 0;
+                $sort = $this->get('sort') ?: 'id';
+                $order = strtoupper($this->get('order') ?: 'DESC');
+
+                // limit 범위 제한
+                $limit = max(1, min(100, $limit));
+
+                $users = $this->User_m->get_all_with_counts($sort, $order, $limit, $offset);
+                $responseData = [];
+
+                foreach ($users as $user) {
+                    $responseData[] = [
+                        'id'            => $user->id,
+                        'name'          => $user->name,
+                        'email'         => $user->email,
+                        'created_at'    => $user->created_at,
+                        'article_count' => (int)$user->article_count,
+                        'comment_count' => (int)$user->comment_count,
+                        'is_owner'      => $current_user_id && $current_user_id === (int)$user->id
+                    ];
+                }
+
+                // bootstrap-table 형식 응답 (success 필드 제거)
+                $this->response([
+                    'rows'  => $responseData,
+                    'total' => $this->User_m->count(),
+                ], self::HTTP_OK);
+                return;
+            }
+
+            // ID가 제공된 경우: 특정 사용자 조회
+            $id = (int)$id;
             $users = $this->User_m->get($id);
 
             if (empty($users)) {
@@ -103,29 +139,19 @@ class User extends RestController
             }
 
             $user = $users[0];
-
-            // 공개 가능한 정보만 응답
-            $response_data = [
+            $responseData = [
                 'id'            => $user->id,
                 'name'          => $user->name,
+                'email'         => $user->email,
                 'created_at'    => $user->created_at,
-                'post_count'    => $this->Article_m->countByUserId($id),
-                'comment_count' => $this->Comment_m->countByUserId($id)
-             ];
-
-            // 본인 프로필 여부
-            $current_user_id = (int) $this->session->userdata('user_id');
-
-            if ($current_user_id && $current_user_id === (int)$id) {
-                $response_data['email'] = $user->email;
-                $response_data['is_owner'] = true;
-            } else {
-                $response_data['is_owner'] = false;
-            }
+                'article_count' => $this->Article_m->countByUserId($user->id),
+                'comment_count' => $this->Comment_m->countByUserId($user->id),
+                'is_owner'      => $current_user_id && $current_user_id === (int)$user->id
+            ];
 
             $this->response([
                 'success' => true,
-                'data'    => $response_data
+                'data'    => $responseData,
             ], self::HTTP_OK);
 
         } catch (Exception $e) {

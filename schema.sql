@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `name` VARCHAR(50) NOT NULL COMMENT '사용자 이름',
   `email` VARCHAR(100) NOT NULL COMMENT '이메일 주소',
   `password` VARCHAR(255) NOT NULL COMMENT '암호화된 비밀번호',
+  `role` VARCHAR(20) NOT NULL DEFAULT 'user' COMMENT '사용자 권한 (admin, user)',
   `remember_token` VARCHAR(64) NULL COMMENT 'Remember Me 토큰',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '계정 생성일',
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '정보 수정일',

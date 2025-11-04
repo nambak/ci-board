@@ -106,4 +106,14 @@ class Comment_m extends CI_Model
         return $this->db->count_all_results('comments');
 
     }
+
+    /**
+     * 전체 댓글 수 조회
+     *
+     * @return int
+     */
+    public function count()
+    {
+        return $this->db->count_all('comments');
+    }
 }

@@ -74,6 +74,7 @@
             type: 'GET',
             dataType: 'json',
             success: function(response) {
+                console.log(response);
                 if (response.success && response.data) {
                     const user = response.data;
 
