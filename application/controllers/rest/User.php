@@ -94,7 +94,12 @@ class User extends RestController
                     return;
                 }
 
-                $users = $this->User_m->get_all_with_counts('id', 'DESC');
+                $per_page = (int)$this->get('per_page') ?: 20;
+                $per_page = max(1, min(100, $per_page));
+                $page = max(1, (int)$this->get('page') ?: 1);
+                $offset = ($page - 1) * $per_page;
+
+                $users = $this->User_m->get_all_with_counts('id', 'DESC', $per_page, $offset);
                 $responseData = [];
 
                 foreach ($users as $user) {
@@ -105,6 +110,8 @@ class User extends RestController
                         'created_at'    => $user->created_at,
                         'article_count' => (int)$user->article_count,
                         'comment_count' => (int)$user->comment_count,
+                        'page'          => $page,
+                        'per_page'      => $per_page,
                         'is_owner'      => $current_user_id && $current_user_id === (int)$user->id
                     ];
                 }

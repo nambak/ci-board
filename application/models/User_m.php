@@ -245,19 +245,29 @@ class User_m extends CI_Model
      * @param string $order_direction 정렬 방향 (기본값: 'DESC')
      * @return array
      */
-    public function get_all($order_by = 'id', $order_direction = 'DESC')
+    public function get_all_with_counts($order_by = 'id', $order_direction = 'DESC', $limit = null, $offset = null)
     {
-        $this->db->order_by($order_by, $order_direction);
-        $query = $this->db->get('users');
-        return $query->result();
-    }
+        // 허용된 정렬 컬럼만 사용
+        $allowed_columns = ['id', 'name', 'email', 'created_at'];
+        if (!in_array($order_by, $allowed_columns)) {
+            $order_by = 'id';
+        }
 
-    public function get_all_with_counts($order_by = 'id', $order_direction = 'DESC')
-    {
+        // 정렬 방향 검증
+        $order_direction = strtoupper($order_direction);
+        if (!in_array($order_direction, ['ASC', 'DESC'])) {
+            $order_direction = 'DESC';
+        }
+
         $this->db->select('users.*, 
         (SELECT COUNT(*) FROM articles WHERE articles.user_id = users.id) as article_count,
         (SELECT COUNT(*) FROM comments WHERE comments.writer_id = users.id) as comment_count');
         $this->db->order_by($order_by, $order_direction);
+
+        if ($limit !== null) {
+            $this->db->limit($limit, $offset);
+        }
+
         $query = $this->db->get('users');
         return $query->result();
     }
