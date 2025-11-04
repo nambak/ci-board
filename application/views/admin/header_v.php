@@ -36,7 +36,9 @@
                     <?php if($this->session->userdata('logged_in')): ?>
                         <!-- 로그인된 상태 -->
                         <span class="text-white me-3">
-                            <a href="/profile" class="text-white text-decoration-none"><?= $this->session->userdata('user_name') ?></a>님 환영합니다
+                            <a href="/profile" class="text-white text-decoration-none">
+                                <?= htmlspecialchars($this->session->userdata('user_name'), ENT_QUOTES, 'UTF-8') ?>
+                            </a>님 환영합니다
                         </span>
                         <a href="/logout" class="btn btn-outline-light">로그아웃</a>
                     <?php else: ?>
