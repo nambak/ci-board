@@ -241,7 +241,7 @@
                 description: boardDescription,
             }
 
-            formData[this.csrfTokenName] = this.csrfHash;
+            formData[csrfTokenName] = csrfHash;
 
             // API 요청
             $.ajax({
