@@ -16,8 +16,20 @@ class Board extends RestController
     public function index_get($id = null)
     {
         if ($id === null) {
+            $boards = $this->board_m->get_all_with_articles_count();
+            $rows = [];
+            foreach ($boards as $board) {
+                $rows[] = [
+                    'id'            => $board->id,
+                    'name'          => $board->name,
+                    'description'   => $board->description,
+                    'article_count' => $board->article_count,
+                    'created_at'    => $board->created_at,
+                ];
+            }
             $this->response([
-                'rows' => $this->board_m->get(),
+                'rows'  => $rows,
+                'total' => $this->board_m->count(),
             ], 200);
         } else {
             $this->load->model('article_m');
@@ -27,9 +39,9 @@ class Board extends RestController
 
             $this->response([
                 'total' => $total,
-                'name' => $board->name,
-                'rows' => $articles,
-                'id'   => $id
+                'name'  => $board->name,
+                'rows'  => $articles,
+                'id'    => $id
             ], 200);
         }
     }
@@ -63,7 +75,7 @@ class Board extends RestController
         }
 
         try {
-            $id = (int) $id;
+            $id = (int)$id;
 
             if ($id <= 0) {
                 $this->response(['message' => 'invalid id'], 400);
@@ -98,7 +110,7 @@ class Board extends RestController
         }
 
         try {
-            $id = (int) $id;
+            $id = (int)$id;
 
             if ($id <= 0) {
                 $this->response(['message' => 'invalid id'], 400);

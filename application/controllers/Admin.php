@@ -49,6 +49,16 @@ class Admin extends MY_Controller
     }
 
     /**
+     * 관리자 → 게시판 관리
+     *
+     * @return void
+     */
+    public function boards()
+    {
+        $this->load->view('admin/boards_v');
+    }
+
+    /**
      * Admin 전용 레이아웃 적용
      */
     public function _output($output)

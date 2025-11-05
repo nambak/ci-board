@@ -13,7 +13,7 @@
 <script>
     const columns = [{
         field: 'no',
-        title: '번호',
+        title: 'No.',
         halign: 'center',
         formatter: (value, row, index) => {
             const table = $('#user-list').bootstrapTable('getOptions');
