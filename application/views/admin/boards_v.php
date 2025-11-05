@@ -51,6 +51,9 @@
 </div>
 
 <script>
+    const csrfTokenName = '<?= $this->security->get_csrf_token_name() ?>';
+    const csrfHash = '<?= $this->security->get_csrf_hash() ?>';
+
     const columns = [{
         field: 'no',
         title: 'No.',
@@ -188,7 +191,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     const deleteData = {};
-                    deleteData[this.csrfTokenName] = this.csrfHash;
+                    deleteData[csrfTokenName] = csrfHash;
                     $.ajax({
                         url: `/rest/board/${boardId}`,
                         type: 'DELETE',
