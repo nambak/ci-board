@@ -1,5 +1,5 @@
 <div class="admin-content p-4">
-    <div class="container-fluid" id="admin-user">
+    <div class="container-fluid" id="admin-board">
         <h1 class="mb-4">게시판 관리</h1>
         <div class="row mt-4">
             <div class="col-12 mb-3 text-end">
