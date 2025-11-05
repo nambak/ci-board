@@ -16,6 +16,16 @@
                         <input class="form-control-plaintext" type="email" id="email" readonly>
                         <small class="text-muted">이메일은 변경할 수 없습니다.</small>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-muted" for="password">비밀번호</label>
+                        <input class="form-control" type="password" id="password">
+                        <div class="invalid-feedback" id="password-error"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-muted" for="new-password">새 비밀번호</label>
+                        <input class="form-control" type="password" id="new-password">
+                        <div class="invalid-feedback" id="new-password-error"></div>
+                    </div>
                 </div>
                 <div class="card-footer">
                     <div class="d-flex justify-content-between">
@@ -77,8 +87,6 @@
                 return;
             }
 
-            const name = $('#name').val().trim();
-
             // 확인 메시지
             Swal.fire({
                 title: '프로필 수정',
@@ -90,7 +98,7 @@
                 confirmButtonColor: '#0d6efd'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    updateProfile(name);
+                    updateProfile();
                 }
             });
         });
@@ -111,12 +119,40 @@
             isValid = false;
         }
 
+        const password = $('#password').val();
+        const newPassword = $('#new-password').val();
+
+        if (password && !newPassword) {
+            showError('new-password', '새 비밀번호를 입력해 주세요.');
+            isValid = false;
+        }
+
+        if (newPassword && !password) {
+            showError('password', '현재 비빌번호를 입력해 주세요');
+            isValid = false;
+        }
+
+        if (password && newPassword && password === newPassword) {
+            showError('new-password', '새 비밀번호가 현재 비밀번호와 같습니다.');
+            showError('password', '현재 비밀번호가 새 비밀번호와 같습니다.');
+            isValid = false;
+        }
+
         return isValid;
     }
 
-    function updateProfile(name) {
+    function updateProfile() {
         // 버튼 비활성화
         $('#updateBtn').prop('disabled', true).text('처리 중...');
+
+        const data = {};
+        data['<?= $this->security->get_csrf_token_name(); ?>'] = '<?= $this->security->get_csrf_hash(); ?>';
+
+        const name = $('#name').val().trim();
+
+        if (name) {
+            data['name'] = name;
+        }
 
         $.ajax({
             url: '/rest/user/profile',
