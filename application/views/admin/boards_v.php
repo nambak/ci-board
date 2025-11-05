@@ -280,5 +280,13 @@
         initEditBoard();
         initDeleteBoard();
         initSubmitCreateBoard();
+
+        // 모달이 닫힐 때 폼 초기화
+        $('#createBoardModal').on('hidden.bs.modal', () => {
+            const form = document.getElementById('createBoardForm');
+            form.reset();
+            form.classList.remove('was-validated');
+            $('#createBoardModalLabel').text('새 게시판 생성');
+        });
     });
 </script>
