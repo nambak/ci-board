@@ -72,7 +72,7 @@
             title: '제목',
             halign: 'center',
             formatter: (value, row, index) => {
-                return `<a href="/board/detail?id=${row.id}">${escapeHtml(row.name)}</a>`;
+                return `<a href="/board/detail?id=${encodeURIComponent(row.id)}">${escapeHtml(row.name)}</a>`;
             }
         },
         {
@@ -204,9 +204,10 @@
                             $('#board-list').bootstrapTable('refresh');
                         },
                         error: (error) => {
+                            const errorMessage = error.responseJSON?.message || error.statusText || '알 수 없는 오류가 발생했습니다.';
                             Swal.fire({
                                 title: '삭제 실패',
-                                text: error.statusText,
+                                text: errorMessage,
                                 icon: 'error'
                             });
                         }
@@ -266,9 +267,10 @@
                     });
                 },
                 error: (error) => {
+                    const errorMessage = error.responseJSON?.message || error.statusText || '알 수 없는 오류가 발생했습니다.';
                     Swal.fire({
-                        title: error.status,
-                        text: error.statusText,
+                        title: '오류',
+                        text: errorMessage,
                         icon: 'error'
                     });
                 }
