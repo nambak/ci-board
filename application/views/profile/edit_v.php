@@ -119,8 +119,8 @@
             isValid = false;
         }
 
-        const password = $('#password').val();
-        const newPassword = $('#new-password').val();
+        const password = $('#password').val().trim();
+        const newPassword = $('#new-password').val().trim();
 
         if (password && !newPassword) {
             showError('new-password', '새 비밀번호를 입력해 주세요.');
