@@ -128,7 +128,7 @@
         }
 
         if (newPassword && !password) {
-            showError('password', '현재 비밀번호 입력해 주세요');
+            showError('password', '현재 비밀번호를 입력해 주세요.');
             isValid = false;
         }
 
@@ -157,9 +157,7 @@
         const password = $('#password').val().trim();
         const newPassword = $('#new-password').val().trim();
 
-        if (name) {
-            data['name'] = name;
-        }
+        data['name'] = name;
 
         if (password && newPassword) {
             data['password'] = password;

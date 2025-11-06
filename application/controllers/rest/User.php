@@ -184,8 +184,8 @@ class User extends RestController
 
             // 입력 데이터 받기
             $name = $this->put('name', true);
-            $password = $this->put('password', true);
-            $newPassword = $this->put('new_password', true);
+            $password = trim($this->put('password', true));
+            $newPassword = trim($this->put('new_password', true));
 
             // 유효성 검사
             $this->load->library('form_validation');
@@ -242,52 +242,51 @@ class User extends RestController
                         }
                     }
                 }
+            }
 
-                // 에러가 있으면 반환
-                if (!empty($errors)) {
-                    $this->response([
-                        'success' => false,
-                        'message' => '입력값을 확인해주세요.',
-                        'errors'  => $errors
-                    ], self::HTTP_UNPROCESSABLE_ENTITY);
-                    return;
-                }
+            // 에러가 있으면 반환
+            if (!empty($errors)) {
+                $this->response([
+                    'success' => false,
+                    'message' => '입력값을 확인해주세요.',
+                    'errors'  => $errors
+                ], self::HTTP_UNPROCESSABLE_ENTITY);
+                return;
+            }
 
-                // 사용자 정보 업데이트
-                $update_data = [
-                    'name' => trim($name)
-                ];
+            // 사용자 정보 업데이트
+            $update_data = [
+                'name' => trim($name)
+            ];
 
-                // 비밀번호 변경이 있는 경우
+            // 비밀번호 변경이 있는 경우
+            if (!empty($password) && !empty($newPassword)) {
+                $update_data['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
+            }
+
+            $result = $this->User_m->update($user_id, $update_data);
+
+            if ($result) {
+                // 세션 정보도 업데이트
+                $this->session->set_userdata('user_name', trim($name));
+
+                $message = '프로필이 수정되었습니다.';
                 if (!empty($password) && !empty($newPassword)) {
-                    $update_data['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
+                    $message = '프로필과 비밀번호가 수정되었습니다.';
                 }
 
-                $result = $this->User_m->update($user_id, $update_data);
-
-                if ($result) {
-                    // 세션 정보도 업데이트
-                    $this->session->set_userdata('user_name', trim($name));
-
-                    $message = '프로필이 수정되었습니다.';
-                    if (!empty($password) && !empty($newPassword)) {
-                        $message = '프로필과 비밀번호가 수정되었습니다.';
-                    }
-
-                    $this->response([
-                        'success' => true,
-                        'message' => $message,
-                        'data'    => [
-                            'name' => trim($name)
-                        ]
-                    ], self::HTTP_OK);
-                } else {
-                    $this->response([
-                        'success' => false,
-                        'message' => '프로필 수정에 실패했습니다.'
-                    ], self::HTTP_INTERNAL_ERROR);
-                }
-
+                $this->response([
+                    'success' => true,
+                    'message' => $message,
+                    'data'    => [
+                        'name' => trim($name)
+                    ]
+                ], self::HTTP_OK);
+            } else {
+                $this->response([
+                    'success' => false,
+                    'message' => '프로필 수정에 실패했습니다.'
+                ], self::HTTP_INTERNAL_ERROR);
             }
         } catch (Exception $e) {
             log_message('error', 'Profile update error: ' . $e->getMessage());
