@@ -184,18 +184,68 @@ class User extends RestController
 
             // 입력 데이터 받기
             $name = $this->put('name', true);
+            $password = trim($this->put('password', true));
+            $newPassword = trim($this->put('new_password', true));
 
             // 유효성 검사
             $this->load->library('form_validation');
-            $this->form_validation->set_data(['name' => $name]);
+            $validation_data = ['name' => $name];
+            $errors = [];
+
+            // 이름 검증
+            $this->form_validation->set_data($validation_data);
             $this->form_validation->set_rules('name', '이름', 'required|trim|min_length[2]|max_length[50]');
 
             if (!$this->form_validation->run()) {
-                $errors = [];
                 if (form_error('name')) {
                     $errors['name'] = strip_tags(form_error('name'));
                 }
+            }
 
+            // 비밀번호 변경 요청이 있는 경우
+            if (!empty($password) || !empty($newPassword)) {
+                // 둘 다 입력되어야 함
+                if (empty($password)) {
+                    $errors['password'] = '현재 비밀번호를 입력해주세요.';
+                }
+                if (empty($newPassword)) {
+                    $errors['new-password'] = '새 비밀번호를 입력해주세요.';
+                }
+
+                // 두 필드가 모두 제공된 경우에만 추가 검증 수행
+                if (!empty($password) && !empty($newPassword)) {
+                    // 비밀번호 길이 검증
+                    if (strlen($newPassword) < 8) {
+                        $errors['new-password'] = '새 비밀번호는 8자 이상이어야 합니다.';
+                    }
+
+                    // 현재 비밀번호와 새 비밀번호가 같은지 검증
+                    if ($password === $newPassword) {
+                        $errors['new-password'] = '새 비밀번호가 현재 비밀번호와 같습니다.';
+                    }
+
+                    // 다른 검증을 모두 통과한 경우에만 DB 조회
+                    if (empty($errors)) {
+                        // 현재 비밀번호 확인
+                        $users = $this->User_m->get($user_id);
+                        if (empty($users)) {
+                            $this->response([
+                                'success' => false,
+                                'message' => '사용자 정보를 찾을 수 없습니다.'
+                            ], self::HTTP_NOT_FOUND);
+                            return;
+                        }
+
+                        $user = $users[0];
+                        if (!password_verify($password, $user->password)) {
+                            $errors['password'] = '현재 비밀번호가 일치하지 않습니다.';
+                        }
+                    }
+                }
+            }
+
+            // 에러가 있으면 반환
+            if (!empty($errors)) {
                 $this->response([
                     'success' => false,
                     'message' => '입력값을 확인해주세요.',
@@ -209,15 +259,25 @@ class User extends RestController
                 'name' => trim($name)
             ];
 
+            // 비밀번호 변경이 있는 경우
+            if (!empty($password) && !empty($newPassword)) {
+                $update_data['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
+            }
+
             $result = $this->User_m->update($user_id, $update_data);
 
             if ($result) {
                 // 세션 정보도 업데이트
                 $this->session->set_userdata('user_name', trim($name));
 
+                $message = '프로필이 수정되었습니다.';
+                if (!empty($password) && !empty($newPassword)) {
+                    $message = '프로필과 비밀번호가 수정되었습니다.';
+                }
+
                 $this->response([
                     'success' => true,
-                    'message' => '프로필이 수정되었습니다.',
+                    'message' => $message,
                     'data'    => [
                         'name' => trim($name)
                     ]
@@ -228,7 +288,6 @@ class User extends RestController
                     'message' => '프로필 수정에 실패했습니다.'
                 ], self::HTTP_INTERNAL_ERROR);
             }
-
         } catch (Exception $e) {
             log_message('error', 'Profile update error: ' . $e->getMessage());
 

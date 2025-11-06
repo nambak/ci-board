@@ -1978,8 +1978,8 @@
       },
       "put": {
         "tags": ["User"],
-        "summary": "프로필 수정",
-        "description": "현재 로그인한 사용자의 프로필 정보를 수정합니다 (로그인 필요)",
+        "summary": "프로필 수정 및 비밀번호 변경",
+        "description": "현재 로그인한 사용자의 프로필 정보를 수정하고, 선택적으로 비밀번호를 변경합니다 (로그인 필요)",
         "security": [
           {
             "sessionAuth": []
@@ -1998,6 +1998,17 @@
                     "minLength": 2,
                     "maxLength": 50,
                     "description": "사용자 이름"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "현재 비밀번호 (비밀번호 변경 시 필수)"
+                  },
+                  "new_password": {
+                    "type": "string",
+                    "format": "password",
+                    "minLength": 8,
+                    "description": "새 비밀번호 (비밀번호 변경 시 필수, 8자 이상)"
                   }
                 }
               }
@@ -2028,11 +2039,26 @@
                     }
                   }
                 },
-                "example": {
-                  "success": true,
-                  "message": "프로필이 수정되었습니다.",
-                  "data": {
-                    "name": "홍길동"
+                "examples": {
+                  "profileOnly": {
+                    "summary": "프로필만 수정",
+                    "value": {
+                      "success": true,
+                      "message": "프로필이 수정되었습니다.",
+                      "data": {
+                        "name": "홍길동"
+                      }
+                    }
+                  },
+                  "profileAndPassword": {
+                    "summary": "프로필 및 비밀번호 수정",
+                    "value": {
+                      "success": true,
+                      "message": "프로필과 비밀번호가 수정되었습니다.",
+                      "data": {
+                        "name": "홍길동"
+                      }
+                    }
                   }
                 }
               }
@@ -2075,11 +2101,61 @@
                     },
                     "errors": {
                       "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "example": "The 이름 field must be at least 2 characters in length."
-                        }
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "nameError": {
+                    "summary": "이름 유효성 검사 실패",
+                    "value": {
+                      "success": false,
+                      "message": "입력값을 확인해주세요.",
+                      "errors": {
+                        "name": "The 이름 field must be at least 2 characters in length."
+                      }
+                    }
+                  },
+                  "passwordMismatch": {
+                    "summary": "현재 비밀번호 불일치",
+                    "value": {
+                      "success": false,
+                      "message": "입력값을 확인해주세요.",
+                      "errors": {
+                        "password": "현재 비밀번호가 일치하지 않습니다."
+                      }
+                    }
+                  },
+                  "newPasswordTooShort": {
+                    "summary": "새 비밀번호 길이 부족",
+                    "value": {
+                      "success": false,
+                      "message": "입력값을 확인해주세요.",
+                      "errors": {
+                        "new-password": "새 비밀번호는 8자 이상이어야 합니다."
+                      }
+                    }
+                  },
+                  "passwordsSame": {
+                    "summary": "현재/새 비밀번호 동일",
+                    "value": {
+                      "success": false,
+                      "message": "입력값을 확인해주세요.",
+                      "errors": {
+                        "new-password": "새 비밀번호가 현재 비밀번호와 같습니다."
+                      }
+                    }
+                  },
+                  "passwordRequired": {
+                    "summary": "비밀번호 입력 누락",
+                    "value": {
+                      "success": false,
+                      "message": "입력값을 확인해주세요.",
+                      "errors": {
+                        "password": "현재 비밀번호를 입력해주세요.",
+                        "new-password": "새 비밀번호를 입력해주세요."
                       }
                     }
                   }
