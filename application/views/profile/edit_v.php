@@ -132,6 +132,11 @@
             isValid = false;
         }
 
+        if (newPassword && newPassword.length < 8) {
+            showError('new-password', '새 비밀번호는 8자 이상이어야 합니다.');
+            isValid = false;
+        }
+
         if (password && newPassword && password === newPassword) {
             showError('new-password', '새 비밀번호가 현재 비밀번호와 같습니다.');
             showError('password', '현재 비밀번호가 새 비밀번호와 같습니다.');
