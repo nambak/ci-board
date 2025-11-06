@@ -149,18 +149,22 @@
         data['<?= $this->security->get_csrf_token_name(); ?>'] = '<?= $this->security->get_csrf_hash(); ?>';
 
         const name = $('#name').val().trim();
+        const password = $('#password').val().trim();
+        const newPassword = $('#new-password').val().trim();
 
         if (name) {
             data['name'] = name;
         }
 
+        if (password && newPassword) {
+            data['password'] = password;
+            data['new_password'] = newPassword;
+        }
+
         $.ajax({
             url: '/rest/user/profile',
             type: 'PUT',
-            data: {
-                name: name,
-                <?= $this->security->get_csrf_token_name(); ?>: '<?= $this->security->get_csrf_hash(); ?>'
-            },
+            data: data,
             dataType: 'json',
             success: (response) => {
                 if (response.success) {
