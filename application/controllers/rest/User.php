@@ -289,14 +289,13 @@ class User extends RestController
                 }
 
             }
-        catch
-            (Exception $e) {
-                log_message('error', 'Profile update error: ' . $e->getMessage());
+        } catch (Exception $e) {
+            log_message('error', 'Profile update error: ' . $e->getMessage());
 
-                $this->response([
-                    'success' => false,
-                    'message' => '프로필 수정 중 오류가 발생했습니다.'
-                ], self::HTTP_INTERNAL_ERROR);
-            }
+            $this->response([
+                'success' => false,
+                'message' => '프로필 수정 중 오류가 발생했습니다.'
+            ], self::HTTP_INTERNAL_ERROR);
+        }
     }
 }
