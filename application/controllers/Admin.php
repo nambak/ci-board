@@ -8,9 +8,14 @@ class Admin extends MY_Controller
         parent::__construct();
 
         $this->load->helper('auth');
+        $this->load->helper('url');
+        $this->load->library('session');
 
         // 로그인 체크
         if (!is_logged_in()) {
+            // 로그인 페이지로 리다렉트 하기전 현재 URL을 세션에 저장
+            $this->session->set_userdata('redirect_url', current_url());
+
             redirect('auth/login');
         }
 

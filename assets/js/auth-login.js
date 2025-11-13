@@ -34,7 +34,7 @@ const AuthLogin = {
                             showConfirmButton: false
                         }).then(() => {
                             // 이전 페이지로 이동하거나 메인 페이지로 이동
-                            location.href = new URLSearchParams(window.location.search).get('redirect') || '/board';
+                            location.href = response.redirect_url || new URLSearchParams(window.location.search).get('redirect') || '/board';
                         });
                     }
                 },

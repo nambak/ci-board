@@ -101,7 +101,8 @@ class Auth extends RestController
                     'id'    => $user->id,
                     'email' => $user->email,
                     'name'  => $user->name,
-                ]
+                ],
+                'redirect_url' => $this->session->userdata('redirect_url') ?? base_url(),
             ], self::HTTP_OK);
         } else {
             // 로그인 실패
