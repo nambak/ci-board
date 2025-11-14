@@ -11,6 +11,7 @@ class Board extends RestController
         parent::__construct();
 
         $this->load->model('board_m');
+        $this->load->helper('auth');
     }
 
     public function index_get($id = null)
@@ -48,8 +49,10 @@ class Board extends RestController
 
     public function index_post()
     {
-        if (!$this->session->userdata('user_id')) {
-            $this->response(['message' => 'unauthorized'], 401);
+        // 관리자 권한 확인
+        if (!is_admin()) {
+            $this->response(['message' => 'forbidden'], 403);
+            return;
         }
 
         try {
@@ -70,8 +73,10 @@ class Board extends RestController
 
     public function index_put($id)
     {
-        if (!$this->session->userdata('user_id')) {
-            $this->response(['message' => 'unauthorized'], 401);
+        // 관리자 권한 확인
+        if (!is_admin()) {
+            $this->response(['message' => 'forbidden'], 403);
+            return;
         }
 
         try {
@@ -98,15 +103,17 @@ class Board extends RestController
             $this->board_m->update($id, $name, $description);
             $this->response(['message' => 'success'], 200);
         } catch (Exception $e) {
-            log_message('error', 'board.index_post: ' . $e->getMessage());
+            log_message('error', 'board.index_put: ' . $e->getMessage());
             $this->response(['message' => 'server error'], 500);
         }
     }
 
     public function index_delete($id)
     {
-        if (!$this->session->userdata('user_id')) {
-            $this->response(['message' => 'unauthorized'], 401);
+        // 관리자 권한 확인
+        if (!is_admin()) {
+            $this->response(['message' => 'forbidden'], 403);
+            return;
         }
 
         try {
@@ -125,7 +132,7 @@ class Board extends RestController
             $this->board_m->delete($id);
             $this->response(['message' => 'success'], 200);
         } catch (Exception $e) {
-            log_message('error', 'board.index_post: ' . $e->getMessage());
+            log_message('error', 'board.index_delete: ' . $e->getMessage());
             $this->response(['message' => 'server error'], 500);
         }
     }
