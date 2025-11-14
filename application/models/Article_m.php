@@ -240,4 +240,122 @@ class Article_m extends CI_Model
         ];
     }
 
+    /**
+     * 게시글 검색
+     * 제목, 내용, 작성자, 날짜 범위로 검색 가능
+     *
+     * @param string $query 검색어
+     * @param string $type 검색 타입 (title, content, all, author)
+     * @param int|null $boardId 게시판 ID
+     * @param string|null $startDate 시작 날짜 (YYYY-MM-DD)
+     * @param string|null $endDate 종료 날짜 (YYYY-MM-DD)
+     * @param int $limit 페이지당 게시글 수
+     * @param int $offset 시작 위치
+     * @return array 검색 결과와 총 개수
+     */
+    public function search($query, $type = 'all', $boardId = null, $startDate = null, $endDate = null, $limit = 10, $offset = 0)
+    {
+        // 검색 타입 화이트리스트 검증
+        $allowedTypes = ['title', 'content', 'all', 'author'];
+        if (!in_array($type, $allowedTypes)) {
+            $type = 'all';
+        }
+
+        // 총 개수 조회용 쿼리
+        $this->db->select('articles.id');
+        $this->db->from('articles');
+        $this->db->join('users', 'users.id = articles.user_id', 'left');
+        $this->db->join('boards', 'boards.id = articles.board_id', 'left');
+
+        // 검색 조건 적용
+        $this->_applySearchConditions($query, $type, $boardId, $startDate, $endDate);
+
+        $total = $this->db->count_all_results();
+
+        // 실제 데이터 조회
+        $this->db->select('articles.*,
+                          boards.name as board_name,
+                          users.name as author,
+                          COUNT(comments.id) as comment_count');
+        $this->db->from('articles');
+        $this->db->join('boards', 'boards.id = articles.board_id', 'left');
+        $this->db->join('users', 'users.id = articles.user_id', 'left');
+        $this->db->join('comments', 'comments.article_id = articles.id', 'left');
+
+        // 검색 조건 적용 (동일하게)
+        $this->_applySearchConditions($query, $type, $boardId, $startDate, $endDate);
+
+        $this->db->group_by('articles.id');
+        $this->db->order_by('articles.id', 'DESC');
+        $this->db->limit($limit, $offset);
+
+        $queryResult = $this->db->get();
+        $rows = $queryResult->result();
+
+        // comment_count를 정수값으로 변환
+        foreach ($rows as &$row) {
+            $row->comment_count = (int)$row->comment_count;
+        }
+
+        return [
+            'rows' => $rows,
+            'total' => $total,
+            'query' => $query,
+            'type' => $type
+        ];
+    }
+
+    /**
+     * 검색 조건 적용 (private helper method)
+     *
+     * @param string $query 검색어
+     * @param string $type 검색 타입
+     * @param int|null $boardId 게시판 ID
+     * @param string|null $startDate 시작 날짜
+     * @param string|null $endDate 종료 날짜
+     */
+    private function _applySearchConditions($query, $type, $boardId, $startDate, $endDate)
+    {
+        // 검색어가 있는 경우
+        if (!empty($query)) {
+            $this->db->group_start();
+
+            switch ($type) {
+                case 'title':
+                    $this->db->like('articles.title', $query);
+                    break;
+
+                case 'content':
+                    $this->db->like('articles.content', $query);
+                    break;
+
+                case 'author':
+                    $this->db->like('users.name', $query);
+                    break;
+
+                case 'all':
+                default:
+                    $this->db->like('articles.title', $query);
+                    $this->db->or_like('articles.content', $query);
+                    break;
+            }
+
+            $this->db->group_end();
+        }
+
+        // 게시판 필터
+        if (!empty($boardId) && (int)$boardId > 0) {
+            $this->db->where('articles.board_id', (int)$boardId);
+        }
+
+        // 날짜 범위 필터
+        if (!empty($startDate)) {
+            $this->db->where('DATE(articles.created_at) >=', $startDate);
+        }
+
+        if (!empty($endDate)) {
+            $this->db->where('DATE(articles.created_at) <=', $endDate);
+        }
+    }
+
 }

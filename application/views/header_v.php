@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.23.5/dist/bootstrap-table.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="/assets/css/ci_board.css" rel="stylesheet">
     <?= $debugbarRenderer->renderHead(); ?>
 </head>
@@ -23,6 +24,22 @@
                 <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
                     <li><a href="/board?id=1" class="nav-link px-2 text-white">게시판</a></li>
                 </ul>
+
+                <!-- 검색 폼 -->
+                <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" action="<?= site_url('search') ?>" method="GET" id="headerSearchForm">
+                    <div class="input-group">
+                        <input type="search"
+                               class="form-control form-control-dark"
+                               placeholder="게시글 검색..."
+                               name="query"
+                               id="headerSearchInput"
+                               autocomplete="off">
+                        <button class="btn btn-outline-light" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+
                 <div class="text-end">
                     <?php if($this->session->userdata('logged_in')): ?>
                         <!-- 로그인된 상태 -->
