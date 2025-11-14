@@ -11,6 +11,7 @@ class Article extends RestController
         $this->load->model('article_m');
         $this->load->library('session');
         $this->load->library('services/ArticleService', null, 'article_service');
+        $this->load->helper('auth');
     }
 
     public function index_get($id)
@@ -111,6 +112,64 @@ class Article extends RestController
             $this->response(['id' => $result], 200);
         } catch (Exception $e) {
             $this->response(['message' => 'server error: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * 관리자용 게시글 목록 조회 API
+     * 페이지네이션, 검색, 필터링을 지원합니다.
+     *
+     * @return void
+     */
+    public function list_get()
+    {
+        try {
+            // 관리자 권한 체크
+            if (!is_admin()) {
+                $this->response(['message' => 'forbidden'], 403);
+                return;
+            }
+
+            // 파라미터 받기 (XSS 방지)
+            $page = (int)$this->get('page', true) ?: 1;
+            $perPage = (int)$this->get('per_page', true) ?: 10;
+            $search = $this->get('search', true) ?: null;
+            $boardId = $this->get('board_id', true) ? (int)$this->get('board_id', true) : null;
+
+            // 페이지네이션 유효성 검사
+            if ($page < 1) {
+                $page = 1;
+            }
+
+            if ($perPage < 1 || $perPage > 100) {
+                $perPage = 10;
+            }
+
+            // offset 계산
+            $offset = ($page - 1) * $perPage;
+
+            // 데이터 조회
+            $result = $this->article_m->get_all_with_details($perPage, $offset, $search, $boardId);
+
+            // 페이지네이션 정보 계산
+            $totalPages = ceil($result['total'] / $perPage);
+
+            $response = [
+                'rows' => $result['rows'],
+                'pagination' => [
+                    'total' => $result['total'],
+                    'per_page' => $perPage,
+                    'current_page' => $page,
+                    'total_pages' => $totalPages,
+                    'from' => $offset + 1,
+                    'to' => min($offset + $perPage, $result['total'])
+                ]
+            ];
+
+            $this->response($response, 200);
+        } catch (Exception $e) {
+            log_message('error', 'Article::list_get error: ' . $e->getMessage());
+            $this->response(['message' => 'server error'], 500);
         }
     }
 }
