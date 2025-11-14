@@ -61,7 +61,7 @@
     // 제목 포맷터 - XSS 방지를 위해 이스케이프 처리
     function titleFormatter(value, row) {
         const escapedTitle = $('<div>').text(value || '').html();
-        const url = '<?= site_url('article/view') ?>/' + row.board_id + '/' + row.id;
+        const url = '<?= site_url('article') ?>/' + row.id;
         return `<a href="${url}" target="_blank" class="text-decoration-none">${escapedTitle}</a>`;
     }
 
