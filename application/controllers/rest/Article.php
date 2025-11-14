@@ -172,4 +172,83 @@ class Article extends RestController
             $this->response(['message' => 'server error'], 500);
         }
     }
+
+    /**
+     * 게시글 검색 API
+     * GET /rest/article/search
+     *
+     * @return void
+     */
+    public function search_get()
+    {
+        try {
+            // 파라미터 받기 (XSS 방지)
+            $query = $this->get('query', true);
+            $type = $this->get('type', true) ?: 'all';
+            $boardId = $this->get('board_id', true) ? (int)$this->get('board_id', true) : null;
+            $startDate = $this->get('start_date', true) ?: null;
+            $endDate = $this->get('end_date', true) ?: null;
+            $page = (int)$this->get('page', true) ?: 1;
+            $perPage = (int)$this->get('per_page', true) ?: 10;
+
+            // 검색어가 없으면 에러
+            if (empty($query)) {
+                $this->response(['message' => 'search query required'], 400);
+                return;
+            }
+
+            // 페이지네이션 유효성 검사
+            if ($page < 1) {
+                $page = 1;
+            }
+
+            if ($perPage < 1 || $perPage > 100) {
+                $perPage = 10;
+            }
+
+            // 날짜 형식 검증 (YYYY-MM-DD)
+            if ($startDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $startDate)) {
+                $this->response(['message' => 'invalid start_date format (YYYY-MM-DD)'], 400);
+                return;
+            }
+
+            if ($endDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $endDate)) {
+                $this->response(['message' => 'invalid end_date format (YYYY-MM-DD)'], 400);
+                return;
+            }
+
+            // offset 계산
+            $offset = ($page - 1) * $perPage;
+
+            // 검색 실행
+            $result = $this->article_m->search($query, $type, $boardId, $startDate, $endDate, $perPage, $offset);
+
+            // 페이지네이션 정보 계산
+            $totalPages = ceil($result['total'] / $perPage);
+
+            $response = [
+                'rows' => $result['rows'],
+                'pagination' => [
+                    'total' => $result['total'],
+                    'per_page' => $perPage,
+                    'current_page' => $page,
+                    'total_pages' => $totalPages,
+                    'from' => $offset + 1,
+                    'to' => min($offset + $perPage, $result['total'])
+                ],
+                'search' => [
+                    'query' => $result['query'],
+                    'type' => $result['type'],
+                    'board_id' => $boardId,
+                    'start_date' => $startDate,
+                    'end_date' => $endDate
+                ]
+            ];
+
+            $this->response($response, 200);
+        } catch (Exception $e) {
+            log_message('error', 'Article::search_get error: ' . $e->getMessage());
+            $this->response(['message' => 'server error'], 500);
+        }
+    }
 }
