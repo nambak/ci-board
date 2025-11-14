@@ -111,6 +111,7 @@ class User extends RestController
                         'id'            => $user->id,
                         'name'          => $user->name,
                         'email'         => $user->email,
+                        'role'          => $user->role ?? 'user',
                         'created_at'    => $user->created_at,
                         'article_count' => (int)$user->article_count,
                         'comment_count' => (int)$user->comment_count,
@@ -294,6 +295,105 @@ class User extends RestController
             $this->response([
                 'success' => false,
                 'message' => '프로필 수정 중 오류가 발생했습니다.'
+            ], self::HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    /**
+     * 사용자 권한 변경 (관리자 전용)
+     * PUT /rest/user/role/{id}
+     */
+    public function role_put($userId)
+    {
+        try {
+            // 관리자 권한 확인
+            if (!is_admin()) {
+                $this->response([
+                    'success' => false,
+                    'message' => '접근 권한이 없습니다.'
+                ], self::HTTP_FORBIDDEN);
+                return;
+            }
+
+            $currentUserId = (int)$this->session->userdata('user_id');
+            $userId = (int)$userId;
+
+            // 유효성 검사
+            if ($userId <= 0) {
+                $this->response([
+                    'success' => false,
+                    'message' => '잘못된 사용자 ID입니다.'
+                ], self::HTTP_BAD_REQUEST);
+                return;
+            }
+
+            // 본인의 권한은 변경할 수 없음
+            if ($currentUserId === $userId) {
+                $this->response([
+                    'success' => false,
+                    'message' => '본인의 권한은 변경할 수 없습니다.'
+                ], self::HTTP_FORBIDDEN);
+                return;
+            }
+
+            // 새로운 권한 값 받기
+            $newRole = $this->put('role', true);
+
+            // 권한 값 검증
+            if (!in_array($newRole, ['user', 'admin'])) {
+                $this->response([
+                    'success' => false,
+                    'message' => '잘못된 권한 값입니다. (user 또는 admin만 가능)'
+                ], self::HTTP_BAD_REQUEST);
+                return;
+            }
+
+            // 대상 사용자 존재 확인
+            $targetUsers = $this->User_m->get($userId);
+            if (empty($targetUsers)) {
+                $this->response([
+                    'success' => false,
+                    'message' => '사용자를 찾을 수 없습니다.'
+                ], self::HTTP_NOT_FOUND);
+                return;
+            }
+            $targetUser = $targetUsers[0];
+
+            // 관리자를 일반 사용자로 강등하려는 경우
+            if ($targetUser->role === 'admin' && $newRole === 'user') {
+                // 최소 1명의 관리자는 유지되어야 함
+                $adminCount = $this->User_m->countAdmins();
+                if ($adminCount <= 1) {
+                    $this->response([
+                        'success' => false,
+                        'message' => '최소 1명의 관리자가 필요합니다.'
+                    ], self::HTTP_FORBIDDEN);
+                    return;
+                }
+            }
+
+            // 권한 변경
+            $result = $this->User_m->updateRole($userId, $newRole);
+
+            if ($result) {
+                $roleLabel = $newRole === 'admin' ? '관리자' : '일반 사용자';
+                $this->response([
+                    'success' => true,
+                    'message' => "사용자 권한이 '{$roleLabel}'(으)로 변경되었습니다."
+                ], self::HTTP_OK);
+            } else {
+                $this->response([
+                    'success' => false,
+                    'message' => '권한 변경에 실패했습니다.'
+                ], self::HTTP_INTERNAL_ERROR);
+            }
+
+        } catch (Exception $e) {
+            log_message('error', 'User role update error: ' . $e->getMessage());
+
+            $this->response([
+                'success' => false,
+                'message' => '권한 변경 중 오류가 발생했습니다.'
             ], self::HTTP_INTERNAL_ERROR);
         }
     }

@@ -259,7 +259,7 @@ class User_m extends CI_Model
             $order_direction = 'DESC';
         }
 
-        $this->db->select('users.*, 
+        $this->db->select('users.*,
         (SELECT COUNT(*) FROM articles WHERE articles.user_id = users.id) as article_count,
         (SELECT COUNT(*) FROM comments WHERE comments.writer_id = users.id) as comment_count');
         $this->db->order_by($order_by, $order_direction);
@@ -270,5 +270,48 @@ class User_m extends CI_Model
 
         $query = $this->db->get('users');
         return $query->result();
+    }
+
+    /**
+     * 사용자 권한(role) 업데이트
+     *
+     * @param int $userId 사용자 ID
+     * @param string $role 새로운 권한 (user 또는 admin)
+     * @return bool 성공 여부
+     */
+    public function updateRole($userId, $role)
+    {
+        try {
+            // 권한 값 검증 (화이트리스트)
+            $allowedRoles = ['user', 'admin'];
+            if (!in_array($role, $allowedRoles)) {
+                throw new Exception('Invalid role value');
+            }
+
+            $data = [
+                'role' => $role,
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+
+            $this->db->where('id', $userId);
+            $this->db->update('users', $data);
+
+            return $this->db->affected_rows() > 0;
+
+        } catch (Exception $e) {
+            log_message('error', 'User role update error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * 관리자 수 조회
+     *
+     * @return int 관리자 사용자 수
+     */
+    public function countAdmins()
+    {
+        $this->db->where('role', 'admin');
+        return $this->db->count_all_results('users');
     }
 }
