@@ -178,16 +178,21 @@
         const commentText = $(this).data('comment');
         const writerName = $(this).data('writer');
 
+        // HTML 이스케이프
+        const escapeHtml = (str) => $('<div>').text(str || '').html();
+
         // 댓글 내용 미리보기 (최대 100자)
-        const preview = commentText.length > 100
+        const rawPreview = commentText.length > 100
             ? commentText.substring(0, 100) + '...'
             : commentText;
+
+        const preview = escapeHtml(rawPreview);
 
         Swal.fire({
             title: '댓글 삭제',
             html: `
                 <div class="text-start">
-                    <p><strong>작성자:</strong> ${writerName}</p>
+                    <p><strong>작성자:</strong> ${escapeHtml(writerName)}</p>
                     <p><strong>내용:</strong></p>
                     <div class="border rounded p-2 bg-light mb-3" style="max-height: 150px; overflow-y: auto;">
                         ${preview}
