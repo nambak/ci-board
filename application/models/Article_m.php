@@ -163,4 +163,81 @@ class Article_m extends CI_Model
         return $this->db->count_all('articles');
     }
 
+    /**
+     * 모든 게시글을 상세 정보와 함께 조회 (관리자용)
+     * 게시판명, 작성자, 댓글 수를 포함하여 페이지네이션과 검색을 지원합니다.
+     *
+     * @param int $limit 페이지당 게시글 수
+     * @param int $offset 시작 위치
+     * @param string|null $search 검색어 (제목 또는 내용 검색)
+     * @param int|null $boardId 게시판 ID 필터
+     * @return array 게시글 목록과 총 개수를 포함한 배열
+     */
+    public function get_all_with_details($limit = 10, $offset = 0, $search = null, $boardId = null)
+    {
+        // 총 개수 조회용 쿼리
+        $this->db->select('articles.id');
+        $this->db->from('articles');
+        $this->db->join('boards', 'boards.id = articles.board_id', 'left');
+        $this->db->join('users', 'users.id = articles.user_id', 'left');
+
+        // 검색 조건
+        if (!empty($search)) {
+            $this->db->group_start();
+            $this->db->like('articles.title', $search);
+            $this->db->or_like('articles.content', $search);
+            $this->db->or_like('users.name', $search);
+            $this->db->group_end();
+        }
+
+        // 게시판 필터
+        if (!empty($boardId)) {
+            $this->db->where('articles.board_id', $boardId);
+        }
+
+        $total = $this->db->count_all_results();
+
+        // 실제 데이터 조회
+        $this->db->select('articles.*,
+                          boards.name as board_name,
+                          users.name as author,
+                          users.email as author_email,
+                          COUNT(comments.id) as comment_count');
+        $this->db->from('articles');
+        $this->db->join('boards', 'boards.id = articles.board_id', 'left');
+        $this->db->join('users', 'users.id = articles.user_id', 'left');
+        $this->db->join('comments', 'comments.article_id = articles.id', 'left');
+
+        // 검색 조건 (동일하게 적용)
+        if (!empty($search)) {
+            $this->db->group_start();
+            $this->db->like('articles.title', $search);
+            $this->db->or_like('articles.content', $search);
+            $this->db->or_like('users.name', $search);
+            $this->db->group_end();
+        }
+
+        // 게시판 필터 (동일하게 적용)
+        if (!empty($boardId)) {
+            $this->db->where('articles.board_id', $boardId);
+        }
+
+        $this->db->group_by('articles.id');
+        $this->db->order_by('articles.id', 'DESC');
+        $this->db->limit($limit, $offset);
+
+        $query = $this->db->get();
+        $rows = $query->result();
+
+        // comment_count를 정수값으로 변환
+        foreach ($rows as &$row) {
+            $row->comment_count = (int)$row->comment_count;
+        }
+
+        return [
+            'rows' => $rows,
+            'total' => $total
+        ];
+    }
+
 }

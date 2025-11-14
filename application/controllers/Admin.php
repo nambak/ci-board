@@ -64,6 +64,16 @@ class Admin extends MY_Controller
     }
 
     /**
+     * 관리자 → 게시글 관리
+     *
+     * @return void
+     */
+    public function articles()
+    {
+        $this->load->view('admin/articles_v');
+    }
+
+    /**
      * Admin 전용 레이아웃 적용
      */
     public function _output($output)
