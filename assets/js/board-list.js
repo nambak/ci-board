@@ -4,7 +4,7 @@ const BoardList = {
     csrfTokenName: null,
 
     initBoardList() {
-        // 기본 컬럼 구성
+        // 기본 컬럼 구성 (관리 기능 제거 - 관리자 페이지에서만 가능)
         const columns = [{
             field: 'name',
             title: '제목',
@@ -30,32 +30,6 @@ const BoardList = {
                 return row.created_at.split(' ')[0];
             }
         }];
-
-        // 로그인한 경우에만 관리 컬럼 추가
-        if (this.isLoggedIn) {
-            columns.push({
-                field: 'actions',
-                title: '관리',
-                align: 'center',
-                halign: 'center',
-                formatter: (value, row, index) => {
-                    return `
-                        <button
-                            class="btn btn-sm btn-outline-primary edit-board"
-                            data-id="${row.id}"
-                            data-name="${this.escapeHtml(row.name)}"
-                            data-description="${this.escapeHtml(row.description)}"
-                        >수정
-                        </button>
-                        <button
-                            class="btn btn-sm btn-outline-danger delete-board"
-                            data-id="${row.id}"
-                            data-name="${this.escapeHtml(row.name)}"
-                        >삭제</button>
-                    `;
-                }
-            });
-        }
 
         // 테이블 초기화
         $('#board_list_table').bootstrapTable({
