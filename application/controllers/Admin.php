@@ -74,6 +74,16 @@ class Admin extends MY_Controller
     }
 
     /**
+     * 관리자 → 댓글 관리
+     *
+     * @return void
+     */
+    public function comments()
+    {
+        $this->load->view('admin/comments_v');
+    }
+
+    /**
      * Admin 전용 레이아웃 적용
      */
     public function _output($output)
