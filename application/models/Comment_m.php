@@ -116,4 +116,81 @@ class Comment_m extends CI_Model
     {
         return $this->db->count_all('comments');
     }
+
+    /**
+     * 모든 댓글을 상세 정보와 함께 조회 (관리자용)
+     * 작성자, 게시글, 게시판 정보를 포함하여 페이지네이션과 정렬을 지원합니다.
+     *
+     * @param int $limit 페이지당 댓글 수
+     * @param int $offset 시작 위치
+     * @param string $sort 정렬 컬럼 (id, created_at, writer_id, article_id)
+     * @param string $order 정렬 순서 (asc, desc)
+     * @param string|null $search 검색어 (댓글 내용 또는 작성자명 검색)
+     * @return array 댓글 목록과 총 개수를 포함한 배열
+     */
+    public function get_all_with_details($limit = 10, $offset = 0, $sort = 'id', $order = 'desc', $search = null)
+    {
+        // 정렬 컬럼 화이트리스트 검증 (SQL Injection 방지)
+        $allowedSortColumns = ['id', 'created_at', 'writer_id', 'article_id'];
+        if (!in_array($sort, $allowedSortColumns)) {
+            $sort = 'id';
+        }
+
+        // 정렬 순서 검증
+        $order = strtolower($order);
+        if (!in_array($order, ['asc', 'desc'])) {
+            $order = 'desc';
+        }
+
+        // 총 개수 조회용 쿼리
+        $this->db->select('comments.id');
+        $this->db->from('comments');
+        $this->db->join('users', 'users.id = comments.writer_id', 'left');
+        $this->db->join('articles', 'articles.id = comments.article_id', 'left');
+
+        // 검색 조건
+        if (!empty($search)) {
+            $this->db->group_start();
+            $this->db->like('comments.comment', $search);
+            $this->db->or_like('users.name', $search);
+            $this->db->or_like('articles.title', $search);
+            $this->db->group_end();
+        }
+
+        $total = $this->db->count_all_results();
+
+        // 실제 데이터 조회
+        $this->db->select('comments.*,
+                          users.name as writer_name,
+                          users.email as writer_email,
+                          articles.id as article_id,
+                          articles.title as article_title,
+                          articles.board_id,
+                          boards.name as board_name');
+        $this->db->from('comments');
+        $this->db->join('users', 'users.id = comments.writer_id', 'left');
+        $this->db->join('articles', 'articles.id = comments.article_id', 'left');
+        $this->db->join('boards', 'boards.id = articles.board_id', 'left');
+
+        // 검색 조건 (동일하게 적용)
+        if (!empty($search)) {
+            $this->db->group_start();
+            $this->db->like('comments.comment', $search);
+            $this->db->or_like('users.name', $search);
+            $this->db->or_like('articles.title', $search);
+            $this->db->group_end();
+        }
+
+        // 정렬 및 페이지네이션
+        $this->db->order_by("comments.{$sort}", $order);
+        $this->db->limit($limit, $offset);
+
+        $query = $this->db->get();
+        $rows = $query->result();
+
+        return [
+            'rows' => $rows,
+            'total' => $total
+        ];
+    }
 }

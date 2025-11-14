@@ -10,27 +10,87 @@ class Comment extends RestController
         parent::__construct();
         $this->load->model('comment_m');
         $this->load->model('article_m');
+        $this->load->helper('auth');
     }
 
     /**
-     * 지정된 게시글의 댓글 목록을 조회하여 반환합니다.
+     * 댓글 목록 조회 API
+     * - article_id가 있으면: 해당 게시글의 댓글 목록 반환
+     * - article_id가 없고 관리자면: 전체 댓글 목록 반환 (페이지네이션)
      */
     public function index_get()
     {
-        $result = $this->comment_m->fetchByPost($this->get('article_id', true));
-        $current_user_id = get_user_id();
+        $articleId = $this->get('article_id', true);
 
-        $data = array_map(function ($comment) use ($current_user_id) {
-            return [
-                'id'         => $comment->id,
-                'name'       => $this->security->xss_clean($comment->name),
-                'comment'    => $this->security->xss_clean($comment->comment),
-                'created_at' => $this->security->xss_clean($comment->created_at),
-                'can_edit'   => $current_user_id && $comment->writer_id == $current_user_id
+        // article_id가 있으면 게시글별 댓글 조회
+        if ($articleId) {
+            $result = $this->comment_m->fetchByPost($articleId);
+            $current_user_id = get_user_id();
+
+            $data = array_map(function ($comment) use ($current_user_id) {
+                return [
+                    'id'         => $comment->id,
+                    'name'       => $this->security->xss_clean($comment->name),
+                    'comment'    => $this->security->xss_clean($comment->comment),
+                    'created_at' => $this->security->xss_clean($comment->created_at),
+                    'can_edit'   => $current_user_id && $comment->writer_id == $current_user_id
+                ];
+            }, $result);
+
+            $this->response(compact('data'), 200);
+            return;
+        }
+
+        // article_id가 없으면 관리자용 전체 목록 조회
+        if (!is_admin()) {
+            $this->response(['message' => 'forbidden'], 403);
+            return;
+        }
+
+        // 관리자용 전체 댓글 목록 조회
+        try {
+            // 파라미터 받기 (XSS 방지)
+            $page = (int)$this->get('page', true) ?: 1;
+            $perPage = (int)$this->get('per_page', true) ?: 10;
+            $sort = $this->get('sort', true) ?: 'id';
+            $order = $this->get('order', true) ?: 'desc';
+            $search = $this->get('search', true) ?: null;
+
+            // 페이지네이션 유효성 검사
+            if ($page < 1) {
+                $page = 1;
+            }
+
+            if ($perPage < 1 || $perPage > 100) {
+                $perPage = 10;
+            }
+
+            // offset 계산
+            $offset = ($page - 1) * $perPage;
+
+            // 데이터 조회
+            $result = $this->comment_m->get_all_with_details($perPage, $offset, $sort, $order, $search);
+
+            // 페이지네이션 정보 계산
+            $totalPages = ceil($result['total'] / $perPage);
+
+            $response = [
+                'rows' => $result['rows'],
+                'pagination' => [
+                    'total' => $result['total'],
+                    'per_page' => $perPage,
+                    'current_page' => $page,
+                    'total_pages' => $totalPages,
+                    'from' => $offset + 1,
+                    'to' => min($offset + $perPage, $result['total'])
+                ]
             ];
-        }, $result);
 
-        $this->response(compact('data'), 200);
+            $this->response($response, 200);
+        } catch (Exception $e) {
+            log_message('error', 'Comment::index_get error: ' . $e->getMessage());
+            $this->response(['message' => 'server error'], 500);
+        }
     }
 
     /**
@@ -122,6 +182,7 @@ class Comment extends RestController
 
     /**
      * 댓글을 삭제하는 REST API 엔드포인트
+     * 작성자 또는 관리자만 삭제 가능
      */
     public function index_delete($id)
     {
@@ -146,8 +207,11 @@ class Comment extends RestController
             return;
         }
 
-        // 작성자 확인
-        if ($existingComment->writer_id != $currentUserId) {
+        // 권한 확인: 작성자 또는 관리자
+        $isWriter = $existingComment->writer_id == $currentUserId;
+        $isAdmin = is_admin();
+
+        if (!$isWriter && !$isAdmin) {
             $this->response(['message' => 'forbidden'], 403);
             return;
         }
