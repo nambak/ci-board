@@ -314,17 +314,4 @@ class User_m extends CI_Model
         $this->db->where('role', 'admin');
         return $this->db->count_all_results('users');
     }
-
-    /**
-     * 사용자 ID로 단일 사용자 조회
-     *
-     * @param int $userId 사용자 ID
-     * @return object|null 사용자 객체 또는 null
-     */
-    public function getById($userId)
-    {
-        $this->db->where('id', $userId);
-        $query = $this->db->get('users');
-        return $query->row();
-    }
 }

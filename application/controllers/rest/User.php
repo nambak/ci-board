@@ -349,14 +349,15 @@ class User extends RestController
             }
 
             // 대상 사용자 존재 확인
-            $targetUser = $this->User_m->getById($userId);
-            if (!$targetUser) {
+            $targetUsers = $this->User_m->get($userId);
+            if (empty($targetUsers)) {
                 $this->response([
                     'success' => false,
                     'message' => '사용자를 찾을 수 없습니다.'
                 ], self::HTTP_NOT_FOUND);
                 return;
             }
+            $targetUser = $targetUsers[0];
 
             // 관리자를 일반 사용자로 강등하려는 경우
             if ($targetUser->role === 'admin' && $newRole === 'user') {
