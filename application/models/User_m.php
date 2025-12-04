@@ -314,4 +314,30 @@ class User_m extends CI_Model
         $this->db->where('role', 'admin');
         return $this->db->count_all_results('users');
     }
+
+    /**
+     * 비밀번호 업데이트
+     *
+     * @param int $user_id 사용자 ID
+     * @param string $new_password 새 비밀번호 (평문)
+     * @return bool 성공 여부
+     */
+    public function update_password($user_id, $new_password)
+    {
+        try {
+            $data = [
+                'password' => password_hash($new_password, PASSWORD_DEFAULT),
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+
+            $this->db->where('id', $user_id);
+            $this->db->update('users', $data);
+
+            return $this->db->affected_rows() > 0;
+
+        } catch (Exception $e) {
+            log_message('error', 'Password update error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
 }

@@ -20,6 +20,7 @@ class Auth extends RestController
         $this->load->helper(['security', 'string', 'signup_security']);
 
         $this->load->model('user_m');
+        $this->load->model('password_reset_m');
     }
 
     /**
@@ -240,6 +241,201 @@ class Auth extends RestController
             $this->response([
                 'success' => false,
                 'message' => '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+            ], self::HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    /**
+     * 비밀번호 재설정 링크 요청
+     * POST /rest/auth/forgot_password
+     */
+    public function forgot_password_post()
+    {
+        try {
+            // 유효성 검사
+            $this->form_validation->set_rules('email', '이메일', 'required|valid_email');
+
+            if (!$this->form_validation->run()) {
+                $errors = [];
+                if (form_error('email')) {
+                    $errors['email'] = strip_tags(form_error('email'));
+                }
+
+                $this->response([
+                    'success' => false,
+                    'message' => '올바른 이메일 주소를 입력해주세요.',
+                    'errors'  => $errors
+                ], self::HTTP_UNPROCESSABLE_ENTITY);
+                return;
+            }
+
+            $email = $this->post('email', true);
+
+            // 사용자 확인
+            $user = $this->user_m->get_by_email($email);
+
+            // 보안상 사용자 존재 여부와 관계없이 같은 응답 반환
+            if (!$user) {
+                $this->response([
+                    'success' => true,
+                    'message' => '이메일로 비밀번호 재설정 링크를 발송했습니다. 이메일을 확인해주세요.'
+                ], self::HTTP_OK);
+                return;
+            }
+
+            // 재설정 토큰 생성
+            $token = $this->password_reset_m->create_token($user->id);
+
+            // 이메일 발송
+            $this->load->library('email');
+
+            $reset_url = base_url('auth/reset_password/' . $token);
+            $expires_at = date('Y-m-d H:i:s', strtotime('+24 hours'));
+
+            // 이메일 템플릿 데이터
+            $email_data = [
+                'user_name' => $user->name,
+                'reset_url' => $reset_url,
+                'expires_at' => date('Y년 m월 d일 H시 i분', strtotime($expires_at))
+            ];
+
+            $message = $this->load->view('emails/password_reset', $email_data, TRUE);
+
+            $this->email->from('noreply@ci3board.local', 'CI3Board');
+            $this->email->to($user->email);
+            $this->email->subject('[CI3Board] 비밀번호 재설정 요청');
+            $this->email->message($message);
+
+            if ($this->email->send()) {
+                $this->response([
+                    'success' => true,
+                    'message' => '이메일로 비밀번호 재설정 링크를 발송했습니다. 이메일을 확인해주세요.'
+                ], self::HTTP_OK);
+            } else {
+                log_message('error', 'Email send failed: ' . $this->email->print_debugger());
+                $this->response([
+                    'success' => false,
+                    'message' => '이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.'
+                ], self::HTTP_INTERNAL_ERROR);
+            }
+
+        } catch (Exception $e) {
+            log_message('error', 'Password reset request error: ' . $e->getMessage());
+            $this->response([
+                'success' => false,
+                'message' => '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+            ], self::HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    /**
+     * 토큰 유효성 검증
+     * GET /rest/auth/verify_token/{token}
+     */
+    public function verify_token_get($token = null)
+    {
+        try {
+            if (!$token) {
+                $this->response([
+                    'success' => false,
+                    'message' => '토큰이 제공되지 않았습니다.',
+                    'valid' => false
+                ], self::HTTP_BAD_REQUEST);
+                return;
+            }
+
+            $token_data = $this->password_reset_m->verify_token($token);
+
+            if ($token_data) {
+                $this->response([
+                    'success' => true,
+                    'message' => '유효한 토큰입니다.',
+                    'valid' => true,
+                    'expires_at' => $token_data->expires_at
+                ], self::HTTP_OK);
+            } else {
+                $this->response([
+                    'success' => false,
+                    'message' => '유효하지 않거나 만료된 토큰입니다.',
+                    'valid' => false
+                ], self::HTTP_BAD_REQUEST);
+            }
+
+        } catch (Exception $e) {
+            log_message('error', 'Token verification error: ' . $e->getMessage());
+            $this->response([
+                'success' => false,
+                'message' => '서버 오류가 발생했습니다.',
+                'valid' => false
+            ], self::HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    /**
+     * 비밀번호 재설정 처리
+     * POST /rest/auth/reset_password
+     */
+    public function reset_password_post()
+    {
+        try {
+            // 유효성 검사
+            $this->form_validation->set_rules('token', '토큰', 'required');
+            $this->form_validation->set_rules('password', '비밀번호', 'required|min_length[8]');
+            $this->form_validation->set_rules('password_confirm', '비밀번호 확인', 'required|matches[password]');
+
+            if (!$this->form_validation->run()) {
+                $errors = [];
+                if (form_error('token')) {
+                    $errors['token'] = strip_tags(form_error('token'));
+                }
+                if (form_error('password')) {
+                    $errors['password'] = strip_tags(form_error('password'));
+                }
+                if (form_error('password_confirm')) {
+                    $errors['password_confirm'] = strip_tags(form_error('password_confirm'));
+                }
+
+                $this->response([
+                    'success' => false,
+                    'message' => '입력값을 확인해주세요.',
+                    'errors'  => $errors
+                ], self::HTTP_UNPROCESSABLE_ENTITY);
+                return;
+            }
+
+            $token = $this->post('token', true);
+            $password = $this->post('password', true);
+
+            // 토큰 검증
+            $token_data = $this->password_reset_m->verify_token($token);
+
+            if (!$token_data) {
+                $this->response([
+                    'success' => false,
+                    'message' => '유효하지 않거나 만료된 토큰입니다.'
+                ], self::HTTP_BAD_REQUEST);
+                return;
+            }
+
+            // 비밀번호 업데이트
+            $this->user_m->update_password($token_data->user_id, $password);
+
+            // 토큰을 사용됨으로 표시
+            $this->password_reset_m->mark_as_used($token);
+
+            // 해당 사용자의 모든 세션 무효화를 위해 remember_token 삭제
+            $this->user_m->save_remember_token($token_data->user_id, null);
+
+            $this->response([
+                'success' => true,
+                'message' => '비밀번호가 성공적으로 변경되었습니다. 새 비밀번호로 로그인해주세요.'
+            ], self::HTTP_OK);
+
+        } catch (Exception $e) {
+            log_message('error', 'Password reset error: ' . $e->getMessage());
+            $this->response([
+                'success' => false,
+                'message' => '비밀번호 변경에 실패했습니다. 다시 시도해주세요.'
             ], self::HTTP_INTERNAL_ERROR);
         }
     }
