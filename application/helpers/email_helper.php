@@ -11,6 +11,19 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 function send_verification_email($to, $name, $token)
 {
+    // 필수 파라미터 검증
+    if (empty($to) || empty($token)) {
+        log_message('error', 'send_verification_mail: Missing required parameters');
+        return false;
+    }
+
+    if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
+        log_message('error', 'send_verification_email: Invalid email address:');
+        return false;
+    }
+
+    $name = $name ?: 'User';
+
     $CI =& get_instance();
     $CI->load->library('email');
 
