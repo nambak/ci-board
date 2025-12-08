@@ -56,11 +56,12 @@ function send_verification_email($to, $name, $token)
                 <p>CI3Board에 가입해 주셔서 감사합니다.</p>
                 <p>아래 버튼을 클릭하여 이메일 인증을 완료해주세요:</p>
                 <p style="text-align: center;">
-                    <a href="' . $verification_url . '" class="button">이메일 인증하기</a>
+                    <a href="' . htmlspecialchars($verification_url, ENT_QUOTES, 'UTF-8') . '" class="button">이메일 인증하기</a>
                 </p>
+                
                 <p>또는 아래 링크를 복사하여 브라우저에 붙여넣으세요:</p>
                 <p style="word-break: break-all; background-color: #fff; padding: 10px; border: 1px solid #ddd;">
-                    ' . $verification_url . '
+                    ' . htmlspecialchars($verification_url, ENT_QUOTES, 'UTF-8') . '
                 </p>
                 <p style="color: #666; font-size: 14px;">
                     <strong>참고:</strong> 이메일 인증을 완료하지 않으면 게시글 및 댓글 작성이 제한됩니다.
@@ -158,7 +159,7 @@ function send_verification_success_email($to, $name)
     $result = $CI->email->send();
 
     if (!$result) {
-        log_message('error', 'Email sending failed: ' . $CI->email->print_debugger());
+        log_message('error', 'Verification success email sending failed');
         return false;
     }
 
