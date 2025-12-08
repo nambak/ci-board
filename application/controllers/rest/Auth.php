@@ -341,7 +341,7 @@ class Auth extends RestController
                     'message' => '이메일로 비밀번호 재설정 링크를 발송했습니다. 이메일을 확인해주세요.'
                 ], self::HTTP_OK);
             } else {
-                log_message('error', 'Email send failed: ' . $this->email->print_debugger());
+                log_message('error', '비밀번호 재설정 메일 발송 실패.');
                 $this->response([
                     'success' => false,
                     'message' => '이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.'
