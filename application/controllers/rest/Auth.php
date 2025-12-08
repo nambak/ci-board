@@ -508,16 +508,19 @@ class Auth extends RestController
                 return;
             }
 
-            // 재발송 쿨다운 체크 (세션 사용)
-            $last_sent = $this->session->userdata('verification_email_sent_at');
-            if ($last_sent && (time() - $last_sent) < 60) {
-                $remaining = 60 - (time() - $last_sent);
-                $this->response([
-                    'success'     => false,
-                    'message'     => "잠시 후 다시 시도해주세요. ({$remaining}초 후 재발송 가능)",
-                    'retry_after' => $remaining
-                ], self::HTTP_TOO_MANY_REQUESTS);
-                return;
+            // DB에서 마지막 발송 시간 확인
+            if ($user->last_verification_sent_at) {
+                $last_sent_time  = strtotime($user->last_verification_sent_at);
+                $elapsed = time() - $last_sent_time;
+                if ($elapsed < 60) {
+                    $remaining = 60 - $elapsed;
+                    $this->response([
+                        'success'     => false,
+                        'message'     => "잠시 후 다시 시도해주세요. ({$remaining}초 후 재발송 가능)",
+                        'retry_after' => $remaining
+                    ], self::HTTP_TOO_MANY_REQUESTS);
+                    return;
+                }
             }
 
             // 새로운 인증 토큰 생성
@@ -539,8 +542,8 @@ class Auth extends RestController
                 return;
             }
 
-            // 재발송 시간 기록
-            $this->session->set_userdata('verification_email_sent_at', time());
+            // DB에 재발송 시간 기록
+            $this->user_m->update_last_verification_sent($user_id, date('Y-m-d H:i:s'));
 
             $this->response([
                 'success' => true,

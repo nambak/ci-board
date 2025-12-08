@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `remember_token` VARCHAR(64) NULL COMMENT 'Remember Me 토큰',
   `email_verified_at` DATETIME NULL COMMENT '이메일 인증 일시',
   `verification_token` VARCHAR(64) NULL COMMENT '이메일 인증 토큰',
+  'last_verification_sent_at' DATETIME NULL COMMENT '인증 이메일 마지막 발송 시간',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '계정 생성일',
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '정보 수정일',
   PRIMARY KEY (`id`),
