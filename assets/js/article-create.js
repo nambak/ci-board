@@ -220,47 +220,30 @@ const ArticleCreate = {
      * 파일 업로드
      */
     async uploadFiles(articleId) {
-        console.log('uploadFiles called with articleId:', articleId);
-        console.log('selectedFiles:', this.selectedFiles);
-        console.log('CSRF token:', this.csrfTokenName, '=', this.csrfHash);
-
-        const uploadPromises = this.selectedFiles.map((file, index) => {
-            console.log(`Preparing upload for file ${index + 1}:`, file.name);
-
+        const results = [];
+        for (const file of this.selectedFiles) {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('article_id', articleId);
             formData.append(this.csrfTokenName, this.csrfHash);
 
-            console.log('FormData prepared for:', file.name);
-
-            return $.ajax({
+            const response = await $.ajax({
                 url: '/rest/attachment/upload',
                 type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false
-            }).done(function(response) {
-                console.log('Upload success for', file.name, ':', response);
-            }).fail(function(xhr, status, error) {
-                console.error('Upload failed for', file.name, ':', {
-                    status: xhr.status,
-                    statusText: xhr.statusText,
-                    responseText: xhr.responseText,
-                    error: error
-                });
             });
-        });
 
-        try {
-            console.log('Starting Promise.all for', uploadPromises.length, 'files');
-            const results = await Promise.all(uploadPromises);
-            console.log('All uploads completed:', results);
-            return results;
-        } catch (error) {
-            console.error('File upload error:', error);
-            throw error;
+            results.push(response);
+
+            // 서버 응답에서 새 CSRF 토큰 갱신
+            if (response.csrf_hash) {
+                this.csrfHash = response.csrf_hash;
+            }
         }
+
+        return results;
     },
 
     /**
