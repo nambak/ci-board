@@ -100,6 +100,16 @@ class Attachment extends RestController
             // 파일 타입 확인
             $file_ext = strtolower(pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION));
             $allowed_types = explode('|', $this->config->item('allowed_types')['all']);
+            $disallowed_types = $this->config->item('disallowed_types');
+
+            // 위험 확장자 차단
+            if (in_array($file_ext, $disallowed_types)) {
+                $this->response([
+                    'success' => false,
+                    'message' => '보안상 허용되지 않는 파일 형식입니다.'
+                ], self::HTTP_BAD_REQUEST);
+                return;
+            }
 
             if (!in_array($file_ext, $allowed_types)) {
                 $this->response([
