@@ -556,7 +556,7 @@ class Auth extends RestController
             }
 
             // DB에 재발송 시간 기록
-            $this->user_m->update_last_verification_sent($user_id, date('Y-m-d H:i:s'));
+            $this->user_m->update_last_verification_sent_at($user_id, date('Y-m-d H:i:s'));
 
             // 트랜잭션 종료
             $this->db->trans_complete();
