@@ -526,6 +526,15 @@ class Auth extends RestController
             // 새로운 인증 토큰 생성
             $verification_token = $this->user_m->generate_verification_token($user_id);
 
+            if (!$verification_token) {
+                log_message('error', 'Failed to generate verification token for user: ' . $user_id);
+                $this->response([
+                    'success' => false,
+                    'message' => '인증 토큰 생성에 실패했습니다. 잠시 후 다시 시도해주세요.'
+                ], self::HTTP_INTERNAL_ERROR);
+                return;
+            }
+
             // 인증 메일 발송
             $email_sent = send_verification_email(
                 $user->email,
