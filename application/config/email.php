@@ -13,10 +13,10 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 $config = [
     'protocol'       => 'smtp',
-    'smtp_host'      => 'sandbox.smtp.mailtrap.io',
-    'smtp_port'      => 2525,
-    'smtp_user'      => '4655a813b556e9',
-    'smtp_pass'      => 'c6bde978343362',
+    'smtp_host'      => getenv('SMTP_HOST') ?: 'sandbox.smtp.mailtrap.io',
+    'smtp_port'      => getenv('SMTP_PORT') ?: 2525,
+    'smtp_user'      => getenv('SMTP_USER'),
+    'smtp_pass'      => getenv('SMTP_PASS'),
     'smtp_crypto'    => 'tls',
     'crlf'           => "\r\n",
     'newline'        => "\r\n",
