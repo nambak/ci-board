@@ -193,20 +193,26 @@
         }
 
         function showAlert(type, message) {
-            const alertHtml = `
-                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            `;
-
             const container = document.querySelector('.card-body');
-            container.insertAdjacentHTML('afterbegin', alertHtml);
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.setAttribute('role', 'alert');
 
-            // 5초 후 자동 제거
+            // 메시지는 텍스트로만 삽입하여 html이 실행되지 않도록 보호
+            const textNode = document.createTextNode(message);
+            alert.appendChild(textNode);
+
+            const closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.className = 'btn-close';
+            closeBtn.setAttribute('data-bs-dismiss', 'alert');
+            closeBtn.setAttribute('aria-label', 'Close');
+            alert.appendChild(closeBtn);
+
+            container.insertAdjacentElement('afterbegin', alert);
+
             setTimeout(() => {
-                const alert = container.querySelector('.alert');
-                if (alert) {
+                if (alert && alert.parentNode) {
                     const bsAlert = new bootstrap.Alert(alert);
                     bsAlert.close();
                 }
