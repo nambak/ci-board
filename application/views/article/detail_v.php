@@ -25,6 +25,9 @@
                     <span class="me-3">작성일: <?= html_escape($currentArticle->created_at) ?></span>
                     <span>조회수: <?= html_escape($currentArticle->views) ?></span>
                 </div>
+                <div id="attachmentInfo" class="text-muted" style="display: none;">
+                    <!-- 첨부파일 정보가 여기에 표시됩니다 -->
+                </div>
             </div>
         </div>
     </div>
@@ -33,6 +36,15 @@
         <div class="col">
             <div class="card">
                 <div class="card-body min-vh-50">
+                    <!-- 첨부 이미지 -->
+                    <div class="row mb-3" id="attachmentImagesSection" style="display: none;">
+                        <div class="col">
+                            <div id="attachmentImages" class="row g-2">
+                                <!-- 이미지 썸네일 표시 -->
+                            </div>
+                        </div>
+                    </div>
+
                     <?= nl2br($currentArticle->content); ?>
                 </div>
             </div>
