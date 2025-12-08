@@ -135,6 +135,257 @@ const ArticleDetail = {
         })
     },
 
+    /**
+     * 첨부파일 목록 조회
+     */
+    getAttachments() {
+        $.ajax({
+            url: `/rest/attachment/list/${this.articleId}`,
+            type: 'GET',
+            success: (response) => {
+                if (response.success && response.data.length > 0) {
+                    this.displayAttachments(response.data);
+                }
+            },
+            error: (error) => {
+                console.error('Attachment load error:', error);
+            }
+        });
+    },
+
+    /**
+     * 첨부파일 표시
+     */
+    displayAttachments(attachments) {
+        const images = attachments.filter(file => file.is_image);
+        const files = attachments.filter(file => !file.is_image);
+        const allFiles = [...images, ...files];
+
+        // 첨부파일 정보 표시 (조회수 옆)
+        if (allFiles.length > 0) {
+            this.displayAttachmentInfo(allFiles);
+        }
+
+        // 이미지 표시 (본문 앞)
+        if (images.length > 0) {
+            this.displayImages(images);
+            $('#attachmentImagesSection').show();
+        }
+    },
+
+    /**
+     * 첨부파일 정보 표시
+     */
+    displayAttachmentInfo(attachments) {
+        const $attachmentInfo = $('#attachmentInfo');
+        $attachmentInfo.empty();
+
+        attachments.forEach((file, index) => {
+            const fileLink = $(`
+                <span class="${index > 0 ? 'ms-3' : ''}">
+                    <i class="bi bi-paperclip"></i>
+                    <a href="/rest/attachment/download/${file.id}" class="text-muted text-decoration-none">
+                        ${this.escapeHtml(file.original_name)}
+                    </a>
+                    <small class="text-muted">(${this.formatFileSize(file.file_size)}, 다운로드 ${file.download_count}회)</small>
+                </span>
+            `);
+
+            $attachmentInfo.append(fileLink);
+        });
+
+        $attachmentInfo.show();
+    },
+
+    /**
+     * 모든 파일 다운로드
+     */
+    downloadAllFiles(attachments) {
+        attachments.forEach((file, index) => {
+            setTimeout(() => {
+                window.location.href = `/rest/attachment/download/${file.id}`;
+            }, index * 500); // 500ms 간격으로 다운로드
+        });
+    },
+
+    /**
+     * 이미지 표시
+     */
+    displayImages(images) {
+        const imageContainer = $('#attachmentImages');
+        imageContainer.empty();
+
+        images.forEach((image, index) => {
+            const imageCard = $(`
+                <div class="col-md-2 col-sm-3 col-4">
+                    <img src="${this.escapeHtml(image.thumbnail_url)}"
+                         class="img-fluid rounded attachment-image"
+                         alt="${this.escapeHtml(image.original_name)}"
+                         data-image-index="${index}"
+                         data-original-name="${this.escapeHtml(image.original_name)}"
+                         style="cursor: pointer; width: 100%; height: 150px; object-fit: cover;">
+                </div>
+            `);
+
+            imageContainer.append(imageCard);
+        });
+
+        // 이미지 클릭 이벤트 (라이트박스)
+        $('.attachment-image').on('click', (e) => {
+            const index = $(e.target).data('image-index');
+            this.openLightbox(images, index);
+        });
+    },
+
+    /**
+     * 파일 표시
+     */
+    displayFiles(files) {
+        const fileContainer = $('#attachmentFiles');
+        fileContainer.empty();
+
+        files.forEach(file => {
+            const fileIcon = this.getFileIcon(file.original_name);
+            const fileItem = $(`
+                <a href="/rest/attachment/download/${file.id}"
+                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi ${fileIcon} me-2"></i>
+                        <span>${this.escapeHtml(file.original_name)}</span>
+                    </div>
+                    <div>
+                        <small class="text-muted me-3">${this.formatFileSize(file.file_size)}</small>
+                        <small class="text-muted">다운로드: ${file.download_count}회</small>
+                    </div>
+                </a>
+            `);
+
+            fileContainer.append(fileItem);
+        });
+    },
+
+    /**
+     * 파일 아이콘 가져오기
+     */
+    getFileIcon(filename) {
+        const ext = filename.split('.').pop().toLowerCase();
+        const iconMap = {
+            'pdf': 'bi-file-pdf',
+            'doc': 'bi-file-word',
+            'docx': 'bi-file-word',
+            'xls': 'bi-file-excel',
+            'xlsx': 'bi-file-excel',
+            'ppt': 'bi-file-ppt',
+            'pptx': 'bi-file-ppt',
+            'zip': 'bi-file-zip',
+            'rar': 'bi-file-zip',
+            '7z': 'bi-file-zip',
+            'txt': 'bi-file-text'
+        };
+
+        return iconMap[ext] || 'bi-file-earmark';
+    },
+
+    /**
+     * 파일 크기 포맷
+     */
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    },
+
+    /**
+     * 라이트박스 열기
+     */
+    openLightbox(images, startIndex) {
+        const imageUrls = images.map(img => img.image_url || img.thumbnail_url);
+        const imageNames = images.map(img => img.original_name);
+
+        let currentIndex = startIndex;
+
+        const lightboxHtml = `
+            <div id="imageLightbox" class="modal fade" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered modal-xl">
+                    <div class="modal-content bg-dark">
+                        <div class="modal-header border-0">
+                            <h5 class="modal-title text-white" id="lightboxTitle">${this.escapeHtml(imageNames[currentIndex])}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body text-center p-0">
+                            <img id="lightboxImage" src="${imageUrls[currentIndex]}" class="img-fluid" style="max-height: 80vh;">
+                        </div>
+                        <div class="modal-footer border-0 justify-content-between">
+                            <button type="button" class="btn btn-light" id="prevImage" ${currentIndex === 0 ? 'disabled' : ''}>
+                                <i class="bi bi-chevron-left"></i> 이전
+                            </button>
+                            <span class="text-white">${currentIndex + 1} / ${images.length}</span>
+                            <button type="button" class="btn btn-light" id="nextImage" ${currentIndex === images.length - 1 ? 'disabled' : ''}>
+                                다음 <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // 기존 라이트박스 제거
+        $('#imageLightbox').remove();
+
+        // 새 라이트박스 추가
+        $('body').append(lightboxHtml);
+
+        const $lightbox = $('#imageLightbox');
+        const $image = $('#lightboxImage');
+        const $title = $('#lightboxTitle');
+        const $prevBtn = $('#prevImage');
+        const $nextBtn = $('#nextImage');
+
+        // 이미지 변경 함수
+        const updateImage = (index) => {
+            currentIndex = index;
+            $image.attr('src', imageUrls[index]);
+            $title.text(imageNames[index]);
+            $prevBtn.prop('disabled', index === 0);
+            $nextBtn.prop('disabled', index === images.length - 1);
+            $lightbox.find('.modal-footer span').text(`${index + 1} / ${images.length}`);
+        };
+
+        // 이전/다음 버튼 이벤트
+        $prevBtn.on('click', () => {
+            if (currentIndex > 0) {
+                updateImage(currentIndex - 1);
+            }
+        });
+
+        $nextBtn.on('click', () => {
+            if (currentIndex < images.length - 1) {
+                updateImage(currentIndex + 1);
+            }
+        });
+
+        // 키보드 이벤트 (좌우 화살표)
+        $(document).on('keydown.lightbox', (e) => {
+            if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                updateImage(currentIndex - 1);
+            } else if (e.key === 'ArrowRight' && currentIndex < images.length - 1) {
+                updateImage(currentIndex + 1);
+            }
+        });
+
+        // 모달 닫힐 때 키보드 이벤트 제거
+        $lightbox.on('hidden.bs.modal', () => {
+            $(document).off('keydown.lightbox');
+            $lightbox.remove();
+        });
+
+        // 모달 표시
+        const modal = new bootstrap.Modal($lightbox[0]);
+        modal.show();
+    },
+
     escapeHtml(html) {
         return String(html === undefined || html === null ? '' : html)
             .replace(/&/g, '&amp;')
@@ -365,6 +616,9 @@ const ArticleDetail = {
 
         // 댓글 목록 조회
         this.getComments();
+
+        // 첨부파일 목록 조회
+        this.getAttachments();
     }
 };
 

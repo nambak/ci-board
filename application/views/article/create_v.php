@@ -23,6 +23,27 @@
                 </div>
             </div>
         </div>
+        <!-- 파일 첨부 영역 -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <i class="bi bi-paperclip"></i> 파일 첨부 (최대 5개, 이미지: 5MB / 일반파일: 10MB)
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <input type="file" class="form-control" id="fileInput" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.7z">
+                            <small class="text-muted">
+                                허용 파일: 이미지(jpg, png, gif), 문서(pdf, doc, xls, ppt), 압축(zip, rar, 7z)
+                            </small>
+                        </div>
+                        <div id="fileList" class="list-group">
+                            <!-- 선택된 파일 목록 표시 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- 버튼 영역 -->
         <div class="row mb-5">
             <div class="col">

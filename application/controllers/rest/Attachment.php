@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-require APPPATH . 'libraries/RestController.php';
+use chriskacerguis\RestServer\RestController;
 
 /**
  * Attachment REST Controller
@@ -220,10 +220,12 @@ class Attachment extends RestController
             $config['width'] = $this->config->item('thumbnail_width');
             $config['height'] = $this->config->item('thumbnail_height');
 
-            $this->load->library('image_lib', $config);
+            $this->load->library('image_lib');
+            $this->image_lib->initialize($config);
 
             if (!$this->image_lib->resize()) {
                 log_message('error', 'Thumbnail creation failed: ' . $this->image_lib->display_errors('', ''));
+                $this->image_lib->clear();
                 return null;
             }
 
@@ -411,14 +413,19 @@ class Attachment extends RestController
 
             $response_data = [];
             foreach ($attachments as $attachment) {
+                $image_url = $attachment->is_image ?
+                    base_url('uploads/attachments/' . basename($attachment->file_path)) : null;
+                $thumbnail_url = $attachment->thumbnail_path ?
+                    base_url('uploads/thumbnails/' . basename($attachment->thumbnail_path)) : $image_url;
+
                 $response_data[] = [
                     'id' => $attachment->id,
                     'original_name' => $attachment->original_name,
                     'file_size' => $attachment->file_size,
                     'mime_type' => $attachment->mime_type,
                     'is_image' => (bool)$attachment->is_image,
-                    'thumbnail_url' => $attachment->thumbnail_path ?
-                        base_url('uploads/thumbnails/' . basename($attachment->thumbnail_path)) : null,
+                    'thumbnail_url' => $thumbnail_url,
+                    'image_url' => $image_url,
                     'download_count' => $attachment->download_count,
                     'created_at' => $attachment->created_at
                 ];

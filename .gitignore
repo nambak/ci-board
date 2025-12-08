@@ -35,3 +35,4 @@ vendor/
 /application/cache/
 /CLAUDE.md
 /.claude/
+/uploads/

@@ -26,10 +26,18 @@ const BoardDetail = {
                 width: 60,
                 widthUnit: '%',
                 formatter: (value, row, index) => {
-                    let title = `<a href="/article/${row.id}">${row.title}</a>`
-                    if (row.comment_count > 0) {
-                        title += `<span style="font-size: 0.8rem;">(${row.comment_count})</span>`
+                    let title = `<a href="/article/${row.id}">${row.title}</a>`;
+
+                    // 첨부파일 아이콘 표시
+                    if (row.attachment_count > 0) {
+                        title += ` <i class="bi bi-paperclip text-muted"></i>`;
                     }
+
+                    // 댓글 수 표시
+                    if (row.comment_count > 0) {
+                        title += ` <span class="text-muted" style="font-size: 0.8rem;">(${row.comment_count})</span>`;
+                    }
+
                     return title;
                 }
             }, {
@@ -61,6 +69,7 @@ const BoardDetail = {
                 }
             }],
             pagination: true,
+            pageSize: 25,
             headerStyle: () => {
                 return {
                     classes: 'table-dark'
