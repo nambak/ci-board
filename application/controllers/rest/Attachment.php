@@ -319,9 +319,20 @@ class Attachment extends RestController
             // 다운로드 횟수 증가
             $this->attachment_m->increment_download_count($id);
 
-            // 파일 다운로드
-            $this->load->helper('download');
-            force_download($attachment->original_name, file_get_contents($attachment->file_path));
+            // 헤더 설정
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="' . basename($attachment->original_name) . '"');
+            header('Content-Transfer-Encoding: binary');
+            header('Content-Length: ' . filesize($attachment->file_path));
+            header('Cache-Control: must-revalidate');
+            header('Pragma: public');
+
+            // 출력 버퍼 정리 후 스트리밍
+            ob_clean();
+            flush();
+            readfile($attachment->file_path);
+            exit;
 
         } catch (Exception $e) {
             log_message('error', 'File download error: ' . $e->getMessage());
