@@ -96,9 +96,9 @@ class Auth extends RestController
             }
 
             $this->response([
-                'success' => true,
-                'message' => '로그인되었습니다.',
-                'user'    => [
+                'success'      => true,
+                'message'      => '로그인되었습니다.',
+                'user'         => [
                     'id'    => $user->id,
                     'email' => $user->email,
                     'name'  => $user->name,
@@ -229,8 +229,17 @@ class Auth extends RestController
             // 사용자 생성
             $user_id = $this->user_m->create($userData);
 
+            if (!$user_id) {
+                throw new Exception('Failed to create user');
+            }
+
             // 이메일 인증 토큰 생성
             $verification_token = $this->user_m->generate_verification_token($user_id);
+
+            if (!$verification_token) {
+                log_message('error', 'Failed to generate verification token for user: ' . $user_id);
+                throw new Exception('Failed to generate verification token');
+            }
 
             // 이메일 인증 메일 발송
             $email_sent = send_verification_email(
@@ -243,10 +252,15 @@ class Auth extends RestController
                 log_message('warning', 'Verification email failed to send for user: ' . $user_id);
             }
 
+            // 이메일 발송 여부에 때라 다른 메시지 제공
+            $message = $email_sent
+                ? '회원가입이 완료되었습니다. 이메일로 발송된 인증 링크를 확인해주세요.'
+                : '회원가입이 완료되었습니다. 이메일 발송에 실패했습니다. 로그인 후 인증 메일을 재발송해주세요.';
+
             // 성공 응답
             $this->response([
-                'success' => true,
-                'message' => '회원가입이 완료되었습니다. 이메일로 발송된 인증 링크를 확인해주세요.',
+                'success'    => true,
+                'message'    => $message,
                 'email_sent' => $email_sent
             ], self::HTTP_CREATED);
 
@@ -309,8 +323,8 @@ class Auth extends RestController
 
             // 이메일 템플릿 데이터
             $email_data = [
-                'user_name' => $user->name,
-                'reset_url' => $reset_url,
+                'user_name'  => $user->name,
+                'reset_url'  => $reset_url,
                 'expires_at' => date('Y년 m월 d일 H시 i분', strtotime($expires_at))
             ];
 
@@ -354,7 +368,7 @@ class Auth extends RestController
                 $this->response([
                     'success' => false,
                     'message' => '토큰이 제공되지 않았습니다.',
-                    'valid' => false
+                    'valid'   => false
                 ], self::HTTP_BAD_REQUEST);
                 return;
             }
@@ -363,16 +377,16 @@ class Auth extends RestController
 
             if ($token_data) {
                 $this->response([
-                    'success' => true,
-                    'message' => '유효한 토큰입니다.',
-                    'valid' => true,
+                    'success'    => true,
+                    'message'    => '유효한 토큰입니다.',
+                    'valid'      => true,
                     'expires_at' => $token_data->expires_at
                 ], self::HTTP_OK);
             } else {
                 $this->response([
                     'success' => false,
                     'message' => '유효하지 않거나 만료된 토큰입니다.',
-                    'valid' => false
+                    'valid'   => false
                 ], self::HTTP_BAD_REQUEST);
             }
 
@@ -381,7 +395,7 @@ class Auth extends RestController
             $this->response([
                 'success' => false,
                 'message' => '서버 오류가 발생했습니다.',
-                'valid' => false
+                'valid'   => false
             ], self::HTTP_INTERNAL_ERROR);
         }
     }
@@ -499,8 +513,8 @@ class Auth extends RestController
             if ($last_sent && (time() - $last_sent) < 60) {
                 $remaining = 60 - (time() - $last_sent);
                 $this->response([
-                    'success' => false,
-                    'message' => "잠시 후 다시 시도해주세요. ({$remaining}초 후 재발송 가능)",
+                    'success'     => false,
+                    'message'     => "잠시 후 다시 시도해주세요. ({$remaining}초 후 재발송 가능)",
                     'retry_after' => $remaining
                 ], self::HTTP_TOO_MANY_REQUESTS);
                 return;
