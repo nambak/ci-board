@@ -28,6 +28,11 @@
                         <div class="d-grid">
                             <button type="submit" class="btn btn-dark" id="loginBtn">로그인</button>
                         </div>
+                        <div class="text-center mt-3">
+                            <small>
+                                <a href="/auth/forgot_password" class="text-decoration-none">비밀번호를 잊으셨나요?</a>
+                            </small>
+                        </div>
                     </form>
                 </div>
                 <div class="card-footer text-center">

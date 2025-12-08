@@ -71,6 +71,21 @@ CREATE TABLE IF NOT EXISTS `comments` (
   CONSTRAINT `fk_comments_writer` FOREIGN KEY (`writer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='댓글 정보';
 
+-- 비밀번호 재설정 테이블
+CREATE TABLE IF NOT EXISTS `password_resets` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` INT UNSIGNED NOT NULL COMMENT '사용자 ID',
+  `token` VARCHAR(64) NOT NULL COMMENT '재설정 토큰',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일',
+  `expires_at` DATETIME NOT NULL COMMENT '만료일',
+  `used` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '사용 여부 (0: 미사용, 1: 사용됨)',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_password_resets_token` (`token`),
+  KEY `idx_password_resets_user_id` (`user_id`),
+  KEY `idx_password_resets_expires_at` (`expires_at`),
+  CONSTRAINT `fk_password_resets_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='비밀번호 재설정 토큰';
+
 -- ============================================
 -- 초기 데이터 삽입 (선택사항)
 -- ============================================
