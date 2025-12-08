@@ -340,4 +340,91 @@ class User_m extends CI_Model
             throw $e;
         }
     }
+
+    /**
+     * 이메일 인증 토큰 생성 및 저장
+     *
+     * @param int $user_id 사용자 ID
+     * @return string 생성된 인증 토큰
+     */
+    public function generate_verification_token($user_id)
+    {
+        try {
+            $token = bin2hex(random_bytes(32));
+
+            $data = [
+                'verification_token' => $token,
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+
+            $this->db->where('id', $user_id);
+            $this->db->update('users', $data);
+
+            return $token;
+
+        } catch (Exception $e) {
+            log_message('error', 'Verification token generation error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * 인증 토큰으로 사용자 조회
+     *
+     * @param string $token 인증 토큰
+     * @return object|null 사용자 정보 또는 null
+     */
+    public function get_by_verification_token($token)
+    {
+        if (empty($token)) {
+            return null;
+        }
+
+        $this->db->where('verification_token', $token);
+        $query = $this->db->get('users');
+
+        return $query->row();
+    }
+
+    /**
+     * 이메일 인증 완료 처리
+     *
+     * @param int $user_id 사용자 ID
+     * @return bool 성공 여부
+     */
+    public function verify_email($user_id)
+    {
+        try {
+            $data = [
+                'email_verified_at' => date('Y-m-d H:i:s'),
+                'verification_token' => null,
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+
+            $this->db->where('id', $user_id);
+            $this->db->update('users', $data);
+
+            return $this->db->affected_rows() > 0;
+
+        } catch (Exception $e) {
+            log_message('error', 'Email verification error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * 이메일 인증 여부 확인
+     *
+     * @param int $user_id 사용자 ID
+     * @return bool 인증 여부
+     */
+    public function is_email_verified($user_id)
+    {
+        $this->db->select('email_verified_at');
+        $this->db->where('id', $user_id);
+        $query = $this->db->get('users');
+
+        $user = $query->row();
+        return $user && !empty($user->email_verified_at);
+    }
 }

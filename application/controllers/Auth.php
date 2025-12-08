@@ -6,9 +6,10 @@ class Auth extends MY_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->load->helper(['url', 'form']);
+        $this->load->helper(['url', 'form', 'email']);
         $this->load->library('session');
         $this->load->library('form_validation');
+        $this->load->model('User_m');
     }
 
     /**
@@ -225,5 +226,74 @@ class Auth extends MY_Controller
             $this->session->set_flashdata('error', '비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
             redirect('/auth/reset_password/' . $token, 'refresh');
         }
+    }
+
+    /**
+     * 이메일 인증 처리
+     *
+     * @return void
+     */
+    public function verify_email()
+    {
+        $token = $this->input->get('token');
+
+        if (!$token) {
+            $this->session->set_flashdata('error', '유효하지 않은 인증 링크입니다.');
+            redirect('/login', 'refresh');
+            return;
+        }
+
+        try {
+            // 토큰으로 사용자 조회
+            $user = $this->User_m->get_by_verification_token($token);
+
+            if (!$user) {
+                $this->session->set_flashdata('error', '유효하지 않거나 만료된 인증 링크입니다.');
+                redirect('/login', 'refresh');
+                return;
+            }
+
+            // 이미 인증된 경우
+            if (!empty($user->email_verified_at)) {
+                $this->session->set_flashdata('info', '이미 인증이 완료된 계정입니다.');
+                redirect('/login', 'refresh');
+                return;
+            }
+
+            // 이메일 인증 완료
+            $this->User_m->verify_email($user->id);
+
+            // 인증 완료 이메일 발송
+            send_verification_success_email($user->email, $user->name);
+
+            // 자동 로그인
+            $sessionData = [
+                'user_id'    => $user->id,
+                'user_email' => $user->email,
+                'user_name'  => $user->name,
+                'role'       => $user->role,
+                'logged_in'  => true
+            ];
+
+            $this->session->set_userdata($sessionData);
+
+            $this->session->set_flashdata('success', '이메일 인증이 완료되었습니다. 환영합니다!');
+            redirect('/board', 'refresh');
+
+        } catch (Exception $e) {
+            log_message('error', 'Email verification error: ' . $e->getMessage());
+            $this->session->set_flashdata('error', '인증 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+            redirect('/login', 'refresh');
+        }
+    }
+
+    /**
+     * 이메일 인증 안내 페이지
+     *
+     * @return void
+     */
+    public function verification_notice()
+    {
+        $this->load->view('auth/verification_notice_v');
     }
 }

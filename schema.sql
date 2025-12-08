@@ -18,12 +18,16 @@ CREATE TABLE IF NOT EXISTS `users` (
   `password` VARCHAR(255) NOT NULL COMMENT '암호화된 비밀번호',
   `role` VARCHAR(20) NOT NULL DEFAULT 'user' COMMENT '사용자 권한 (admin, user)',
   `remember_token` VARCHAR(64) NULL COMMENT 'Remember Me 토큰',
+  `email_verified_at` DATETIME NULL COMMENT '이메일 인증 일시',
+  `verification_token` VARCHAR(64) NULL COMMENT '이메일 인증 토큰',
+  `last_verification_sent_at` DATETIME NULL COMMENT '인증 이메일 마지막 발송 시간',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '계정 생성일',
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '정보 수정일',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_users_name` (`name`),
   UNIQUE KEY `uk_users_email` (`email`),
-  KEY `idx_users_remember_token` (`remember_token`)
+  KEY `idx_users_remember_token` (`remember_token`),
+  KEY `idx_verification_token` (`verification_token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자 정보';
 
 -- 게시판 테이블

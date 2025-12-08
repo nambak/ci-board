@@ -894,6 +894,29 @@
               }
             }
           },
+          "403": {
+            "description": "이메일 인증 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "email_verification_required": {
+                      "type": "boolean",
+                      "description": "이메일 인증 필요 여부"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "이메일 인증이 필요합니다. 이메일을 확인하여 인증을 완료해주세요.",
+                  "email_verification_required": true
+                }
+              }
+            }
+          },
           "500": {
             "description": "서버 오류",
             "content": {
@@ -1048,6 +1071,29 @@
                 },
                 "example": {
                   "message": "unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "이메일 인증 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "email_verification_required": {
+                      "type": "boolean",
+                      "description": "이메일 인증 필요 여부"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "이메일 인증이 필요합니다. 이메일을 확인하여 인증을 완료해주세요.",
+                  "email_verification_required": true
                 }
               }
             }
@@ -1876,6 +1922,145 @@
                     "valid": {
                       "type": "boolean",
                       "example": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rest/auth/resend-verification": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "이메일 인증 메일 재발송",
+        "description": "회원가입 후 이메일 인증 메일을 재발송합니다 (로그인 필요, 1분 쿨다운)",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "인증 메일 재발송 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "인증 메일이 재발송되었습니다. 이메일을 확인해주세요."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "이미 인증된 계정",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "이미 인증이 완료된 계정입니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "로그인이 필요합니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "사용자를 찾을 수 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "사용자를 찾을 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "너무 많은 요청 (쿨다운)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "잠시 후 다시 시도해주세요. (45초 후 재발송 가능)"
+                    },
+                    "retry_after": {
+                      "type": "integer",
+                      "description": "재시도 가능까지 남은 시간(초)",
+                      "example": 45
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
                     }
                   }
                 }
