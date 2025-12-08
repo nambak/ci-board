@@ -51,8 +51,27 @@ class Article_m extends CI_Model
 
     public function delete($id)
     {
-        $this->db->where('id', $id);
+        // 첨부파일 삭제
+        $this->load->model('attachment_m');
+        $attachments = $this->attachment_m->get_by_article($id);
 
+        foreach ($attachments as $attachment) {
+            // 파일 삭제
+            if (file_exists($attachment->file_path)) {
+                unlink($attachment->file_path);
+            }
+
+            // 썸네일 삭제
+            if ($attachment->thumbnail_path && file_exists($attachment->thumbnail_path)) {
+                unlink($attachment->thumbnail_path);
+            }
+        }
+
+        // DB에서 첨부파일 삭제 (외래키 제약조건으로 자동 삭제되지만 명시적 처리)
+        $this->attachment_m->delete_by_article($id);
+
+        // 게시글 삭제
+        $this->db->where('id', $id);
         return $this->db->delete('articles');
     }
 
