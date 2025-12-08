@@ -1,5 +1,5 @@
 <?php
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 use chriskacerguis\RestServer\RestController;
 
@@ -40,8 +40,8 @@ class Attachment extends RestController
             // 이메일 인증 확인
             if (!$this->user_m->is_email_verified($user_id)) {
                 $this->response([
-                    'success' => false,
-                    'message' => '이메일 인증이 필요합니다.',
+                    'success'                     => false,
+                    'message'                     => '이메일 인증이 필요합니다.',
                     'email_verification_required' => true
                 ], self::HTTP_FORBIDDEN);
                 return;
@@ -175,13 +175,13 @@ class Attachment extends RestController
 
             // DB에 저장
             $attachment_data = [
-                'article_id' => $article_id,
-                'original_name' => $_FILES['file']['name'],
-                'stored_name' => $upload_data['file_name'],
-                'file_path' => $upload_data['full_path'],
-                'file_size' => $upload_data['file_size'] * 1024, // bytes로 저장
-                'mime_type' => $mime_type,
-                'is_image' => $is_image ? 1 : 0,
+                'article_id'     => $article_id,
+                'original_name'  => $_FILES['file']['name'],
+                'stored_name'    => $upload_data['file_name'],
+                'file_path'      => $upload_data['full_path'],
+                'file_size'      => $upload_data['file_size'] * 1024, // bytes로 저장
+                'mime_type'      => $mime_type,
+                'is_image'       => $is_image ? 1 : 0,
                 'thumbnail_path' => $thumbnail_path
             ];
 
@@ -190,11 +190,11 @@ class Attachment extends RestController
             $this->response([
                 'success' => true,
                 'message' => '파일이 업로드되었습니다.',
-                'data' => [
-                    'id' => $attachment_id,
+                'data'    => [
+                    'id'            => $attachment_id,
                     'original_name' => $attachment_data['original_name'],
-                    'file_size' => $attachment_data['file_size'],
-                    'is_image' => $is_image,
+                    'file_size'     => $attachment_data['file_size'],
+                    'is_image'      => $is_image,
                     'thumbnail_url' => $thumbnail_path ? base_url('uploads/thumbnails/' . basename($thumbnail_path)) : null
                 ]
             ], self::HTTP_CREATED);
@@ -380,6 +380,14 @@ class Attachment extends RestController
 
             // 게시글 작성자 확인
             $article = $this->article_m->get($attachment->article_id);
+            if (!$article) {
+                $this->response([
+                    'success' => false,
+                    'message' => '게시글을 찾을 수 없습니다.'
+                ], self::HTTP_NOT_FOUND);
+                return;
+            }
+
             if ($article->user_id != $user_id) {
                 $this->response([
                     'success' => false,
@@ -440,21 +448,21 @@ class Attachment extends RestController
                     base_url('uploads/thumbnails/' . basename($attachment->thumbnail_path)) : $image_url;
 
                 $response_data[] = [
-                    'id' => $attachment->id,
-                    'original_name' => $attachment->original_name,
-                    'file_size' => $attachment->file_size,
-                    'mime_type' => $attachment->mime_type,
-                    'is_image' => (bool)$attachment->is_image,
-                    'thumbnail_url' => $thumbnail_url,
-                    'image_url' => $image_url,
+                    'id'             => $attachment->id,
+                    'original_name'  => $attachment->original_name,
+                    'file_size'      => $attachment->file_size,
+                    'mime_type'      => $attachment->mime_type,
+                    'is_image'       => (bool)$attachment->is_image,
+                    'thumbnail_url'  => $thumbnail_url,
+                    'image_url'      => $image_url,
                     'download_count' => $attachment->download_count,
-                    'created_at' => $attachment->created_at
+                    'created_at'     => $attachment->created_at
                 ];
             }
 
             $this->response([
                 'success' => true,
-                'data' => $response_data
+                'data'    => $response_data
             ], self::HTTP_OK);
 
         } catch (Exception $e) {
