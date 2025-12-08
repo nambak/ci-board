@@ -9,6 +9,7 @@ class Article extends RestController
     {
         parent::__construct();
         $this->load->model('article_m');
+        $this->load->model('user_m');
         $this->load->library('session');
         $this->load->library('services/ArticleService', null, 'article_service');
         $this->load->helper('auth');
@@ -94,6 +95,14 @@ class Article extends RestController
 
             if (!$userId) {
                 $this->response(['message' => 'unauthorized'], 401);
+            }
+
+            // 이메일 인증 확인
+            if (!$this->user_m->is_email_verified($userId)) {
+                $this->response([
+                    'message' => '이메일 인증이 필요합니다. 이메일을 확인하여 인증을 완료해주세요.',
+                    'email_verification_required' => true
+                ], 403);
             }
 
             if ((int)$boardId <= 0) {

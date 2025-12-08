@@ -17,7 +17,7 @@ class Auth extends RestController
         $this->load->library('form_validation');
         $this->load->library('rate_limiter');
         $this->load->library('simple_captcha');
-        $this->load->helper(['security', 'string', 'signup_security']);
+        $this->load->helper(['security', 'string', 'signup_security', 'email']);
 
         $this->load->model('user_m');
         $this->load->model('password_reset_m');
@@ -227,12 +227,27 @@ class Auth extends RestController
             ];
 
             // 사용자 생성
-            $this->user_m->create($userData);
+            $user_id = $this->user_m->create($userData);
+
+            // 이메일 인증 토큰 생성
+            $verification_token = $this->user_m->generate_verification_token($user_id);
+
+            // 이메일 인증 메일 발송
+            $email_sent = send_verification_email(
+                $inputData['email'],
+                trim($inputData['name']),
+                $verification_token
+            );
+
+            if (!$email_sent) {
+                log_message('warning', 'Verification email failed to send for user: ' . $user_id);
+            }
 
             // 성공 응답
             $this->response([
                 'success' => true,
-                'message' => '회원가입이 완료되었습니다.',
+                'message' => '회원가입이 완료되었습니다. 이메일로 발송된 인증 링크를 확인해주세요.',
+                'email_sent' => $email_sent
             ], self::HTTP_CREATED);
 
         } catch (Exception $e) {
@@ -436,6 +451,93 @@ class Auth extends RestController
             $this->response([
                 'success' => false,
                 'message' => '비밀번호 변경에 실패했습니다. 다시 시도해주세요.'
+            ], self::HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    /**
+     * 이메일 인증 메일 재발송
+     * POST /rest/auth/resend-verification
+     */
+    public function resend_verification_post()
+    {
+        try {
+            // 세션에서 사용자 ID 가져오기
+            $user_id = $this->session->userdata('user_id');
+
+            if (!$user_id) {
+                $this->response([
+                    'success' => false,
+                    'message' => '로그인이 필요합니다.'
+                ], self::HTTP_UNAUTHORIZED);
+                return;
+            }
+
+            // 사용자 정보 조회
+            $users = $this->user_m->get($user_id);
+            if (empty($users)) {
+                $this->response([
+                    'success' => false,
+                    'message' => '사용자를 찾을 수 없습니다.'
+                ], self::HTTP_NOT_FOUND);
+                return;
+            }
+
+            $user = $users[0];
+
+            // 이미 인증된 경우
+            if (!empty($user->email_verified_at)) {
+                $this->response([
+                    'success' => false,
+                    'message' => '이미 인증이 완료된 계정입니다.'
+                ], self::HTTP_BAD_REQUEST);
+                return;
+            }
+
+            // 재발송 쿨다운 체크 (세션 사용)
+            $last_sent = $this->session->userdata('verification_email_sent_at');
+            if ($last_sent && (time() - $last_sent) < 60) {
+                $remaining = 60 - (time() - $last_sent);
+                $this->response([
+                    'success' => false,
+                    'message' => "잠시 후 다시 시도해주세요. ({$remaining}초 후 재발송 가능)",
+                    'retry_after' => $remaining
+                ], self::HTTP_TOO_MANY_REQUESTS);
+                return;
+            }
+
+            // 새로운 인증 토큰 생성
+            $verification_token = $this->user_m->generate_verification_token($user_id);
+
+            // 인증 메일 발송
+            $email_sent = send_verification_email(
+                $user->email,
+                $user->name,
+                $verification_token
+            );
+
+            if (!$email_sent) {
+                log_message('error', 'Resend verification email failed for user: ' . $user_id);
+                $this->response([
+                    'success' => false,
+                    'message' => '이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.'
+                ], self::HTTP_INTERNAL_ERROR);
+                return;
+            }
+
+            // 재발송 시간 기록
+            $this->session->set_userdata('verification_email_sent_at', time());
+
+            $this->response([
+                'success' => true,
+                'message' => '인증 메일이 재발송되었습니다. 이메일을 확인해주세요.'
+            ], self::HTTP_OK);
+
+        } catch (Exception $e) {
+            log_message('error', 'Resend verification error: ' . $e->getMessage());
+            $this->response([
+                'success' => false,
+                'message' => '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
             ], self::HTTP_INTERNAL_ERROR);
         }
     }

@@ -10,6 +10,7 @@ class Comment extends RestController
         parent::__construct();
         $this->load->model('comment_m');
         $this->load->model('article_m');
+        $this->load->model('user_m');
         $this->load->helper('auth');
     }
 
@@ -112,6 +113,14 @@ class Comment extends RestController
 
         if (!$writerId) {
             $this->response(['message' => 'unauthorized'], 401);
+        }
+
+        // 이메일 인증 확인
+        if (!$this->user_m->is_email_verified($writerId)) {
+            $this->response([
+                'message' => '이메일 인증이 필요합니다. 이메일을 확인하여 인증을 완료해주세요.',
+                'email_verification_required' => true
+            ], 403);
         }
 
         $article = $this->article_m->get($articleId);
