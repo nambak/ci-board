@@ -26,7 +26,8 @@ const BoardDetail = {
                 width: 60,
                 widthUnit: '%',
                 formatter: (value, row, index) => {
-                    let title = `<a href="/article/${row.id}">${row.title}</a>`;
+                    const escapedTitle = $('<div>').text(row.title).html();
+                    let title = `<a href="/article/${row.id}">${escapedTitle}</a>`;
 
                     // 첨부파일 아이콘 표시
                     if (row.attachment_count > 0) {
