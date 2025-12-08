@@ -487,6 +487,10 @@ class Auth extends RestController
                 return;
             }
 
+            // 트랜잭션 시작
+            $this->db->trans_start();
+            $this->db->query('SELECT * FROM users WHERE id = ? FOR UPDATE', [$user_id]);
+
             // 사용자 정보 조회
             $users = $this->user_m->get($user_id);
             if (empty($users)) {
@@ -553,6 +557,9 @@ class Auth extends RestController
 
             // DB에 재발송 시간 기록
             $this->user_m->update_last_verification_sent($user_id, date('Y-m-d H:i:s'));
+
+            // 트랜잭션 종료
+            $this->db->trans_complete();
 
             $this->response([
                 'success' => true,
