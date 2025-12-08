@@ -83,11 +83,13 @@ function send_verification_email($to, $name, $token)
     $result = $CI->email->send();
 
     if (!$result) {
-        log_message('error', 'Email sending failed: ' . $CI->email->print_debugger());
+        // 필요 시 개발 환경에서만 print_debugger()를 남기도록 조건 분기
+        log_message('error', 'Verification email sending failed');
         return false;
     }
 
-    log_message('info', 'Verification email sent to: ' . $to);
+    log_message('info', 'Verification email sent.');
+
     return true;
 }
 
