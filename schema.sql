@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `password_resets` (
 -- 첨부파일 테이블
 CREATE TABLE IF NOT EXISTS `attachments` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `article_id` INT NOT NULL COMMENT '게시글 ID',
+  `article_id` INT UNSIGNED NOT NULL COMMENT '게시글 ID',
   `original_name` VARCHAR(255) NOT NULL COMMENT '원본 파일명',
   `stored_name` VARCHAR(255) NOT NULL COMMENT '저장된 파일명 (암호화)',
   `file_path` VARCHAR(500) NOT NULL COMMENT '파일 저장 경로',
