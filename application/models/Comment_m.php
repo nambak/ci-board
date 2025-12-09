@@ -116,18 +116,6 @@ class Comment_m extends CI_Model
     }
 
     /**
-     * 답글 개수를 조회합니다.
-     *
-     * @param int $commentId 부모 댓글 ID
-     * @return int 답글 개수
-     */
-    public function countReplies($commentId)
-    {
-        $this->db->where('parent_id', $commentId);
-        return $this->db->count_all_results('comments');
-    }
-
-    /**
      * ID로 댓글 조회
      * @param int $id
      * @return object|null
