@@ -77,6 +77,21 @@ class Report extends RestController
                 return;
             }
 
+            // 자기 자신의 콘텐츠 신고 방지
+            if ($targetType === Report_m::TYPE_ARTICLE) {
+                $article = $this->article_m->get($targetId);
+                if ($article && (int)$article->user_id === (int)$userId) {
+                    $this->response(['message' => '자신의 게시글은 신고할 수 없습니다.'], 403);
+                    return;
+                }
+            } else {
+                $comment = $this->comment_m->get($targetId);
+                if ($comment && (int)$comment->writer_id === (int)$userId) {
+                    $this->response(['message' => '자신의 댓글은 신고할 수 없습니다.'], 403);
+                    return;
+                }
+            }
+
             // 신고 저장
             $reportId = $this->report_m->add($userId, $targetType, $targetId, $reason, $detail);
 
