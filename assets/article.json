@@ -2,7 +2,7 @@
   "_metadata": {
     "domain": "Article",
     "description": "게시글 관련 API",
-    "endpoint_count": 4,
+    "endpoint_count": 6,
     "base_url": "http://learning-ci.local.com"
   },
   "paths": {
@@ -39,6 +39,8 @@
                   "title": "첫 번째 게시글",
                   "content": "게시글 내용입니다.",
                   "view_count": 10,
+                  "like_count": 5,
+                  "liked_by_me": false,
                   "name": "홍길동",
                   "email": "user@example.com",
                   "created_at": "2024-08-20 10:00:00",
@@ -301,6 +303,258 @@
         }
       }
     },
+    "/rest/article/{id}/like": {
+      "post": {
+        "tags": [
+          "Article"
+        ],
+        "summary": "게시글 좋아요 추가",
+        "description": "게시글에 좋아요를 추가합니다 (로그인 필요, 중복 불가)",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "게시글 ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "좋아요 추가 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "like_count": {
+                      "type": "integer",
+                      "description": "현재 좋아요 수"
+                    },
+                    "liked_by_me": {
+                      "type": "boolean",
+                      "description": "현재 사용자의 좋아요 여부"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success",
+                  "like_count": 6,
+                  "liked_by_me": true
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "unauthorized"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "게시글을 찾을 수 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "article not found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "이미 좋아요 한 게시글",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "already liked"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "server error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Article"
+        ],
+        "summary": "게시글 좋아요 취소",
+        "description": "게시글의 좋아요를 취소합니다 (로그인 필요)",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "게시글 ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "좋아요 취소 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "like_count": {
+                      "type": "integer",
+                      "description": "현재 좋아요 수"
+                    },
+                    "liked_by_me": {
+                      "type": "boolean",
+                      "description": "현재 사용자의 좋아요 여부"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success",
+                  "like_count": 5,
+                  "liked_by_me": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "unauthorized"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "게시글을 찾을 수 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "article not found"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "좋아요 하지 않은 게시글",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "not liked"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/rest/article/create": {
       "post": {
         "tags": [
@@ -474,6 +728,14 @@
               "email": {
                 "type": "string",
                 "description": "작성자 이메일"
+              },
+              "like_count": {
+                "type": "integer",
+                "description": "좋아요 수"
+              },
+              "liked_by_me": {
+                "type": "boolean",
+                "description": "현재 로그인 사용자의 좋아요 여부"
               }
             }
           }

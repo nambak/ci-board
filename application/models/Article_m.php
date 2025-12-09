@@ -4,13 +4,14 @@ defined('BASEPATH') or exit('No direct script access allowed');
 class Article_m extends CI_Model
 {
     /**
-     * 지정된 게시판 ID에 해당하는 모든 게시글을 최신순으로 조회합니다.
+     * 지정된 게시판 ID에 해당하는 모든 게시글을 조회합니다.
      * 각 게시글의 댓글 수와 첨부파일 수도 함께 조회합니다.
      *
      * @param int $boardId 게시판의 고유 ID.
+     * @param string $sort 정렬 방식 ('latest': 최신순, 'popular': 인기순). 기본값은 최신순.
      * @return array 게시글 객체 배열 (comment_count, attachment_count 포함).
      */
-    public function fetchByBoardId($boardId)
+    public function fetchByBoardId($boardId, $sort = 'latest')
     {
         $this->db->select('articles.*, users.name as author,
                           COUNT(DISTINCT comments.id) as comment_count,
@@ -21,7 +22,16 @@ class Article_m extends CI_Model
         $this->db->join('users', 'users.id = articles.user_id', 'left');
         $this->db->where('articles.board_id', $boardId);
         $this->db->group_by('articles.id');
-        $this->db->order_by('articles.id', 'DESC');
+
+        if ($sort === 'popular') {
+            // 인기순: 최근 7일 기준, 좋아요 수 + 조회수 가중치
+            $this->db->where('articles.created_at >=', date('Y-m-d H:i:s', strtotime('-7 days')));
+            $this->db->order_by('(articles.like_count * 2 + articles.view_count)', 'DESC', false);
+            $this->db->order_by('articles.id', 'DESC');
+        } else {
+            $this->db->order_by('articles.id', 'DESC');
+        }
+
         $query = $this->db->get();
 
         $result = $query->result();
@@ -184,6 +194,48 @@ class Article_m extends CI_Model
     public function count()
     {
         return $this->db->count_all('articles');
+    }
+
+    /**
+     * 좋아요 수 증가
+     *
+     * @param int $id
+     * @return bool
+     */
+    public function incrementLikeCount($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->set('like_count', 'like_count + 1', false);
+
+        return $this->db->update('articles');
+    }
+
+    /**
+     * 좋아요 수 감소
+     *
+     * @param int $id
+     * @return bool
+     */
+    public function decrementLikeCount($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->where('like_count >', 0);
+        $this->db->set('like_count', 'like_count - 1', false);
+
+        return $this->db->update('articles');
+    }
+
+    /**
+     * 게시글 존재 여부 확인
+     *
+     * @param int $id
+     * @return bool
+     */
+    public function exists($id)
+    {
+        $this->db->where('id', $id);
+
+        return $this->db->count_all_results('articles') > 0;
     }
 
     /**

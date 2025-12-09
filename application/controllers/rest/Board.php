@@ -34,7 +34,8 @@ class Board extends RestController
             ], 200);
         } else {
             $this->load->model('article_m');
-            $articles = $this->article_m->fetchByBoardId($id);
+            $sort = $this->get('sort', true) ?: 'latest';
+            $articles = $this->article_m->fetchByBoardId($id, $sort);
             $board = $this->board_m->get($id);
             $total = $this->article_m->countByBoardId($id);
 
@@ -42,7 +43,8 @@ class Board extends RestController
                 'total' => $total,
                 'name'  => $board->name,
                 'rows'  => $articles,
-                'id'    => $id
+                'id'    => $id,
+                'sort'  => $sort
             ], 200);
         }
     }

@@ -1,10 +1,11 @@
 const BoardDetail = {
     pageId: '#board_detail ',
     boardId: null,
+    currentSort: 'latest',
 
     initPostList() {
         $(this.pageId + '#board_detail_table').bootstrapTable({
-            url: `/rest/board/${this.boardId}`,
+            url: `/rest/board/${this.boardId}?sort=${this.currentSort}`,
             columns: [{
                 field: 'id',
                 title: '번호',
@@ -54,6 +55,18 @@ const BoardDetail = {
                     return escapedAuthor;
                 }
             }, {
+                field: 'like_count',
+                title: '좋아요',
+                halign: 'center',
+                align: 'right',
+                formatter: (value, row, index) => {
+                    const count = row.like_count || 0;
+                    if (count > 0) {
+                        return `<span class="text-danger"><i class="bi bi-heart-fill"></i> ${count}</span>`;
+                    }
+                    return count;
+                }
+            }, {
                 field: 'views',
                 title: '조회수',
                 halign: 'center',
@@ -88,10 +101,32 @@ const BoardDetail = {
         });
     },
 
+    initSortButtons() {
+        $(this.pageId + '.sort-btn').on('click', (e) => {
+            const $btn = $(e.currentTarget);
+            const sort = $btn.data('sort');
+
+            if (sort === this.currentSort) {
+                return;
+            }
+
+            // 버튼 활성화 상태 변경
+            $(this.pageId + '.sort-btn').removeClass('active');
+            $btn.addClass('active');
+
+            // 정렬 방식 변경 후 테이블 새로고침
+            this.currentSort = sort;
+            $(this.pageId + '#board_detail_table').bootstrapTable('refreshOptions', {
+                url: `/rest/board/${this.boardId}?sort=${this.currentSort}`
+            });
+        });
+    },
+
     init(boardId) {
         this.boardId = boardId;
 
         this.initPostList();
+        this.initSortButtons();
 
         $(this.pageId + '#writePost').on('click', () => {
             location.href = `/article/create?board_id=${this.boardId}`;

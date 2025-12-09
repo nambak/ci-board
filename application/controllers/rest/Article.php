@@ -9,6 +9,7 @@ class Article extends RestController
     {
         parent::__construct();
         $this->load->model('article_m');
+        $this->load->model('article_like_m');
         $this->load->model('user_m');
         $this->load->library('session');
         $this->load->library('services/ArticleService', null, 'article_service');
@@ -33,6 +34,11 @@ class Article extends RestController
             if ($this->article_service->incrementViewCount($id, $viewedArticles)) {
                 $this->session->set_userdata('viewed_articles', $viewedArticles);
             }
+
+            // 좋아요 관련 정보 추가
+            $userId = get_user_id();
+            $article->like_count = (int)($article->like_count ?? 0);
+            $article->liked_by_me = $userId ? $this->article_like_m->hasLiked($id, $userId) : false;
 
             $this->response($article, 200);
         } catch (Exception $e) {
@@ -257,6 +263,114 @@ class Article extends RestController
             $this->response($response, 200);
         } catch (Exception $e) {
             log_message('error', 'Article::search_get error: ' . $e->getMessage());
+            $this->response(['message' => 'server error'], 500);
+        }
+    }
+
+    /**
+     * 게시글 좋아요 추가
+     * POST /rest/article/{id}/like
+     *
+     * @param int $id 게시글 ID
+     * @return void
+     */
+    public function like_post($id)
+    {
+        try {
+            $userId = get_user_id();
+
+            if (!$userId) {
+                $this->response(['message' => 'unauthorized'], 401);
+                return;
+            }
+
+            $id = (int)$id;
+
+            if ($id <= 0) {
+                $this->response(['message' => 'invalid id'], 400);
+                return;
+            }
+
+            // 게시글 존재 확인
+            if (!$this->article_m->exists($id)) {
+                $this->response(['message' => 'article not found'], 404);
+                return;
+            }
+
+            // 이미 좋아요 했는지 확인
+            if ($this->article_like_m->hasLiked($id, $userId)) {
+                $this->response(['message' => 'already liked'], 409);
+                return;
+            }
+
+            // 좋아요 추가
+            $this->article_like_m->add($id, $userId);
+            $this->article_m->incrementLikeCount($id);
+
+            // 업데이트된 좋아요 수 조회
+            $likeCount = $this->article_like_m->countByArticleId($id);
+
+            $this->response([
+                'message' => 'success',
+                'like_count' => $likeCount,
+                'liked_by_me' => true
+            ], 200);
+        } catch (Exception $e) {
+            log_message('error', 'Article::like_post error: ' . $e->getMessage());
+            $this->response(['message' => 'server error'], 500);
+        }
+    }
+
+    /**
+     * 게시글 좋아요 취소
+     * DELETE /rest/article/{id}/like
+     *
+     * @param int $id 게시글 ID
+     * @return void
+     */
+    public function like_delete($id)
+    {
+        try {
+            $userId = get_user_id();
+
+            if (!$userId) {
+                $this->response(['message' => 'unauthorized'], 401);
+                return;
+            }
+
+            $id = (int)$id;
+
+            if ($id <= 0) {
+                $this->response(['message' => 'invalid id'], 400);
+                return;
+            }
+
+            // 게시글 존재 확인
+            if (!$this->article_m->exists($id)) {
+                $this->response(['message' => 'article not found'], 404);
+                return;
+            }
+
+            // 좋아요 안 했으면 취소 불가
+            if (!$this->article_like_m->hasLiked($id, $userId)) {
+                $this->response(['message' => 'not liked'], 409);
+                return;
+            }
+
+            // 좋아요 삭제
+            $this->article_like_m->remove($id, $userId);
+            $this->article_m->decrementLikeCount($id);
+
+            // 업데이트된 좋아요 수 조회
+            $likeCount = $this->article_like_m->countByArticleId($id);
+
+            $this->response([
+                'message' => 'success',
+                'like_count' => $likeCount,
+                'liked_by_me' => false
+            ], 200);
+        } catch (Exception $e) {
+            log_message('error', 'Article::like_delete error: ' . $e->getMessage());
             $this->response(['message' => 'server error'], 500);
         }
     }
