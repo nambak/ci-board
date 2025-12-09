@@ -13,12 +13,6 @@ class Reports extends RestController
         $this->load->model('comment_m');
         $this->load->library('session');
         $this->load->helper('auth');
-
-        // 관리자 권한 체크
-        if (!is_admin()) {
-            $this->response(['message' => 'forbidden'], 403);
-            return;
-        }
     }
 
     /**
