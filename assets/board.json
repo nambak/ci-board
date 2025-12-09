@@ -514,45 +514,6 @@
             "description": "수정 일시"
           }
         }
-      },
-      "Article": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "게시글 ID"
-          },
-          "board_id": {
-            "type": "integer",
-            "description": "게시판 ID"
-          },
-          "user_id": {
-            "type": "integer",
-            "description": "작성자 ID"
-          },
-          "title": {
-            "type": "string",
-            "description": "게시글 제목"
-          },
-          "content": {
-            "type": "string",
-            "description": "게시글 내용"
-          },
-          "view_count": {
-            "type": "integer",
-            "description": "조회수"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "생성 일시"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "수정 일시"
-          }
-        }
       }
     }
   }

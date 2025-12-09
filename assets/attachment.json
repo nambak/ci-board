@@ -363,6 +363,14 @@
     "schemas": {
       "Attachment": {
         "type": "object",
+        "required": [
+          "id",
+          "original_name",
+          "file_size",
+          "mime_type",
+          "is_image",
+          "created_at"
+        ],
         "properties": {
           "id": {
             "type": "integer",
