@@ -8,7 +8,7 @@ ALTER TABLE `comments` ADD COLUMN `parent_id` INT UNSIGNED NULL COMMENT '부모 
 ALTER TABLE `comments` ADD COLUMN `depth` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '댓글 깊이' AFTER `parent_id`;
 
 -- parent_id 인덱스 추가
-ALTER TABLE `comments` ADD KEY `idx_parent_id` (`parent_id`);
+ALTER TABLE `comments` ADD KEY `idx_comments_parent_id` (`parent_id`)
 
 -- 외래 키 제약조건 추가 (부모 댓글 삭제 시 자식 댓글도 삭제)
-ALTER TABLE `comments` ADD CONSTRAINT `fk_comments_parent` FOREIGN KEY (`parent_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE;
+ALTER TABLE `comments` ADD CONSTRAINT `fk_comments_parent` FOREIGN KEY (`parent_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
