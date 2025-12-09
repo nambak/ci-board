@@ -3,6 +3,7 @@
     "schemas": {
       "Article": {
         "type": "object",
+        "required": ["id", "board_id", "title", "content"],
         "properties": {
           "id": {
             "type": "integer",

@@ -25,11 +25,6 @@ class ApiSpec extends RestController
         'attachment.json',
     ];
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     /**
      * 분리된 OpenAPI 스펙 파일들을 병합하여 반환
      * GET /rest/apispec
@@ -97,7 +92,7 @@ class ApiSpec extends RestController
 
             // paths 병합
             if (isset($spec['paths'])) {
-                foreach ($spec['paths'] as $path => $operations) {
+                foreach ($spec['paths'] as $path) {
                     if (isset($merged_paths[$path])) {
                         log_message('error', "Path conflict detected: {$path} in {$file}");
                     }
@@ -108,7 +103,7 @@ class ApiSpec extends RestController
 
             // components/schemas 병합
             if (isset($spec['components']['schemas'])) {
-                foreach ($spec['components']['schemas'] as $schema_name => $schema) {
+                foreach ($spec['components']['schemas'] as $schema_name) {
                     if (isset($merged_schemas[$schema_name])) {
                         log_message('error', "Schema conflict detected: {$schema_name} in {$file}");
                     }
