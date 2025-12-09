@@ -493,8 +493,12 @@ const ArticleDetail = {
             $('.reply-form').remove();
 
             // 답글 입력 폼 생성
+            const parentDepth = parseInt($btn.closest('.comment-item').data('depth'), 10) || 0;
+            const nextDepth = Math.min(parentDepth + 1, 2);
+            const indexPx = nextDepth * 40;
+
             const replyForm = `
-                <div class="reply-form card mt-2 mb-2" data-parent-id="${commentId}" style="margin-left: 40px;">
+                <div class="reply-form card mt-2 mb-2" data-parent-id="${commentId}" style="margin-left: ${indexPx}px;">
                     <div class="card-body">
                         <div class="mb-2">
                             <span class="badge bg-light text-primary">@${this.escapeHtml(authorName)}</span>에게 답글 작성
