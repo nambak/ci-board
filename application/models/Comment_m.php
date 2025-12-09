@@ -17,19 +17,21 @@ class Comment_m extends CI_Model
     public function create($articleId, $comment, $writerId, $parentId = null)
     {
         $depth = 0;
+        $validParentId = null;
 
         // 부모 댓글이 있으면 depth 계산
         if ($parentId) {
             $parent = $this->get($parentId);
             if ($parent) {
                 $depth = min($parent->depth + 1, 2); // 최대 depth 2로 제한
+                $validParentId = $parentId;
             }
         }
 
         $this->db->insert('comments', [
             'article_id' => $articleId,
             'writer_id'  => $writerId,
-            'parent_id'  => $parentId,
+            'parent_id'  => $validParentId,
             'depth'      => $depth,
             'comment'    => $comment
         ]);
@@ -275,7 +277,7 @@ class Comment_m extends CI_Model
         $rows = $query->result();
 
         return [
-            'rows' => $rows,
+            'rows'  => $rows,
             'total' => $total
         ];
     }
