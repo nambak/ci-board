@@ -1,0 +1,93 @@
+<?php
+
+use chriskacerguis\RestServer\RestController;
+
+defined('BASEPATH') or exit('No direct script access allowed');
+
+class ApiSpec extends RestController
+{
+    /**
+     * API 스펙 파일 목록
+     */
+    private $spec_files = [
+        'board.json',
+        'article.json',
+        'comment.json',
+        'auth.json',
+        'user.json',
+        'attachment.json',
+    ];
+
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    /**
+     * 분리된 OpenAPI 스펙 파일들을 병합하여 반환
+     * GET /rest/apispec
+     */
+    public function index_get()
+    {
+        $assets_path = FCPATH . 'assets/';
+
+        // 기본 스펙 로드
+        $base_file = $assets_path . '_base.json';
+        if (!file_exists($base_file)) {
+            return $this->response(['message' => '_base.json not found'], 404);
+        }
+
+        $base_spec = json_decode(file_get_contents($base_file), true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return $this->response(['message' => 'Invalid _base.json'], 500);
+        }
+
+        // _description 필드 제거 (메타데이터)
+        unset($base_spec['_description']);
+
+        // paths와 components 초기화
+        $merged_paths = [];
+        $merged_schemas = [];
+
+        // 각 도메인 스펙 파일 병합
+        foreach ($this->spec_files as $file) {
+            $file_path = $assets_path . $file;
+
+            if (!file_exists($file_path)) {
+                log_message('warning', "API spec file not found: {$file}");
+                continue;
+            }
+
+            $spec = json_decode(file_get_contents($file_path), true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                log_message('error', "Invalid JSON in {$file}: " . json_last_error_msg());
+                continue;
+            }
+
+            // paths 병합
+            if (isset($spec['paths'])) {
+                $merged_paths = array_merge($merged_paths, $spec['paths']);
+            }
+
+            // components/schemas 병합
+            if (isset($spec['components']['schemas'])) {
+                $merged_schemas = array_merge($merged_schemas, $spec['components']['schemas']);
+            }
+        }
+
+        // 최종 스펙 구성
+        $base_spec['paths'] = $merged_paths;
+
+        if (!empty($merged_schemas)) {
+            if (!isset($base_spec['components'])) {
+                $base_spec['components'] = [];
+            }
+            $base_spec['components']['schemas'] = $merged_schemas;
+        }
+
+        // JSON 응답 반환
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($base_spec, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    }
+}

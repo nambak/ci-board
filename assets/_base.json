@@ -1,0 +1,29 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "CI Board API Documentation",
+    "description": "CodeIgniter 기반 게시판 시스템 REST API 문서",
+    "version": "1.0.0",
+    "contact": {
+      "name": "CI Board",
+      "url": "https://github.com/nambak/ci-board"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://learning-ci.local.com",
+      "description": "Local Test Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sessionAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "ci_session",
+        "description": "CodeIgniter 세션 쿠키 기반 인증"
+      }
+    }
+  },
+  "_description": "이 파일은 API 문서의 기본 정보입니다. 각 도메인별 API는 별도 파일을 참조하세요."
+}

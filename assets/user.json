@@ -1,0 +1,584 @@
+{
+  "_metadata": {
+    "domain": "User",
+    "description": "사용자 관련 API",
+    "endpoint_count": 4,
+    "base_url": "http://learning-ci.local.com"
+  },
+  "paths": {
+    "/rest/user": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "전체 사용자 목록 조회",
+        "description": "모든 사용자의 공개 프로필 목록을 조회합니다 (관리자 전용)",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "사용자 목록 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/UserPublicProfile"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "description": "전체 사용자 수"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "rows": [
+                    {
+                      "id": 1,
+                      "name": "홍길동",
+                      "email": "user@example.com",
+                      "created_at": "2024-08-19 16:33:58",
+                      "article_count": 10,
+                      "comment_count": 25,
+                      "is_owner": false
+                    }
+                  ],
+                  "total": 100
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "권한 없음 (관리자만 접근 가능)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "접근 권한이 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "사용자 정보를 불러오는 중 오류가 발생했습니다."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rest/user/{id}": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "특정 사용자 공개 프로필 조회",
+        "description": "특정 사용자의 공개 프로필 정보를 조회합니다",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "사용자 ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "사용자 프로필 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UserPublicProfile"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": 1,
+                    "name": "홍길동",
+                    "email": "user@example.com",
+                    "created_at": "2024-08-19 16:33:58",
+                    "article_count": 10,
+                    "comment_count": 25,
+                    "is_owner": false
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "사용자를 찾을 수 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "사용자 정보를 찾을 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "사용자 정보를 불러오는 중 오류가 발생했습니다."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rest/user/profile": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "내 프로필 조회",
+        "description": "현재 로그인한 사용자의 프로필 정보를 조회합니다 (로그인 필요)",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "프로필 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/UserProfile"
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": 1,
+                    "name": "홍길동",
+                    "email": "user@example.com",
+                    "created_at": "2024-08-19 16:33:58",
+                    "post_count": 10,
+                    "comment_count": 25
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "로그인이 필요합니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "사용자 정보를 찾을 수 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "사용자 정보를 찾을 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "프로필 정보를 불러오는 중 오류가 발생했습니다."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "User"
+        ],
+        "summary": "프로필 수정 및 비밀번호 변경",
+        "description": "현재 로그인한 사용자의 프로필 정보를 수정하고, 선택적으로 비밀번호를 변경합니다 (로그인 필요)",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 50,
+                    "description": "사용자 이름"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "현재 비밀번호 (비밀번호 변경 시 필수)"
+                  },
+                  "new_password": {
+                    "type": "string",
+                    "format": "password",
+                    "minLength": 8,
+                    "description": "새 비밀번호 (비밀번호 변경 시 필수, 8자 이상)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "프로필 수정 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "profileOnly": {
+                    "summary": "프로필만 수정",
+                    "value": {
+                      "success": true,
+                      "message": "프로필이 수정되었습니다.",
+                      "data": {
+                        "name": "홍길동"
+                      }
+                    }
+                  },
+                  "profileAndPassword": {
+                    "summary": "프로필 및 비밀번호 수정",
+                    "value": {
+                      "success": true,
+                      "message": "프로필과 비밀번호가 수정되었습니다.",
+                      "data": {
+                        "name": "홍길동"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "로그인이 필요합니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "유효성 검사 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "입력값을 확인해주세요."
+                    },
+                    "errors": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "nameError": {
+                    "summary": "이름 유효성 검사 실패",
+                    "value": {
+                      "success": false,
+                      "message": "입력값을 확인해주세요.",
+                      "errors": {
+                        "name": "The 이름 field must be at least 2 characters in length."
+                      }
+                    }
+                  },
+                  "passwordMismatch": {
+                    "summary": "현재 비밀번호 불일치",
+                    "value": {
+                      "success": false,
+                      "message": "입력값을 확인해주세요.",
+                      "errors": {
+                        "password": "현재 비밀번호가 일치하지 않습니다."
+                      }
+                    }
+                  },
+                  "newPasswordTooShort": {
+                    "summary": "새 비밀번호 길이 부족",
+                    "value": {
+                      "success": false,
+                      "message": "입력값을 확인해주세요.",
+                      "errors": {
+                        "new-password": "새 비밀번호는 8자 이상이어야 합니다."
+                      }
+                    }
+                  },
+                  "passwordsSame": {
+                    "summary": "현재/새 비밀번호 동일",
+                    "value": {
+                      "success": false,
+                      "message": "입력값을 확인해주세요.",
+                      "errors": {
+                        "new-password": "새 비밀번호가 현재 비밀번호와 같습니다."
+                      }
+                    }
+                  },
+                  "passwordRequired": {
+                    "summary": "비밀번호 입력 누락",
+                    "value": {
+                      "success": false,
+                      "message": "입력값을 확인해주세요.",
+                      "errors": {
+                        "password": "현재 비밀번호를 입력해주세요.",
+                        "new-password": "새 비밀번호를 입력해주세요."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "프로필 수정 중 오류가 발생했습니다."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UserProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "사용자 ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "사용자 이름"
+          },
+          "email": {
+            "type": "string",
+            "description": "사용자 이메일"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "가입 일시"
+          },
+          "post_count": {
+            "type": "integer",
+            "description": "작성한 게시글 수"
+          },
+          "comment_count": {
+            "type": "integer",
+            "description": "작성한 댓글 수"
+          }
+        }
+      },
+      "UserPublicProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "사용자 ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "사용자 이름"
+          },
+          "email": {
+            "type": "string",
+            "description": "사용자 이메일"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "가입 일시"
+          },
+          "article_count": {
+            "type": "integer",
+            "description": "작성한 게시글 수"
+          },
+          "comment_count": {
+            "type": "integer",
+            "description": "작성한 댓글 수"
+          },
+          "is_owner": {
+            "type": "boolean",
+            "description": "현재 로그인한 사용자가 프로필 소유자인지 여부"
+          }
+        }
+      }
+    }
+  }
+}

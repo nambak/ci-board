@@ -1,0 +1,559 @@
+{
+  "_metadata": {
+    "domain": "Board",
+    "description": "게시판 관련 API",
+    "endpoint_count": 5,
+    "base_url": "http://learning-ci.local.com"
+  },
+  "paths": {
+    "/rest/board": {
+      "get": {
+        "tags": [
+          "Board"
+        ],
+        "summary": "게시판 목록 조회",
+        "description": "생성된 모든 게시판 목록을 조회합니다",
+        "responses": {
+          "200": {
+            "description": "게시판 목록 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Board"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "rows": [
+                    {
+                      "id": 1,
+                      "name": "일반 게시판",
+                      "description": "주제에 관련없는 게시물을 올리는 게시판입니다",
+                      "created_at": "2024-08-19 16:33:58",
+                      "updated_at": "2024-08-19 16:33:58"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Board"
+        ],
+        "summary": "게시판 생성",
+        "description": "새로운 게시판을 생성합니다 (로그인 필요)",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "게시판 이름"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "게시판 설명"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "게시판 생성 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "description": "생성된 게시판 ID"
+                    }
+                  }
+                },
+                "example": {
+                  "id": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청 (필수 값 누락)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "name required"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "unauthorized"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rest/board/{id}": {
+      "get": {
+        "tags": [
+          "Board"
+        ],
+        "summary": "게시판 상세 조회",
+        "description": "특정 게시판의 상세 정보와 해당 게시판의 게시글 목록을 조회합니다",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "게시판 ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "게시판 상세 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "total": {
+                      "type": "integer",
+                      "description": "게시글 총 개수"
+                    },
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Article"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "id": 1,
+                  "name": "일반 게시판",
+                  "total": 10,
+                  "rows": [
+                    {
+                      "id": 1,
+                      "board_id": 1,
+                      "user_id": 1,
+                      "title": "첫 번째 게시글",
+                      "content": "게시글 내용입니다.",
+                      "view_count": 10,
+                      "created_at": "2024-08-20 10:00:00",
+                      "updated_at": "2024-08-20 10:00:00"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Board"
+        ],
+        "summary": "게시판 수정",
+        "description": "기존 게시판의 정보를 수정합니다 (로그인 필요)",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "게시판 ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "게시판 이름"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "게시판 설명"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "게시판 수정 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "invalidId": {
+                    "value": {
+                      "message": "invalid id"
+                    }
+                  },
+                  "nameRequired": {
+                    "value": {
+                      "message": "name required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "unauthorized"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "게시판을 찾을 수 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "board not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "server error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Board"
+        ],
+        "summary": "게시판 삭제",
+        "description": "특정 게시판을 삭제합니다 (로그인 필요)",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "게시판 ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "게시판 삭제 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "invalid id"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "unauthorized"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "게시판을 찾을 수 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "board not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Board": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "게시판 ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "게시판 이름"
+          },
+          "description": {
+            "type": "string",
+            "description": "게시판 설명"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "생성 일시"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "수정 일시"
+          }
+        }
+      },
+      "Article": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "게시글 ID"
+          },
+          "board_id": {
+            "type": "integer",
+            "description": "게시판 ID"
+          },
+          "user_id": {
+            "type": "integer",
+            "description": "작성자 ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "게시글 제목"
+          },
+          "content": {
+            "type": "string",
+            "description": "게시글 내용"
+          },
+          "view_count": {
+            "type": "integer",
+            "description": "조회수"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "생성 일시"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "수정 일시"
+          }
+        }
+      }
+    }
+  }
+}
