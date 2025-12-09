@@ -54,7 +54,7 @@ class ApiSpec extends RestController
             $file_path = $assets_path . $file;
 
             if (!file_exists($file_path)) {
-                log_message('warning', "API spec file not found: {$file}");
+                log_message('error', "API spec file not found: {$file}");
                 continue;
             }
 
@@ -68,7 +68,7 @@ class ApiSpec extends RestController
             if (isset($spec['paths'])) {
                 foreach ($spec['paths'] as $path => $operations) {
                     if (isset($merged_paths[$path])) {
-                        log_message('warning', "Path conflict detected: {$path} in {$file}");
+                        log_message('error', "Path conflict detected: {$path} in {$file}");
                     }
                 }
 
@@ -79,7 +79,7 @@ class ApiSpec extends RestController
             if (isset($spec['components']['schemas'])) {
                 foreach ($spec['components']['schemas'] as $schema_name => $schema) {
                     if (isset($merged_schemas[$schema_name])) {
-                        log_message('warning', "Schema conflict detected: {$schema_name} in {$file}");
+                        log_message('error', "Schema conflict detected: {$schema_name} in {$file}");
                     }
                 }
 
