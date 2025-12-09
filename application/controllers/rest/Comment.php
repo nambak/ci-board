@@ -141,13 +141,15 @@ class Comment extends RestController
         }
 
         // parent_id 유효성 검사
-        if ($parentId) {
+        if ($parentId !== null && $parentId !== '') {
             if (!ctype_digit((string)$parentId) || (int)$parentId <= 0) {
                 $this->response(['message' => 'invalid parent_id'], 400);
                 return;
             }
 
+            $parentId = (int)$parentId;
             $parentComment = $this->comment_m->get($parentId);
+
             if (!$parentComment) {
                 $this->response(['message' => 'parent comment not found'], 404);
                 return;
@@ -164,6 +166,9 @@ class Comment extends RestController
                 $this->response(['message' => 'maximum reply depth reached'], 400);
                 return;
             }
+        } else {
+            // 루트 댓글의 경우 명시적으로 null로 정규화
+            $parentId = null;
         }
 
         try {
