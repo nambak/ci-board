@@ -68,3 +68,7 @@ $route['logout'] = 'auth/logout';
 
 // REST API routes
 $route['rest/article/(:num)/like'] = 'rest/article/like/$1';
+
+// Admin REST API routes
+$route['rest/admin/reports'] = 'rest/admin/reports/index';
+$route['rest/admin/reports/(:num)'] = 'rest/admin/reports/index/$1';

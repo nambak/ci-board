@@ -54,17 +54,23 @@
             </div>
         </div>
     </div>
-    <!-- 좋아요 버튼 영역 -->
+    <!-- 좋아요/신고 버튼 영역 -->
     <div class="row mb-4">
         <div class="col text-center">
             <?php if (is_logged_in()): ?>
-                <button id="likeButton" class="btn btn-outline-danger btn-lg">
+                <button id="likeButton" class="btn btn-outline-danger btn-lg me-2">
                     <i class="bi bi-heart" id="likeIcon"></i>
                     <span id="likeButtonText">좋아요</span>
                 </button>
+                <button id="reportArticleButton" class="btn btn-outline-warning btn-lg" data-bs-toggle="modal" data-bs-target="#reportModal" data-target-type="article" data-target-id="<?= $currentArticle->id ?>">
+                    <i class="bi bi-flag"></i> 신고
+                </button>
             <?php else: ?>
-                <button class="btn btn-outline-secondary btn-lg" disabled title="로그인 후 이용 가능합니다">
+                <button class="btn btn-outline-secondary btn-lg me-2" disabled title="로그인 후 이용 가능합니다">
                     <i class="bi bi-heart"></i> 좋아요
+                </button>
+                <button class="btn btn-outline-secondary btn-lg" disabled title="로그인 후 이용 가능합니다">
+                    <i class="bi bi-flag"></i> 신고
                 </button>
             <?php endif; ?>
         </div>
@@ -139,5 +145,59 @@
             </div>
         </div>
     </div>
+
+    <!-- 신고 모달 -->
+    <?php if (is_logged_in()): ?>
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reportModalLabel">신고하기</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="reportForm">
+                        <input type="hidden" id="reportTargetType" name="target_type" value="">
+                        <input type="hidden" id="reportTargetId" name="target_id" value="">
+
+                        <div class="mb-3">
+                            <label class="form-label">신고 사유 선택 <span class="text-danger">*</span></label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reason" id="reasonSpam" value="spam">
+                                <label class="form-check-label" for="reasonSpam">스팸/광고</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reason" id="reasonAbuse" value="abuse">
+                                <label class="form-check-label" for="reasonAbuse">욕설/비방</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reason" id="reasonAdult" value="adult">
+                                <label class="form-check-label" for="reasonAdult">음란물</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reason" id="reasonCopyright" value="copyright">
+                                <label class="form-check-label" for="reasonCopyright">저작권 침해</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="reason" id="reasonOther" value="other">
+                                <label class="form-check-label" for="reasonOther">기타</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="reportDetailSection" style="display: none;">
+                            <label for="reportDetail" class="form-label">상세 내용 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="reportDetail" name="detail" rows="3" placeholder="신고 사유를 상세히 입력해주세요."></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-warning" id="submitReport">신고하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 </article>
 <script src="/assets/js/article-detail.js" defer></script>
+<script src="/assets/js/report.js" defer></script>

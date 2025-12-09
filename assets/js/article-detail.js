@@ -520,6 +520,11 @@ const ArticleDetail = {
                 ? `<button class="btn btn-sm btn-link text-secondary reply-btn" data-comment-id="${comment.id}" data-author-name="${this.escapeHtml(comment.name).replace(/"/g, '&quot;')}">답글</button>`
                 : '';
 
+            // 신고 버튼 (로그인 상태 && 본인 댓글이 아닌 경우만 표시)
+            const reportButton = isLoggedIn && !comment.can_edit
+                ? `<button class="btn btn-sm btn-link text-warning report-comment-btn" data-target-type="comment" data-target-id="${comment.id}"><i class="bi bi-flag"></i> 신고</button>`
+                : '';
+
             const template = `<div class="card mb-2 comment-item" data-comment-id="${comment.id}" data-depth="${comment.depth}" style="${indentStyle}">
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
@@ -541,6 +546,7 @@ const ArticleDetail = {
                             </div>
                             <div class="mt-2">
                                 ${replyButton}
+                                ${reportButton}
                             </div>
                         </div>
                     </div>
@@ -554,6 +560,19 @@ const ArticleDetail = {
         // 이벤트 핸들러 등록
         this.initCommentEditButtons();
         this.initReplyButtons();
+        this.initCommentReportButtons();
+    },
+
+    /**
+     * 댓글 신고 버튼 이벤트 초기화
+     */
+    initCommentReportButtons() {
+        $('.report-comment-btn').on('click', (event) => {
+            const $btn = $(event.currentTarget);
+            if (typeof openReportModal === 'function') {
+                openReportModal($btn[0]);
+            }
+        });
     },
 
     /**
