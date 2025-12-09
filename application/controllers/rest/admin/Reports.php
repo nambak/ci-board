@@ -49,7 +49,6 @@ class Reports extends RestController
                 $report->reason_label = Report_m::$allowedReasons[$report->reason] ?? $report->reason;
 
 
-
                 $this->response($report, 200);
                 return;
             }
@@ -84,14 +83,14 @@ class Reports extends RestController
             $statusCounts = $this->report_m->countByStatus();
 
             $response = [
-                'rows' => $result['rows'],
-                'pagination' => [
-                    'total' => $result['total'],
-                    'per_page' => $perPage,
+                'rows'          => $result['rows'],
+                'pagination'    => [
+                    'total'        => $result['total'],
+                    'per_page'     => $perPage,
                     'current_page' => $page,
-                    'total_pages' => $totalPages,
-                    'from' => $offset + 1,
-                    'to' => min($offset + $perPage, $result['total'])
+                    'total_pages'  => $totalPages,
+                    'from'         => $result['total'] > 0 ? $offset + 1 : 0,
+                    'to'           => min($offset + $perPage, $result['total'])
                 ],
                 'status_counts' => $statusCounts
             ];
@@ -194,7 +193,7 @@ class Reports extends RestController
 
             $this->response([
                 'message' => '신고 상태가 변경되었습니다.',
-                'status' => $status
+                'status'  => $status
             ], 200);
         } catch (Exception $e) {
             log_message('error', 'AdminReports::index_put error: ' . $e->getMessage());
@@ -215,26 +214,26 @@ class Reports extends RestController
             $article = $this->article_m->get($targetId);
             if ($article) {
                 return [
-                    'type' => 'article',
-                    'id' => $article->id,
-                    'title' => $article->title,
-                    'content' => mb_substr($article->content, 0, 200) . (mb_strlen($article->content) > 200 ? '...' : ''),
-                    'author_id' => $article->user_id,
+                    'type'       => 'article',
+                    'id'         => $article->id,
+                    'title'      => $article->title,
+                    'content'    => mb_substr($article->content, 0, 200) . (mb_strlen($article->content) > 200 ? '...' : ''),
+                    'author_id'  => $article->user_id,
                     'created_at' => $article->created_at,
-                    'url' => '/article/' . $article->id
+                    'url'        => '/article/' . $article->id
                 ];
             }
         } elseif ($targetType === Report_m::TYPE_COMMENT) {
             $comment = $this->comment_m->get($targetId);
             if ($comment) {
                 return [
-                    'type' => 'comment',
-                    'id' => $comment->id,
-                    'content' => $comment->comment,
-                    'author_id' => $comment->writer_id,
+                    'type'       => 'comment',
+                    'id'         => $comment->id,
+                    'content'    => $comment->comment,
+                    'author_id'  => $comment->writer_id,
                     'article_id' => $comment->article_id,
                     'created_at' => $comment->created_at,
-                    'url' => '/article/' . $comment->article_id . '#comment-' . $comment->id
+                    'url'        => '/article/' . $comment->article_id . '#comment-' . $comment->id
                 ];
             }
         }
