@@ -64,6 +64,8 @@ CREATE TABLE IF NOT EXISTS `comments` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `article_id` INT UNSIGNED NOT NULL COMMENT '게시글 ID',
   `writer_id` INT UNSIGNED NOT NULL COMMENT '작성자 ID',
+  `parent_id` INT UNSIGNED NULL COMMENT '부모 댓글 ID (답글인 경우)',
+  `depth` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '댓글 깊이 (0: 일반, 1-2: 답글)',
   `comment` TEXT NOT NULL COMMENT '댓글 내용',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '작성일',
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일',
@@ -71,8 +73,10 @@ CREATE TABLE IF NOT EXISTS `comments` (
   KEY `idx_comments_article_id` (`article_id`),
   KEY `idx_comments_writer_id` (`writer_id`),
   KEY `idx_comments_created_at` (`created_at`),
+  KEY `idx_comments_parent_id` (`parent_id`),
   CONSTRAINT `fk_comments_article` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_comments_writer` FOREIGN KEY (`writer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `fk_comments_writer` FOREIGN KEY (`writer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_comments_parent` FOREIGN KEY (`parent_id`) REFERENCES `comments` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='댓글 정보';
 
 -- 비밀번호 재설정 테이블

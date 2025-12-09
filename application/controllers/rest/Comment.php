@@ -16,7 +16,7 @@ class Comment extends RestController
 
     /**
      * 댓글 목록 조회 API
-     * - article_id가 있으면: 해당 게시글의 댓글 목록 반환
+     * - article_id가 있으면: 해당 게시글의 댓글 목록 반환 (계층 구조)
      * - article_id가 없고 관리자면: 전체 댓글 목록 반환 (페이지네이션)
      */
     public function index_get()
@@ -29,13 +29,17 @@ class Comment extends RestController
             $current_user_id = get_user_id();
 
             $data = array_map(function ($comment) use ($current_user_id) {
-                return [
-                    'id'         => $comment->id,
-                    'name'       => $this->security->xss_clean($comment->name),
-                    'comment'    => $this->security->xss_clean($comment->comment),
-                    'created_at' => $this->security->xss_clean($comment->created_at),
-                    'can_edit'   => $current_user_id && $comment->writer_id == $current_user_id
+                $item = [
+                    'id'                 => $comment->id,
+                    'name'               => $this->security->xss_clean($comment->name),
+                    'comment'            => $this->security->xss_clean($comment->comment),
+                    'created_at'         => $this->security->xss_clean($comment->created_at),
+                    'can_edit'           => $current_user_id && $comment->writer_id == $current_user_id,
+                    'parent_id'          => $comment->parent_id,
+                    'depth'              => (int)$comment->depth,
+                    'parent_author_name' => $comment->parent_author_name ? $this->security->xss_clean($comment->parent_author_name) : null
                 ];
+                return $item;
             }, $result);
 
             $this->response(compact('data'), 200);
@@ -96,23 +100,28 @@ class Comment extends RestController
 
     /**
      * 새로운 댓글을 저장하는 REST API 엔드포인트
+     * parent_id가 있으면 답글로 저장됩니다.
      */
     public function save_post()
     {
         $articleId = $this->post('article_id', true);
         $comment = $this->post('comment', true);
+        $parentId = $this->post('parent_id', true);
         $writerId = get_user_id(); // 현재 로그인된 사용자 ID 사용
 
         if (!ctype_digit((string)$articleId) || (int)$articleId <= 0) {
             $this->response(['message' => 'invalid article_id'], 400);
+            return;
         }
 
         if (!is_string($comment) || trim($comment) === '') {
             $this->response(['message' => 'comment required'], 400);
+            return;
         }
 
         if (!$writerId) {
             $this->response(['message' => 'unauthorized'], 401);
+            return;
         }
 
         // 이메일 인증 확인
@@ -121,19 +130,53 @@ class Comment extends RestController
                 'message' => '이메일 인증이 필요합니다. 이메일을 확인하여 인증을 완료해주세요.',
                 'email_verification_required' => true
             ], 403);
+            return;
         }
 
         $article = $this->article_m->get($articleId);
 
         if (!$article) {
-            $this->response('article not found', 404);
+            $this->response(['message' => 'article not found'], 404);
+            return;
+        }
+
+        // parent_id 유효성 검사
+        if ($parentId !== null && $parentId !== '') {
+            if (!ctype_digit((string)$parentId) || (int)$parentId <= 0) {
+                $this->response(['message' => 'invalid parent_id'], 400);
+                return;
+            }
+
+            $parentId = (int)$parentId;
+            $parentComment = $this->comment_m->get($parentId);
+
+            if (!$parentComment) {
+                $this->response(['message' => 'parent comment not found'], 404);
+                return;
+            }
+
+            // 부모 댓글이 같은 게시글에 속하는지 확인
+            if ($parentComment->article_id != $articleId) {
+                $this->response(['message' => 'parent comment does not belong to this article'], 400);
+                return;
+            }
+
+            // 최대 depth 검사 (depth 2까지만 허용)
+            if ($parentComment->depth >= 2) {
+                $this->response(['message' => 'maximum reply depth reached'], 400);
+                return;
+            }
+        } else {
+            // 루트 댓글의 경우 명시적으로 null로 정규화
+            $parentId = null;
         }
 
         try {
-            $this->comment_m->create($articleId, $comment, $writerId);
-            $this->response('success', 200);
+            $commentId = $this->comment_m->create($articleId, $comment, $writerId, $parentId);
+            $this->response(['message' => 'success', 'id' => $commentId], 200);
         } catch (Exception $e) {
-            $this->response('server error: ' . $e->getMessage(), 500);
+            log_message('error', 'Comment save error: ' . $e->getMessage());
+            $this->response(['message' => 'server error'], 500);
         }
     }
 

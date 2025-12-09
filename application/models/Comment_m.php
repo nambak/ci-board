@@ -11,32 +11,108 @@ class Comment_m extends CI_Model
      * @param int $articleId 댓글이 달릴 게시글의 ID
      * @param string $comment 댓글 내용
      * @param int $writerId 댓글 작성자의 사용자 ID
-     * @return void
+     * @param int|null $parentId 부모 댓글 ID (답글인 경우)
+     * @return int 생성된 댓글 ID
      */
-    public function create($articleId, $comment, $writerId)
+    public function create($articleId, $comment, $writerId, $parentId = null)
     {
+        $depth = 0;
+        $validParentId = null;
+
+        // 부모 댓글이 있으면 depth 계산
+        if ($parentId) {
+            $parent = $this->get($parentId);
+            if ($parent) {
+                $depth = min($parent->depth + 1, 2); // 최대 depth 2로 제한
+                $validParentId = $parentId;
+            }
+        }
+
         $this->db->insert('comments', [
             'article_id' => $articleId,
             'writer_id'  => $writerId,
+            'parent_id'  => $validParentId,
+            'depth'      => $depth,
             'comment'    => $comment
         ]);
+
+        return $this->db->insert_id();
     }
 
     /**
-     * 지정된 게시글 ID에 해당하는 모든 댓글과 작성자 이름을 조회합니다.
+     * 지정된 게시글 ID에 해당하는 모든 댓글과 작성자 이름을 계층 구조로 조회합니다.
      *
      * @param int $id 댓글을 조회할 게시글의 ID
-     * @return array 댓글 객체 배열로, 각 객체에는 댓글 정보와 작성자 이름이 포함됩니다.
+     * @return array 댓글 객체 배열 (부모 댓글 아래에 자식 댓글이 정렬됨)
      */
     public function fetchByPost($id)
     {
-        $query = $this->db->select('comments.*, users.name')
+        // 모든 댓글 조회 (생성일 순 정렬)
+        $query = $this->db->select('comments.*, users.name, parent_user.name as parent_author_name')
             ->from('comments')
             ->join('users', 'users.id = comments.writer_id')
+            ->join('comments as parent_comment', 'parent_comment.id = comments.parent_id', 'left')
+            ->join('users as parent_user', 'parent_user.id = parent_comment.writer_id', 'left')
             ->where('comments.article_id', $id)
+            ->order_by('comments.created_at', 'ASC')
             ->get();
 
-        return $query->result();
+        $allComments = $query->result();
+
+        // 계층 구조 정렬: 부모 댓글 아래에 자식 댓글 배치
+        return $this->buildCommentTree($allComments);
+    }
+
+    /**
+     * 댓글을 계층 구조로 정렬합니다.
+     * 부모 댓글 아래에 자식 댓글들이 순서대로 배치됩니다.
+     *
+     * @param array $comments 모든 댓글 배열
+     * @return array 계층 구조로 정렬된 댓글 배열
+     */
+    private function buildCommentTree($comments)
+    {
+        $result = [];
+        $childrenMap = [];
+
+        // 자식 댓글을 parent_id 기준으로 그룹화
+        foreach ($comments as $comment) {
+            if ($comment->parent_id) {
+                if (!isset($childrenMap[$comment->parent_id])) {
+                    $childrenMap[$comment->parent_id] = [];
+                }
+                $childrenMap[$comment->parent_id][] = $comment;
+            }
+        }
+
+        // 루트 댓글(depth=0)부터 순서대로 배치
+        foreach ($comments as $comment) {
+            if ($comment->depth == 0) {
+                $result[] = $comment;
+                // 이 댓글의 자식들 추가
+                $this->addChildren($result, $comment->id, $childrenMap);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * 재귀적으로 자식 댓글을 추가합니다.
+     *
+     * @param array &$result 결과 배열
+     * @param int $parentId 부모 댓글 ID
+     * @param array $childrenMap 자식 댓글 맵
+     */
+    private function addChildren(&$result, $parentId, $childrenMap)
+    {
+        if (isset($childrenMap[$parentId])) {
+            foreach ($childrenMap[$parentId] as $child) {
+                $result[] = $child;
+                // 자식의 자식도 추가 (재귀)
+                $this->addChildren($result, $child->id, $childrenMap);
+            }
+        }
     }
 
     /**
@@ -189,7 +265,7 @@ class Comment_m extends CI_Model
         $rows = $query->result();
 
         return [
-            'rows' => $rows,
+            'rows'  => $rows,
             'total' => $total
         ];
     }
