@@ -27,7 +27,7 @@ class Reports extends RestController
      *
      * @return void
      */
-    public function index_get()
+    public function index_get($id = null)
     {
         try {
             if (!is_admin()) {
@@ -35,6 +35,30 @@ class Reports extends RestController
                 return;
             }
 
+            // ID와 같이 요청: 신고 상세
+            if ($id !== null) {
+                $id = (int)$id;
+
+                if ($id <= 0) {
+                    $this->response(['message' => 'invalid id'], 400);
+                    return;
+                }
+
+                $report = $this->report_m->getWithDetails($id);
+
+                if (!$report) {
+                    $this->response(['message' => 'report not found'], 404);
+                    return;
+                }
+
+                $report->target_info = $this->getTargetInfo($report->target_type, $report->target_id);
+                $report->reason_label = Report_m::$allowedReasons[$report->reason] ?? $report->reason;
+
+                $this->response($report, 200);
+                return;
+            }
+
+            // ID가 없는 경우 : 신고 전체 목록
             $page = (int)$this->get('page', true) ?: 1;
             $perPage = (int)$this->get('per_page', true) ?: 10;
             $status = $this->get('status', true) ?: null;
