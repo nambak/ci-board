@@ -441,7 +441,7 @@ const ArticleDetail = {
 
             // 답글 버튼 (로그인 상태 && depth < 2일 때만 표시)
             const replyButton = isLoggedIn && comment.depth < 2
-                ? `<button class="btn btn-sm btn-link text-secondary reply-btn" data-comment-id="${comment.id}" data-author-name="${this.escapeHtml(comment.name)}">답글</button>`
+                ? `<button class="btn btn-sm btn-link text-secondary reply-btn" data-comment-id="${comment.id}" data-author-name="${this.escapeHtml(comment.name).replace(/"/g, '&quot;')}">답글</button>`
                 : '';
 
             const template = `<div class="card mb-2 comment-item" data-comment-id="${comment.id}" data-depth="${comment.depth}" style="${indentStyle}">
