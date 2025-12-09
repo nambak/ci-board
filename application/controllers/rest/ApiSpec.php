@@ -66,11 +66,23 @@ class ApiSpec extends RestController
 
             // paths 병합
             if (isset($spec['paths'])) {
+                foreach ($spec['paths'] as $path => $operations) {
+                    if (isset($merged_paths[$path])) {
+                        log_message('warning', "Path conflict detected: {$path} in {$file}");
+                    }
+                }
+
                 $merged_paths = array_merge($merged_paths, $spec['paths']);
             }
 
             // components/schemas 병합
             if (isset($spec['components']['schemas'])) {
+                foreach ($spec['components']['schemas'] as $schema_name => $schema) {
+                    if (isset($merged_schemas[$schema_name])) {
+                        log_message('warning', "Schema conflict detected: {$schema_name} in {$file}");
+                    }
+                }
+
                 $merged_schemas = array_merge($merged_schemas, $spec['components']['schemas']);
             }
         }
