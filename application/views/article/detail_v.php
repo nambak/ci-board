@@ -24,6 +24,10 @@
                     </span>
                     <span class="me-3">작성일: <?= html_escape($currentArticle->created_at) ?></span>
                     <span>조회수: <?= html_escape($currentArticle->views) ?></span>
+                    <span class="ms-3">
+                        <i class="bi bi-heart-fill text-danger"></i>
+                        <span id="likeCount"><?= (int)($currentArticle->like_count ?? 0) ?></span>
+                    </span>
                 </div>
                 <div id="attachmentInfo" class="text-muted" style="display: none;">
                     <!-- 첨부파일 정보가 여기에 표시됩니다 -->
@@ -50,6 +54,22 @@
             </div>
         </div>
     </div>
+    <!-- 좋아요 버튼 영역 -->
+    <div class="row mb-4">
+        <div class="col text-center">
+            <?php if (is_logged_in()): ?>
+                <button id="likeButton" class="btn btn-outline-danger btn-lg">
+                    <i class="bi bi-heart" id="likeIcon"></i>
+                    <span id="likeButtonText">좋아요</span>
+                </button>
+            <?php else: ?>
+                <button class="btn btn-outline-secondary btn-lg" disabled title="로그인 후 이용 가능합니다">
+                    <i class="bi bi-heart"></i> 좋아요
+                </button>
+            <?php endif; ?>
+        </div>
+    </div>
+
     <!-- 버튼 영역 -->
     <div class="row mb-5">
         <div class="col">

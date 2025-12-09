@@ -11,6 +11,7 @@ const ArticleDetail = {
     csrfTokenName: null,
     csrfHash: null,
     boardId: null,
+    likedByMe: false,
 
     /**
      * 게시판 목록으로 이동 버튼 초기화
@@ -28,6 +29,81 @@ const ArticleDetail = {
         $(this.pageId + '#redirectEditPost').on('click', () => {
             location.href = `/article/${this.articleId}/edit`;
         });
+    },
+
+    /**
+     * 좋아요 버튼 초기화
+     */
+    initLikeButton() {
+        $(this.pageId + '#likeButton').on('click', () => {
+            this.toggleLike();
+        });
+    },
+
+    /**
+     * 좋아요 상태 조회 및 UI 업데이트
+     */
+    getLikeStatus() {
+        $.ajax({
+            url: `/rest/article/${this.articleId}`,
+            type: 'GET',
+            success: (response) => {
+                this.likedByMe = response.liked_by_me || false;
+                this.updateLikeUI();
+            },
+            error: (error) => {
+                console.error('Like status load error:', error);
+            }
+        });
+    },
+
+    /**
+     * 좋아요 토글
+     */
+    toggleLike() {
+        const method = this.likedByMe ? 'DELETE' : 'POST';
+        const likeData = {};
+        likeData[this.csrfTokenName] = this.csrfHash;
+
+        $.ajax({
+            url: `/rest/article/${this.articleId}/like`,
+            type: method,
+            data: likeData,
+            success: (response) => {
+                this.likedByMe = response.liked_by_me;
+                $('#likeCount').text(response.like_count);
+                this.updateLikeUI();
+            },
+            error: (error) => {
+                if (error.status === 401) {
+                    Swal.fire({
+                        icon: 'warning',
+                        text: '로그인이 필요합니다.'
+                    });
+                } else {
+                    this.displayError(error);
+                }
+            }
+        });
+    },
+
+    /**
+     * 좋아요 UI 업데이트
+     */
+    updateLikeUI() {
+        const $button = $('#likeButton');
+        const $icon = $('#likeIcon');
+        const $text = $('#likeButtonText');
+
+        if (this.likedByMe) {
+            $button.removeClass('btn-outline-danger').addClass('btn-danger');
+            $icon.removeClass('bi-heart').addClass('bi-heart-fill');
+            $text.text('좋아요 취소');
+        } else {
+            $button.removeClass('btn-danger').addClass('btn-outline-danger');
+            $icon.removeClass('bi-heart-fill').addClass('bi-heart');
+            $text.text('좋아요');
+        }
     },
 
     /**
@@ -707,6 +783,8 @@ const ArticleDetail = {
         // 로그인 사용자 전용 기능
         if (isLoggedIn) {
             this.initCommentPostButton();
+            this.initLikeButton();
+            this.getLikeStatus();
         }
 
         // 댓글 목록 조회

@@ -49,12 +49,14 @@ CREATE TABLE IF NOT EXISTS `articles` (
   `title` VARCHAR(200) NOT NULL COMMENT '게시글 제목',
   `content` TEXT NOT NULL COMMENT '게시글 내용',
   `view_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '조회수',
+  `like_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '좋아요 수',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '작성일',
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일',
   PRIMARY KEY (`id`),
   KEY `idx_articles_board_id` (`board_id`),
   KEY `idx_articles_user_id` (`user_id`),
   KEY `idx_articles_created_at` (`created_at`),
+  KEY `idx_articles_like_count` (`like_count`),
   CONSTRAINT `fk_articles_board` FOREIGN KEY (`board_id`) REFERENCES `boards` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_articles_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='게시글 정보';
@@ -112,6 +114,19 @@ CREATE TABLE IF NOT EXISTS `attachments` (
   KEY `idx_attachments_created_at` (`created_at`),
   CONSTRAINT `fk_attachments_article` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='첨부파일 정보';
+
+-- 게시글 좋아요 테이블
+CREATE TABLE IF NOT EXISTS `article_likes` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `article_id` INT UNSIGNED NOT NULL COMMENT '게시글 ID',
+  `user_id` INT UNSIGNED NOT NULL COMMENT '사용자 ID',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '좋아요 일시',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_article_user` (`article_id`, `user_id`),
+  KEY `idx_article_likes_user_id` (`user_id`),
+  CONSTRAINT `fk_article_likes_article` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_article_likes_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='게시글 좋아요 정보';
 
 -- ============================================
 -- 초기 데이터 삽입 (선택사항)

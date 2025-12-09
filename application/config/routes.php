@@ -65,3 +65,6 @@ $route['user/(:num)'] = 'user/index/$1';      // /user/1
 $route['login'] = 'auth/login';
 $route['register'] = 'auth/register';
 $route['logout'] = 'auth/logout';
+
+// REST API routes
+$route['rest/article/(:num)/like'] = 'rest/article/like/$1';
