@@ -1,0 +1,484 @@
+{
+  "_metadata": {
+    "domain": "Article",
+    "description": "게시글 관련 API",
+    "endpoint_count": 4,
+    "base_url": "http://learning-ci.local.com"
+  },
+  "paths": {
+    "/rest/article/{id}": {
+      "get": {
+        "tags": [
+          "Article"
+        ],
+        "summary": "게시글 조회",
+        "description": "특정 게시글의 상세 정보를 조회합니다 (작성자 정보 포함)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "게시글 ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "게시글 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetail"
+                },
+                "example": {
+                  "id": 1,
+                  "board_id": 1,
+                  "user_id": 1,
+                  "title": "첫 번째 게시글",
+                  "content": "게시글 내용입니다.",
+                  "view_count": 10,
+                  "name": "홍길동",
+                  "email": "user@example.com",
+                  "created_at": "2024-08-20 10:00:00",
+                  "updated_at": "2024-08-20 10:00:00"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "invalid id"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "게시글을 찾을 수 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "server error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Article"
+        ],
+        "summary": "게시글 수정",
+        "description": "기존 게시글의 제목과 내용을 수정합니다 (로그인 필요)",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "게시글 ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title",
+                  "content"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "게시글 제목"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "게시글 내용"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "게시글 수정 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청 (필수 값 누락)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "titleRequired": {
+                    "value": {
+                      "message": "title required"
+                    }
+                  },
+                  "contentRequired": {
+                    "value": {
+                      "message": "content required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "unauthorized"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "게시글을 찾을 수 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "post not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "server error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Article"
+        ],
+        "summary": "게시글 삭제",
+        "description": "특정 게시글을 삭제합니다",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "게시글 ID",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "게시글 삭제 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "success"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rest/article/create": {
+      "post": {
+        "tags": [
+          "Article"
+        ],
+        "summary": "게시글 작성",
+        "description": "새로운 게시글을 작성합니다 (로그인 필요)",
+        "security": [
+          {
+            "sessionAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "board_id",
+                  "title",
+                  "content"
+                ],
+                "properties": {
+                  "board_id": {
+                    "type": "integer",
+                    "description": "게시판 ID"
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "게시글 제목"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "게시글 내용"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "게시글 작성 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer",
+                      "description": "생성된 게시글 ID"
+                    }
+                  }
+                },
+                "example": {
+                  "id": 123
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "invalidBoardId": {
+                    "value": {
+                      "message": "invalid board_id"
+                    }
+                  },
+                  "titleRequired": {
+                    "value": {
+                      "message": "title required"
+                    }
+                  },
+                  "contentRequired": {
+                    "value": {
+                      "message": "content required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "이메일 인증 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "email_verification_required": {
+                      "type": "boolean",
+                      "description": "이메일 인증 필요 여부"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "이메일 인증이 필요합니다. 이메일을 확인하여 인증을 완료해주세요.",
+                  "email_verification_required": true
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "서버 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ArticleDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Article"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "작성자 이름"
+              },
+              "email": {
+                "type": "string",
+                "description": "작성자 이메일"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
