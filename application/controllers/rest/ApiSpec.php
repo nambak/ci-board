@@ -98,8 +98,6 @@ class ApiSpec extends RestController
         }
 
         // JSON 응답 반환
-        $this->output
-            ->set_content_type('application/json')
-            ->set_output(json_encode($base_spec, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        $this->response($base_spec, 200);
     }
 }
