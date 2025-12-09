@@ -128,6 +128,27 @@ CREATE TABLE IF NOT EXISTS `article_likes` (
   CONSTRAINT `fk_article_likes_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='게시글 좋아요 정보';
 
+-- 신고 테이블
+CREATE TABLE IF NOT EXISTS `reports` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `reporter_id` INT UNSIGNED NOT NULL COMMENT '신고자 ID',
+  `target_type` ENUM('article', 'comment') NOT NULL COMMENT '신고 대상 타입',
+  `target_id` INT UNSIGNED NOT NULL COMMENT '신고 대상 ID',
+  `reason` VARCHAR(50) NOT NULL COMMENT '신고 사유',
+  `detail` TEXT NULL COMMENT '상세 내용',
+  `status` ENUM('pending', 'processing', 'completed', 'rejected') NOT NULL DEFAULT 'pending' COMMENT '처리 상태',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '신고 일시',
+  `processed_at` DATETIME NULL COMMENT '처리 일시',
+  `processed_by` INT UNSIGNED NULL COMMENT '처리한 관리자 ID',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_reporter_target` (`reporter_id`, `target_type`, `target_id`),
+  KEY `idx_reports_target` (`target_type`, `target_id`),
+  KEY `idx_reports_status` (`status`),
+  KEY `idx_reports_created_at` (`created_at`),
+  CONSTRAINT `fk_reports_reporter` FOREIGN KEY (`reporter_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_reports_processor` FOREIGN KEY (`processed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='신고 정보';
+
 -- ============================================
 -- 초기 데이터 삽입 (선택사항)
 -- ============================================

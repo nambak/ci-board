@@ -131,6 +131,17 @@ class Comment_m extends CI_Model
     }
 
     /**
+     * 댓글 존재 여부 확인
+     * @param int $id
+     * @return bool
+     */
+    public function exists($id)
+    {
+        $this->db->where('id', $id);
+        return $this->db->count_all_results('comments') > 0;
+    }
+
+    /**
      * 댓글 수정
      * @param int $id 댓글 ID
      * @param string $comment 수정할 댓글 내용
