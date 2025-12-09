@@ -304,7 +304,10 @@ class Article extends RestController
             }
 
             // 좋아요 추가
-            $this->article_like_m->add($id, $userId);
+            if (!$this->article_like_m->add($id, $userId)) {
+                $this->response(['message' => 'failed to add like'], 500);
+                return;
+            }
             $this->article_m->incrementLikeCount($id);
 
             // 업데이트된 좋아요 수 조회
@@ -358,7 +361,10 @@ class Article extends RestController
             }
 
             // 좋아요 삭제
-            $this->article_like_m->remove($id, $userId);
+            if (!$this->article_like_m->remove($id, $userId)) {
+                $this->response(['message' => 'failed to remove like'], 500);
+                return;
+            }
             $this->article_m->decrementLikeCount($id);
 
             // 업데이트된 좋아요 수 조회

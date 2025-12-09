@@ -24,9 +24,8 @@ class Article_m extends CI_Model
         $this->db->group_by('articles.id');
 
         if ($sort === 'popular') {
-            // 인기순: 최근 7일 기준, 좋아요 수 + 조회수 가중치
-            $this->db->where('articles.created_at >=', date('Y-m-d H:i:s', strtotime('-7 days')));
-            $this->db->order_by('(articles.like_count * 2 + articles.view_count)', 'DESC', false);
+            // 인기순: 좋아요 수 + 조회수 가중치
+            $this->db->order_by('(articles.like_count * 2 + articles.views)', 'DESC', false);
             $this->db->order_by('articles.id', 'DESC');
         } else {
             $this->db->order_by('articles.id', 'DESC');
