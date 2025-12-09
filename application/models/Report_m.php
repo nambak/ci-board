@@ -198,7 +198,7 @@ class Report_m extends CI_Model
      */
     public function getWithDetails($id)
     {
-        $this->db->select('r.*, u.name as reporter_name, u.email as reporter_email, p.name as processor_name');
+        $this->db->select('r.*, u.name as reporter_name, p.name as processor_name');
         $this->db->from('reports r');
         $this->db->join('users u', 'u.id = r.reporter_id', 'left');
         $this->db->join('users p', 'p.id = r.processed_by', 'left');
