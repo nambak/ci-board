@@ -82,9 +82,11 @@ const ArticleDetail = {
 
     /**
      * 댓글 저장
+     * @param {number|null} parentId 부모 댓글 ID (답글인 경우)
+     * @param {jQuery|null} $textarea 사용할 textarea 요소 (답글 폼인 경우)
      */
-    saveComment() {
-        const comment = $(this.pageId + " textarea[name=comment]");
+    saveComment(parentId = null, $textarea = null) {
+        const comment = $textarea || $(this.pageId + " textarea[name=comment]");
 
         if (!comment.val().trim()) {
             Swal.fire({
@@ -100,6 +102,10 @@ const ArticleDetail = {
         commentData['comment'] = comment.val();
         commentData['writer_id'] = this.userId;
 
+        if (parentId) {
+            commentData['parent_id'] = parentId;
+        }
+
         $.ajax({
             url: '/rest/comment/save',
             type: 'POST',
@@ -109,6 +115,11 @@ const ArticleDetail = {
 
                 // 저장 후 textarea 비움
                 comment.val('');
+
+                // 답글 폼이면 닫기
+                if (parentId) {
+                    $(`.reply-form[data-parent-id="${parentId}"]`).remove();
+                }
             },
             error: (error) => {
                 this.displayError(error);
@@ -408,7 +419,19 @@ const ArticleDetail = {
         // 댓글 수 표시
         $("#comment-title").html(`댓글 <span class="comment-count">(${data.length})</span>`);
 
+        // 로그인 여부 확인
+        const isLoggedIn = $('#post_detail').data('is-logged-in');
+
         data.forEach((comment) => {
+            // 들여쓰기 스타일 (depth에 따라)
+            const indentStyle = comment.depth > 0 ? `margin-left: ${comment.depth * 40}px;` : '';
+            const replyIndicator = comment.depth > 0 ? '<i class="bi bi-arrow-return-right text-muted me-2"></i>' : '';
+
+            // 부모 작성자 멘션
+            const mentionBadge = comment.parent_author_name
+                ? `<span class="badge bg-light text-primary me-2">@${this.escapeHtml(comment.parent_author_name)}</span>`
+                : '';
+
             // 댓글 수정/삭제 버튼은 작성자만 표시
             const editDeleteButtons = comment.can_edit ?
                 `<div>
@@ -416,23 +439,32 @@ const ArticleDetail = {
                         <button class="btn btn-sm text-danger delete-comment-btn" data-comment-id="${comment.id}">삭제</button>
                     </div>` : '';
 
-            const template = `<div class="card mb-2 comment-item" data-comment-id="${comment.id}">
+            // 답글 버튼 (로그인 상태 && depth < 2일 때만 표시)
+            const replyButton = isLoggedIn && comment.depth < 2
+                ? `<button class="btn btn-sm btn-link text-secondary reply-btn" data-comment-id="${comment.id}" data-author-name="${this.escapeHtml(comment.name)}">답글</button>`
+                : '';
+
+            const template = `<div class="card mb-2 comment-item" data-comment-id="${comment.id}" data-depth="${comment.depth}" style="${indentStyle}">
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
                             <div>
+                                ${replyIndicator}
                                 <strong>${this.escapeHtml(comment.name)}</strong>
                                 <small class="text-muted ms-2">${comment.created_at}</small>
                             </div>
                             ${editDeleteButtons}
                         </div>
                         <div class="comment-content mt-2">
-                            <p class="mb-0 comment-text">${this.escapeHtml(comment.comment)}</p>
+                            <p class="mb-0 comment-text">${mentionBadge}${this.escapeHtml(comment.comment)}</p>
                             <div class="comment-edit-form" style="display: none;">
                                 <textarea class="form-control mb-2" rows="3">${this.escapeHtml(comment.comment)}</textarea>
                                 <div class="text-end">
                                     <button class="btn btn-sm btn-secondary cancel-edit-btn">취소</button>
                                     <button class="btn btn-sm btn-primary save-edit-btn">저장</button>
                                 </div>
+                            </div>
+                            <div class="mt-2">
+                                ${replyButton}
                             </div>
                         </div>
                     </div>
@@ -445,6 +477,65 @@ const ArticleDetail = {
 
         // 이벤트 핸들러 등록
         this.initCommentEditButtons();
+        this.initReplyButtons();
+    },
+
+    /**
+     * 답글 버튼 이벤트 초기화
+     */
+    initReplyButtons() {
+        $('.reply-btn').on('click', (event) => {
+            const $btn = $(event.currentTarget);
+            const commentId = $btn.data('comment-id');
+            const authorName = $btn.data('author-name');
+
+            // 기존 답글 폼이 있으면 제거
+            $('.reply-form').remove();
+
+            // 답글 입력 폼 생성
+            const replyForm = `
+                <div class="reply-form card mt-2 mb-2" data-parent-id="${commentId}" style="margin-left: 40px;">
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <span class="badge bg-light text-primary">@${this.escapeHtml(authorName)}</span>에게 답글 작성
+                        </div>
+                        <textarea class="form-control reply-textarea mb-2" rows="2" placeholder="답글을 입력하세요"></textarea>
+                        <div class="text-end">
+                            <button class="btn btn-sm btn-secondary cancel-reply-btn">취소</button>
+                            <button class="btn btn-sm btn-primary save-reply-btn" data-parent-id="${commentId}">답글 작성</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 해당 댓글 아래에 폼 추가
+            $(`.comment-item[data-comment-id="${commentId}"]`).after(replyForm);
+
+            // 답글 폼 이벤트 등록
+            this.initReplyFormButtons();
+
+            // 포커스
+            $(`.reply-form[data-parent-id="${commentId}"] .reply-textarea`).focus();
+        });
+    },
+
+    /**
+     * 답글 폼 버튼 이벤트 초기화
+     */
+    initReplyFormButtons() {
+        // 취소 버튼
+        $('.cancel-reply-btn').off('click').on('click', (event) => {
+            $(event.currentTarget).closest('.reply-form').remove();
+        });
+
+        // 저장 버튼
+        $('.save-reply-btn').off('click').on('click', (event) => {
+            const $btn = $(event.currentTarget);
+            const parentId = $btn.data('parent-id');
+            const $textarea = $btn.closest('.reply-form').find('.reply-textarea');
+
+            this.saveComment(parentId, $textarea);
+        });
     },
 
     /**
