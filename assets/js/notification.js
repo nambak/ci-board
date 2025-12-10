@@ -23,7 +23,15 @@ const NotificationManager = {
      * 상대 시간 포맷
      */
     formatRelativeTime(dateString) {
-        const date = new Date(dateString);
+        // "YYYY-MM-DD HH:MM:SS" 형식을 ISO 8601 형식으로 변환
+        const normalizedString = dateString.replace(' ', 'T');
+        const date = new Date(normalizedString);
+
+        // 유효하지 않은 날짜인 경우 원본 문자열 반환
+        if (isNaN(date.getTime())) {
+            return dateString.split(' ')[0];
+        }
+
         const now = new Date();
         const diffMs = now - date;
         const diffSec = Math.floor(diffMs / 1000);
