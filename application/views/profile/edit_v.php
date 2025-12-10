@@ -6,6 +6,27 @@
                     <h4 class="mb-0">프로필 수정</h4>
                 </div>
                 <div class="card-body">
+                    <!-- 프로필 이미지 섹션 -->
+                    <div class="text-center mb-4">
+                        <div class="position-relative d-inline-block">
+                            <div id="profileImageContainer">
+                                <div class="avatar-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px; border-radius: 50%; font-size: 3rem;">
+                                    <span id="userInitial"></span>
+                                </div>
+                            </div>
+                            <label for="profileImageInput" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; cursor: pointer;">
+                                <i class="bi bi-camera"></i>
+                            </label>
+                            <input type="file" id="profileImageInput" accept="image/jpeg,image/png,image/gif" style="display: none;">
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">JPG, PNG, GIF (최대 2MB)</small>
+                        </div>
+                        <button type="button" id="deleteProfileImage" class="btn btn-sm btn-outline-danger mt-2" style="display: none;">
+                            <i class="bi bi-trash"></i> 이미지 삭제
+                        </button>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label fw-bold text-muted" for="name">이름 <span class="text-danger">*</span></label>
                         <input class="form-control" type="text" id="name" required>
@@ -40,10 +61,13 @@
 
 <script defer>
     const pageId = '#profile_page ';
+    const csrfTokenName = '<?= $this->security->get_csrf_token_name(); ?>';
+    const csrfHash = '<?= $this->security->get_csrf_hash(); ?>';
 
     $(document).ready(() => {
         loadProfile();
         initUpdateButton();
+        initProfileImageUpload();
     });
 
     function loadProfile() {
@@ -55,6 +79,14 @@
                 if (response.success && response.data) {
                     $('#name').val(response.data.name);
                     $('#email').val(response.data.email);
+
+                    // 프로필 이미지 표시
+                    if (response.data.profile_image_url) {
+                        showProfileImage(response.data.profile_image_url);
+                        $('#deleteProfileImage').show();
+                    } else if (response.data.name) {
+                        $('#userInitial').text(response.data.name.charAt(0).toUpperCase());
+                    }
                 }
             },
             error: (xhr) => {
@@ -226,5 +258,148 @@
     function clearErrors() {
         $('.form-control').removeClass('is-invalid');
         $('.invalid-feedback').text('');
+    }
+
+    // 프로필 이미지 업로드 초기화
+    function initProfileImageUpload() {
+        // 파일 선택 이벤트
+        $('#profileImageInput').on('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            // 파일 유효성 검사
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                Swal.fire({
+                    icon: 'error',
+                    text: 'JPG, PNG, GIF 형식의 이미지만 업로드할 수 있습니다.'
+                });
+                this.value = '';
+                return;
+            }
+
+            if (file.size > 2 * 1024 * 1024) {
+                Swal.fire({
+                    icon: 'error',
+                    text: '파일 크기는 2MB 이하여야 합니다.'
+                });
+                this.value = '';
+                return;
+            }
+
+            uploadProfileImage(file);
+        });
+
+        // 삭제 버튼 이벤트
+        $('#deleteProfileImage').on('click', function() {
+            Swal.fire({
+                title: '프로필 이미지 삭제',
+                text: '프로필 이미지를 삭제하시겠습니까?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '삭제',
+                cancelButtonText: '취소',
+                confirmButtonColor: '#dc3545'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    deleteProfileImage();
+                }
+            });
+        });
+    }
+
+    function uploadProfileImage(file) {
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append(csrfTokenName, csrfHash);
+
+        Swal.fire({
+            title: '업로드 중...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        $.ajax({
+            url: '/rest/user/profile/image',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: (response) => {
+                Swal.close();
+                if (response.success) {
+                    showProfileImage(response.data.profile_image_url);
+                    $('#deleteProfileImage').show();
+                    Swal.fire({
+                        icon: 'success',
+                        text: '프로필 이미지가 업로드되었습니다.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        text: response.message || '이미지 업로드에 실패했습니다.'
+                    });
+                }
+            },
+            error: (xhr) => {
+                Swal.close();
+                const response = xhr.responseJSON || {};
+                Swal.fire({
+                    icon: 'error',
+                    text: response.message || '이미지 업로드 중 오류가 발생했습니다.'
+                });
+            }
+        });
+
+        $('#profileImageInput').val('');
+    }
+
+    function deleteProfileImage() {
+        $.ajax({
+            url: '/rest/user/profile/image',
+            type: 'DELETE',
+            data: { [csrfTokenName]: csrfHash },
+            success: (response) => {
+                if (response.success) {
+                    showInitialAvatar();
+                    $('#deleteProfileImage').hide();
+                    Swal.fire({
+                        icon: 'success',
+                        text: '프로필 이미지가 삭제되었습니다.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        text: response.message || '이미지 삭제에 실패했습니다.'
+                    });
+                }
+            },
+            error: (xhr) => {
+                const response = xhr.responseJSON || {};
+                Swal.fire({
+                    icon: 'error',
+                    text: response.message || '이미지 삭제 중 오류가 발생했습니다.'
+                });
+            }
+        });
+    }
+
+    function showProfileImage(url) {
+        $('#profileImageContainer').html(
+            '<img src="' + url + '" alt="프로필" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">'
+        );
+    }
+
+    function showInitialAvatar() {
+        const name = $('#name').val() || '';
+        const initial = name.charAt(0).toUpperCase();
+        $('#profileImageContainer').html(
+            '<div class="avatar-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px; border-radius: 50%; font-size: 3rem;">' +
+            '<span id="userInitial">' + initial + '</span></div>'
+        );
     }
 </script>

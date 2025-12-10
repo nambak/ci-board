@@ -51,12 +51,14 @@ class User extends RestController
 
             // 응답 데이터 구성
             $response_data = [
-                'id'            => $user->id,
-                'name'          => $user->name,
-                'email'         => $user->email,
-                'created_at'    => $user->created_at,
-                'post_count'    => $this->Article_m->countByUserId($user_id),
-                'comment_count' => $this->Comment_m->countByUserId($user_id)
+                'id'                => $user->id,
+                'name'              => $user->name,
+                'email'             => $user->email,
+                'profile_image'     => $user->profile_image ?? null,
+                'profile_image_url' => !empty($user->profile_image) ? '/uploads/profiles/' . $user->profile_image : null,
+                'created_at'        => $user->created_at,
+                'post_count'        => $this->Article_m->countByUserId($user_id),
+                'comment_count'     => $this->Comment_m->countByUserId($user_id)
             ];
 
             $this->response([
@@ -141,13 +143,15 @@ class User extends RestController
 
             $user = $users[0];
             $responseData = [
-                'id'            => $user->id,
-                'name'          => $user->name,
-                'email'         => $user->email,
-                'created_at'    => $user->created_at,
-                'article_count' => $this->Article_m->countByUserId($user->id),
-                'comment_count' => $this->Comment_m->countByUserId($user->id),
-                'is_owner'      => $current_user_id && $current_user_id === (int)$user->id
+                'id'                => $user->id,
+                'name'              => $user->name,
+                'email'             => $user->email,
+                'profile_image'     => $user->profile_image ?? null,
+                'profile_image_url' => !empty($user->profile_image) ? '/uploads/profiles/' . $user->profile_image : null,
+                'created_at'        => $user->created_at,
+                'article_count'     => $this->Article_m->countByUserId($user->id),
+                'comment_count'     => $this->Comment_m->countByUserId($user->id),
+                'is_owner'          => $current_user_id && $current_user_id === (int)$user->id
             ];
 
             $this->response([
@@ -300,6 +304,210 @@ class User extends RestController
     }
 
     /**
+     * 프로필 이미지 업로드
+     * POST /rest/user/profile/image
+     */
+    public function image_post()
+    {
+        // 로그인 여부 확인
+        if (!$this->session->userdata('logged_in')) {
+            $this->response([
+                'success' => false,
+                'message' => '로그인이 필요합니다.'
+            ], self::HTTP_UNAUTHORIZED);
+            return;
+        }
+
+        try {
+            $user_id = $this->session->userdata('user_id');
+
+            // 파일 업로드 확인
+            if (empty($_FILES['image']['name'])) {
+                $this->response([
+                    'success' => false,
+                    'message' => '이미지 파일을 선택해주세요.'
+                ], self::HTTP_BAD_REQUEST);
+                return;
+            }
+
+            // 업로드 설정
+            $config['upload_path'] = FCPATH . 'uploads/profiles/';
+            $config['allowed_types'] = 'jpg|jpeg|png|gif';
+            $config['max_size'] = 2048; // 2MB
+            $config['encrypt_name'] = TRUE;
+
+            // 업로드 디렉토리 생성
+            if (!is_dir($config['upload_path'])) {
+                mkdir($config['upload_path'], 0755, true);
+            }
+
+            $this->load->library('upload', $config);
+
+            if (!$this->upload->do_upload('image')) {
+                $this->response([
+                    'success' => false,
+                    'message' => $this->upload->display_errors('', '')
+                ], self::HTTP_BAD_REQUEST);
+                return;
+            }
+
+            $upload_data = $this->upload->data();
+
+            // 이미지 유효성 검사 (getimagesize)
+            $image_info = @getimagesize($upload_data['full_path']);
+            if ($image_info === false) {
+                // 잘못된 이미지 파일 삭제
+                @unlink($upload_data['full_path']);
+                $this->response([
+                    'success' => false,
+                    'message' => '유효하지 않은 이미지 파일입니다.'
+                ], self::HTTP_BAD_REQUEST);
+                return;
+            }
+
+            // 이미지 리사이징 (200x200)
+            $this->load->library('image_lib');
+
+            $resize_config['image_library'] = 'gd2';
+            $resize_config['source_image'] = $upload_data['full_path'];
+            $resize_config['maintain_ratio'] = FALSE;
+            $resize_config['width'] = 200;
+            $resize_config['height'] = 200;
+
+            // 정사각형 크롭을 위해 먼저 비율 유지하며 리사이즈
+            $original_width = $image_info[0];
+            $original_height = $image_info[1];
+
+            if ($original_width != $original_height) {
+                // 크롭 설정
+                $crop_size = min($original_width, $original_height);
+                $x_axis = ($original_width - $crop_size) / 2;
+                $y_axis = ($original_height - $crop_size) / 2;
+
+                $crop_config['image_library'] = 'gd2';
+                $crop_config['source_image'] = $upload_data['full_path'];
+                $crop_config['maintain_ratio'] = FALSE;
+                $crop_config['width'] = $crop_size;
+                $crop_config['height'] = $crop_size;
+                $crop_config['x_axis'] = $x_axis;
+                $crop_config['y_axis'] = $y_axis;
+
+                $this->imageCrop($crop_config, $upload_data);
+
+                $this->image_lib->clear();
+            }
+
+            // 200x200으로 리사이즈
+            $this->imageResize($resize_config, $upload_data);
+
+            // 기존 프로필 이미지 조회 (삭제용)
+            $users = $this->User_m->get($user_id);
+            $oldProfileImage = (!empty($users) && !empty($users[0]->profile_image))
+                ? $users[0]->profile_image
+                : null;
+
+
+            // DB 업데이트
+            $result = $this->User_m->update($user_id, [
+                'profile_image' => $upload_data['file_name']
+            ]);
+
+            if ($result) {
+                // 기존 프로필 이미지 삭제
+                $this->deleteProfileImage($oldProfileImage);
+
+                // 세션 업데이트
+                $this->session->set_userdata('profile_image', $upload_data['file_name']);
+
+                $this->response([
+                    'success' => true,
+                    'message' => '프로필 이미지가 업로드되었습니다.',
+                    'data'    => [
+                        'profile_image'     => $upload_data['file_name'],
+                        'profile_image_url' => '/uploads/profiles/' . $upload_data['file_name']
+                    ]
+                ], self::HTTP_OK);
+            } else {
+                // 업로드된 파일 삭제
+                @unlink($upload_data['full_path']);
+
+                $this->response([
+                    'success' => false,
+                    'message' => '프로필 이미지 저장에 실패했습니다.'
+                ], self::HTTP_INTERNAL_ERROR);
+            }
+
+        } catch (Exception $e) {
+            log_message('error', 'Profile image upload error: ' . $e->getMessage());
+
+            $this->response([
+                'success' => false,
+                'message' => '프로필 이미지 업로드 중 오류가 발생했습니다.'
+            ], self::HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    /**
+     * 프로필 이미지 삭제
+     * DELETE /rest/user/profile/image
+     */
+    public function image_delete()
+    {
+        // 로그인 여부 확인
+        if (!$this->session->userdata('logged_in')) {
+            $this->response([
+                'success' => false,
+                'message' => '로그인이 필요합니다.'
+            ], self::HTTP_UNAUTHORIZED);
+            return;
+        }
+
+        try {
+            $user_id = $this->session->userdata('user_id');
+
+            // 현재 프로필 이미지 확인
+            $users = $this->User_m->get($user_id);
+            if (empty($users) || empty($users[0]->profile_image)) {
+                $this->response([
+                    'success' => false,
+                    'message' => '삭제할 프로필 이미지가 없습니다.'
+                ], self::HTTP_NOT_FOUND);
+                return;
+            }
+
+            // DB 업데이트
+            $result = $this->User_m->update($user_id, [
+                'profile_image' => null
+            ]);
+
+            if ($result) {
+                $this->deleteProfileImage($users[0]->profile_image);
+
+                // 세션 업데이트
+                $this->session->unset_userdata('profile_image');
+
+                $this->response([
+                    'success' => true,
+                    'message' => '프로필 이미지가 삭제되었습니다.'
+                ], self::HTTP_OK);
+            } else {
+                $this->response([
+                    'success' => false,
+                    'message' => '프로필 이미지 삭제에 실패했습니다.'
+                ], self::HTTP_INTERNAL_ERROR);
+            }
+
+        } catch (Exception $e) {
+            log_message('error', 'Profile image delete error: ' . $e->getMessage());
+
+            $this->response([
+                'success' => false,
+                'message' => '프로필 이미지 삭제 중 오류가 발생했습니다.'
+            ], self::HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    /**
      * 사용자 권한 변경 (관리자 전용)
      * PUT /rest/user/role/{id}
      */
@@ -397,4 +605,45 @@ class User extends RestController
             ], self::HTTP_INTERNAL_ERROR);
         }
     }
+
+    private function deleteProfileImage($oldProfileImage)
+    {
+        if (!empty($oldProfileImage)) {
+            $oldImagePath = FCPATH . 'uploads/profiles/' . $oldProfileImage;
+            if (file_exists($oldImagePath)) {
+                @unlink($oldImagePath);
+            }
+        }
+    }
+
+    private function imageCrop($config, $upload_data)
+    {
+        $this->image_lib->initialize($config);
+
+        if (!$this->image_lib->crop()) {
+            log_message('error', 'Profile image crop error:' . $this->image_lib->display_errors());
+            @unlink($upload_data['full_path']);
+            $this->response([
+                'success' => false,
+                'message' => '이미지 처리 중 오류가 발생했습니다.'
+            ], self::HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    private function imageResize($config, $uploadData)
+    {
+        $this->image_lib->initialize($config);
+
+        if (!$this->image_lib->resize()) {
+            log_message('error', 'Profile image resize error:' . $this->image_lib->display_errors());
+            @unlink($uploadData['full_path']);
+            $this->response([
+                'success' => false,
+                'message' => '이미지 처리중 오류가 발생했습니다.'
+            ], self::HTTP_INTERNAL_ERROR);
+        }
+    }
 }
+
+
+

@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `email` VARCHAR(100) NOT NULL COMMENT '이메일 주소',
   `password` VARCHAR(255) NOT NULL COMMENT '암호화된 비밀번호',
   `role` VARCHAR(20) NOT NULL DEFAULT 'user' COMMENT '사용자 권한 (admin, user)',
+  `profile_image` VARCHAR(255) NULL COMMENT '프로필 이미지 파일명',
   `remember_token` VARCHAR(64) NULL COMMENT 'Remember Me 토큰',
   `email_verified_at` DATETIME NULL COMMENT '이메일 인증 일시',
   `verification_token` VARCHAR(64) NULL COMMENT '이메일 인증 토큰',

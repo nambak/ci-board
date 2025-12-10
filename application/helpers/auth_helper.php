@@ -91,3 +91,55 @@ function is_admin()
     $role = $CI->session->userdata('role');
     return isset($role) && $role === 'admin';
 }
+
+/**
+ * 사용자 프로필 이미지 URL 반환
+ * @param string|null $profile_image 프로필 이미지 파일명
+ * @param string|null $name 사용자 이름 (이니셜 아바타용)
+ * @param int $size 이미지 크기 (기본 40)
+ * @return array ['type' => 'image'|'initial', 'url' => string|null, 'initial' => string|null]
+ */
+function get_profile_avatar($profile_image = null, $name = null, $size = 40)
+{
+    if (!empty($profile_image)) {
+        return [
+            'type' => 'image',
+            'url' => '/uploads/profiles/' . $profile_image,
+            'initial' => null
+        ];
+    }
+
+    // 이니셜 아바타
+    $initial = '';
+    if (!empty($name)) {
+        $initial = mb_strtoupper(mb_substr($name, 0, 1, 'UTF-8'), 'UTF-8');
+    }
+
+    return [
+        'type' => 'initial',
+        'url' => null,
+        'initial' => $initial
+    ];
+}
+
+/**
+ * 프로필 아바타 HTML 생성
+ * @param string|null $profile_image 프로필 이미지 파일명
+ * @param string|null $name 사용자 이름
+ * @param int $size 이미지 크기 (픽셀)
+ * @param string $class 추가 CSS 클래스
+ * @return string HTML
+ */
+function profile_avatar_html($profile_image = null, $name = null, $size = 40, $class = '')
+{
+    $avatar = get_profile_avatar($profile_image, $name, $size);
+    $style = "width: {$size}px; height: {$size}px;";
+
+    if ($avatar['type'] === 'image') {
+        return '<img src="' . html_escape($avatar['url']) . '" alt="프로필" class="rounded-circle ' . html_escape($class) . '" style="' . $style . ' object-fit: cover;">';
+    }
+
+    // 이니셜 아바타
+    $font_size = round($size * 0.4);
+    return '<div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white ' . html_escape($class) . '" style="' . $style . ' font-size: ' . $font_size . 'px;">' . html_escape($avatar['initial']) . '</div>';
+}
