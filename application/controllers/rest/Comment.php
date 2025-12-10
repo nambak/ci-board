@@ -175,6 +175,20 @@ class Comment extends RestController
 
         try {
             $commentId = $this->comment_m->create($articleId, $comment, $writerId, $parentId);
+
+            // 알림 생성
+            $this->load->library('services/NotificationService', null, 'notification_service');
+            if ($parentId) {
+                // 답글 알림
+                $this->notification_service->notifyNewReply($parentId, $commentId, $writerId);
+            } else {
+                // 일반 댓글 알림
+                $this->notification_service->notifyNewComment($articleId, $commentId, $writerId);
+            }
+
+            // 멘션 알림 (댓글 내용에 @사용자명이 있으면)
+            $this->notification_service->notifyMentionsInComment($articleId, $commentId, $comment, $writerId);
+
             $this->response(['message' => 'success', 'id' => $commentId], 200);
         } catch (Exception $e) {
             log_message('error', 'Comment save error: ' . $e->getMessage());

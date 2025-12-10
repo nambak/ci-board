@@ -70,6 +70,11 @@ $route['logout'] = 'auth/logout';
 $route['rest/article/(:num)/like'] = 'rest/article/like/$1';
 $route['rest/user/profile/image'] = 'rest/user/image';
 
+// Notification REST API routes
+$route['rest/notification/unread-count'] = 'rest/notification/unread_count';
+$route['rest/notification/read-all'] = 'rest/notification/read_all';
+$route['rest/notification/(:num)/read'] = 'rest/notification/read/$1';
+
 // Admin REST API routes
 $route['rest/admin/reports'] = 'rest/admin/reports/index';
 $route['rest/admin/reports/(:num)'] = 'rest/admin/reports/index/$1';
