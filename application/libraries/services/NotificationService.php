@@ -54,8 +54,8 @@ class NotificationService
                 'comment',
                 $title,
                 $message,
-                'article',
-                $articleId,
+                'comment',
+                $commentId,
                 $actorId
             );
         } catch (Exception $e) {
