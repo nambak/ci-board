@@ -427,4 +427,46 @@ class User_m extends CI_Model
         $user = $query->row();
         return $user && !empty($user->email_verified_at);
     }
+
+    /**
+     * 알림 설정 활성화 여부 확인
+     *
+     * @param int $userId 사용자 ID
+     * @return bool 알림 활성화 여부
+     */
+    public function isNotificationEnabled($userId)
+    {
+        $this->db->select('notification_enabled');
+        $this->db->where('id', $userId);
+        $query = $this->db->get('users');
+
+        $user = $query->row();
+        return $user && $user->notification_enabled == 1;
+    }
+
+    /**
+     * 알림 설정 업데이트
+     *
+     * @param int $userId 사용자 ID
+     * @param bool $enabled 활성화 여부
+     * @return bool 성공 여부
+     */
+    public function updateNotificationSetting($userId, $enabled)
+    {
+        try {
+            $data = [
+                'notification_enabled' => $enabled ? 1 : 0,
+                'updated_at' => date('Y-m-d H:i:s')
+            ];
+
+            $this->db->where('id', $userId);
+            $this->db->update('users', $data);
+
+            return $this->db->affected_rows() >= 0;
+
+        } catch (Exception $e) {
+            log_message('error', 'Notification setting update error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
 }

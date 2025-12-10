@@ -51,14 +51,15 @@ class User extends RestController
 
             // 응답 데이터 구성
             $response_data = [
-                'id'                => $user->id,
-                'name'              => $user->name,
-                'email'             => $user->email,
-                'profile_image'     => $user->profile_image ?? null,
-                'profile_image_url' => !empty($user->profile_image) ? '/uploads/profiles/' . $user->profile_image : null,
-                'created_at'        => $user->created_at,
-                'post_count'        => $this->Article_m->countByUserId($user_id),
-                'comment_count'     => $this->Comment_m->countByUserId($user_id)
+                'id'                   => $user->id,
+                'name'                 => $user->name,
+                'email'                => $user->email,
+                'profile_image'        => $user->profile_image ?? null,
+                'profile_image_url'    => !empty($user->profile_image) ? '/uploads/profiles/' . $user->profile_image : null,
+                'notification_enabled' => isset($user->notification_enabled) ? (int)$user->notification_enabled : 1,
+                'created_at'           => $user->created_at,
+                'post_count'           => $this->Article_m->countByUserId($user_id),
+                'comment_count'        => $this->Comment_m->countByUserId($user_id)
             ];
 
             $this->response([
@@ -191,6 +192,7 @@ class User extends RestController
             $name = $this->put('name', true);
             $password = trim($this->put('password', true));
             $newPassword = trim($this->put('new_password', true));
+            $notificationEnabled = $this->put('notification_enabled', true);
 
             // 유효성 검사
             $this->load->library('form_validation');
@@ -263,6 +265,11 @@ class User extends RestController
             $update_data = [
                 'name' => trim($name)
             ];
+
+            // 알림 설정 업데이트
+            if ($notificationEnabled !== null && $notificationEnabled !== '') {
+                $update_data['notification_enabled'] = (int)$notificationEnabled ? 1 : 0;
+            }
 
             // 비밀번호 변경이 있는 경우
             if (!empty($password) && !empty($newPassword)) {

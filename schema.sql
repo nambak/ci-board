@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `profile_image` VARCHAR(255) NULL COMMENT '프로필 이미지 파일명',
   `remember_token` VARCHAR(64) NULL COMMENT 'Remember Me 토큰',
   `email_verified_at` DATETIME NULL COMMENT '이메일 인증 일시',
+  `notification_enabled` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '알림 활성화 여부 (0: 비활성, 1: 활성)',
   `verification_token` VARCHAR(64) NULL COMMENT '이메일 인증 토큰',
   `last_verification_sent_at` DATETIME NULL COMMENT '인증 이메일 마지막 발송 시간',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '계정 생성일',
@@ -149,6 +150,26 @@ CREATE TABLE IF NOT EXISTS `reports` (
   CONSTRAINT `fk_reports_reporter` FOREIGN KEY (`reporter_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_reports_processor` FOREIGN KEY (`processed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='신고 정보';
+
+-- 알림 테이블
+CREATE TABLE IF NOT EXISTS `notifications` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` INT UNSIGNED NOT NULL COMMENT '알림 수신자 ID',
+  `type` ENUM('comment', 'reply', 'like', 'mention') NOT NULL COMMENT '알림 유형',
+  `title` VARCHAR(200) NOT NULL COMMENT '알림 제목',
+  `message` VARCHAR(500) NOT NULL COMMENT '알림 메시지',
+  `reference_type` ENUM('article', 'comment') NULL COMMENT '참조 대상 타입',
+  `reference_id` INT UNSIGNED NULL COMMENT '참조 대상 ID',
+  `actor_id` INT UNSIGNED NULL COMMENT '알림 발생시킨 사용자 ID',
+  `is_read` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '읽음 여부 (0: 안읽음, 1: 읽음)',
+  `read_at` DATETIME NULL COMMENT '읽은 시간',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일',
+  PRIMARY KEY (`id`),
+  KEY `idx_notifications_user_read` (`user_id`, `is_read`),
+  KEY `idx_notifications_created_at` (`created_at`),
+  CONSTRAINT `fk_notifications_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_notifications_actor` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='알림 정보';
 
 -- ============================================
 -- 초기 데이터 삽입 (선택사항)

@@ -47,6 +47,19 @@
                         <input class="form-control" type="password" id="new-password">
                         <div class="invalid-feedback" id="new-password-error"></div>
                     </div>
+
+                    <!-- 알림 설정 -->
+                    <hr class="my-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-muted">알림 설정</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="notificationEnabled" checked>
+                            <label class="form-check-label" for="notificationEnabled">
+                                알림 받기
+                                <small class="text-muted d-block">댓글, 답글, 좋아요 알림을 받습니다.</small>
+                            </label>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-footer">
                     <div class="d-flex justify-content-between">
@@ -86,6 +99,11 @@
                         $('#deleteProfileImage').show();
                     } else if (response.data.name) {
                         $('#userInitial').text(response.data.name.charAt(0).toUpperCase());
+                    }
+
+                    // 알림 설정 로드
+                    if (response.data.notification_enabled !== undefined) {
+                        $('#notificationEnabled').prop('checked', response.data.notification_enabled == 1);
                     }
                 }
             },
@@ -189,6 +207,7 @@
         const newPassword = $('#new-password').val().trim();
 
         data['name'] = name;
+        data['notification_enabled'] = $('#notificationEnabled').is(':checked') ? 1 : 0;
 
         if (password && newPassword) {
             data['password'] = password;

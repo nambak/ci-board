@@ -124,6 +124,11 @@ class Article extends RestController
             }
 
             $result = $this->article_m->store($boardId, $userId, $title, $content);
+
+            // 멘션 알림 (게시글 내용에 @사용자명이 있으면)
+            $this->load->library('services/NotificationService', null, 'notification_service');
+            $this->notification_service->notifyMentionsInArticle($result, $content, $userId);
+
             $this->response(['id' => $result], 200);
         } catch (Exception $e) {
             $this->response(['message' => 'server error: ' . $e->getMessage()], 500);
@@ -309,6 +314,10 @@ class Article extends RestController
                 return;
             }
             $this->article_m->incrementLikeCount($id);
+
+            // 좋아요 알림 생성
+            $this->load->library('services/NotificationService', null, 'notification_service');
+            $this->notification_service->notifyLike($id, $userId);
 
             // 업데이트된 좋아요 수 조회
             $likeCount = $this->article_like_m->countByArticleId($id);
