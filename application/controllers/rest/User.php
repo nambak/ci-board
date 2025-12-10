@@ -478,18 +478,14 @@ class User extends RestController
                 return;
             }
 
-            // 파일 삭제
-            $image_path = FCPATH . 'uploads/profiles/' . $users[0]->profile_image;
-            if (file_exists($image_path)) {
-                @unlink($image_path);
-            }
-
             // DB 업데이트
             $result = $this->User_m->update($user_id, [
                 'profile_image' => null
             ]);
 
             if ($result) {
+                $this->deleteProfileImage($users[0]->profile_image);
+
                 // 세션 업데이트
                 $this->session->unset_userdata('profile_image');
 
