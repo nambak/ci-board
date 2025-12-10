@@ -76,7 +76,7 @@ const NotificationManager = {
         $.ajax({
             url: '/rest/notification',
             type: 'GET',
-            data: { recent: 1 },
+            data: {recent: 1},
             success: (response) => {
                 this.renderDropdownNotifications(response.rows);
                 this.updateBadge(response.unread_count);
@@ -171,6 +171,8 @@ const NotificationManager = {
             type: 'PUT',
             success: () => {
                 this.updateUnreadCount();
+            },
+            complete: () => {
                 if (typeof onSuccess === 'function') {
                     onSuccess();
                 }
@@ -208,7 +210,7 @@ const NotificationManager = {
         $.ajax({
             url: '/rest/notification',
             type: 'GET',
-            data: { page: page, per_page: 20 },
+            data: {page: page, per_page: 20},
             success: (response) => {
                 this.renderFullNotificationList(response.rows);
                 this.renderPagination(response.pagination);
@@ -304,7 +306,7 @@ const NotificationManager = {
             url: `/rest/notification/${id}`,
             type: 'DELETE',
             success: () => {
-                $(`.notification-card[data-id="${id}"]`).fadeOut(300, function() {
+                $(`.notification-card[data-id="${id}"]`).fadeOut(300, function () {
                     $(this).remove();
                 });
                 this.updateUnreadCount();
