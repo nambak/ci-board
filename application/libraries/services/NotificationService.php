@@ -271,8 +271,8 @@ class NotificationService
                     'mention',
                     $title,
                     $message,
-                    'article',
-                    $articleId,
+                    'comment',
+                    $commentId,
                     $actorId
                 );
             }
