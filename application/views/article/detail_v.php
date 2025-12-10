@@ -54,28 +54,6 @@
             </div>
         </div>
     </div>
-    <!-- 좋아요/신고 버튼 영역 -->
-    <div class="row mb-4">
-        <div class="col text-center">
-            <?php if (is_logged_in()): ?>
-                <button id="likeButton" class="btn btn-outline-danger btn-lg me-2">
-                    <i class="bi bi-heart" id="likeIcon"></i>
-                    <span id="likeButtonText">좋아요</span>
-                </button>
-                <button id="reportArticleButton" class="btn btn-outline-warning btn-lg" data-bs-toggle="modal" data-bs-target="#reportModal" data-target-type="article" data-target-id="<?= $currentArticle->id ?>">
-                    <i class="bi bi-flag"></i> 신고
-                </button>
-            <?php else: ?>
-                <button class="btn btn-outline-secondary btn-lg me-2" disabled title="로그인 후 이용 가능합니다">
-                    <i class="bi bi-heart"></i> 좋아요
-                </button>
-                <button class="btn btn-outline-secondary btn-lg" disabled title="로그인 후 이용 가능합니다">
-                    <i class="bi bi-flag"></i> 신고
-                </button>
-            <?php endif; ?>
-        </div>
-    </div>
-
     <!-- 버튼 영역 -->
     <div class="row mb-5">
         <div class="col">
@@ -85,6 +63,22 @@
                     <?php if (is_article_author($currentArticle->id)): ?>
                         <button id="redirectEditPost" class="btn btn-outline-primary me-2">수정</button>
                         <button id="deletePost" class="btn btn-outline-danger">삭제</button>
+                    <?php endif; ?>
+
+                    <?php if (is_logged_in()): ?>
+                        <button id="likeButton" class="btn btn-outline-danger me-2">
+                            <i class="bi bi-heart" id="likeIcon"></i>
+                            <span id="likeButtonText">좋아요</span>
+                        </button>
+                        <button id="reportArticleButton"
+                                class="btn btn-outline-warning"
+                                data-bs-toggle="modal"
+                                data-bs-target="#reportModal"
+                                data-target-type="article"
+                                data-target-id="<?= $currentArticle->id ?>"
+                        >
+                            <i class="bi bi-flag"></i> 신고
+                        </button>
                     <?php endif; ?>
                 </div>
                 <div>

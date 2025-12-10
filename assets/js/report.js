@@ -3,7 +3,6 @@
  */
 document.addEventListener('DOMContentLoaded', function () {
     const reportModal = document.getElementById('reportModal');
-    const reportForm = document.getElementById('reportForm');
     const reportTargetType = document.getElementById('reportTargetType');
     const reportTargetId = document.getElementById('reportTargetId');
     const reportDetailSection = document.getElementById('reportDetailSection');
@@ -57,12 +56,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // 유효성 검사
         if (!reason) {
-            alert('신고 사유를 선택해주세요.');
+            Swal.fire({
+                icon: 'warning',
+                text: '신고 사유를 선택해주세요.'
+            });
             return;
         }
 
         if (reason.value === 'other' && !detail) {
-            alert('기타 사유를 선택한 경우 상세 내용을 입력해주세요.');
+            Swal.fire({
+                icon: 'warning',
+                text: '기타 사유를 선택한 경우 상세 내용을 입력해주세요.'
+            });
             reportDetail.focus();
             return;
         }
@@ -86,39 +91,45 @@ document.addEventListener('DOMContentLoaded', function () {
             formData.append('detail', detail);
         }
 
-        // API 호출
-        fetch('/rest/report', {
-            method: 'POST',
-            body: formData
-        })
-            .then(function (response) {
-                return response.json().then(function (data) {
-                    return {status: response.status, data: data};
-                });
-            })
-            .then(function (result) {
-                if (result.status === 201) {
-                    alert(result.data.message || '신고가 접수되었습니다.');
-                    // 모달 닫기
-                    const bsModal = bootstrap.Modal.getInstance(reportModal);
-                    bsModal.hide();
-                } else if (result.status === 409) {
-                    alert(result.data.message || '이미 신고한 게시물입니다.');
-                } else if (result.status === 401) {
-                    alert('로그인이 필요합니다.');
-                    window.location.href = '/login';
+        const modal = bootstrap.Modal.getInstance(reportModal);
+
+        $.ajax({
+            url: '/rest/report',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: (response) => {
+                Swal.fire({
+                    icon: 'success',
+                    text: response.message || '신고가 접수되었습니다.'
+                }).then(() => modal.hide());
+            },
+            error: (xhr) => {
+                console.error('Report error:', xhr);
+                const response = xhr.responseJSON || {};
+                if (xhr.status === 409) {
+                    Swal.fire({
+                        icon: 'error',
+                        text: response.message || '이미 신고한 게시물입니다.'
+                    }).then(() => modal.hide());
+                } else if (xhr.status === 401) {
+                    Swal.fire({
+                        icon: 'error',
+                        text: '로그인이 필요합니다.'
+                    }).then(() => window.location.href = '/login');
                 } else {
-                    alert(result.data.message || '신고 접수에 실패했습니다.');
+                    Swal.fire({
+                        icon: 'error',
+                        text: response.message || '신고 처리 중 오류가 발생했습니다.'
+                    }).then(() => modal.hide());
                 }
-            })
-            .catch(function (error) {
-                console.error('Report error:', error);
-                alert('신고 처리 중 오류가 발생했습니다.');
-            })
-            .finally(function () {
+            },
+            complete: () => {
                 submitReportBtn.disabled = false;
                 submitReportBtn.textContent = '신고하기';
-            });
+            }
+        });
     });
 
     /**
