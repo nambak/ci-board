@@ -99,8 +99,8 @@ class NotificationService
                 'reply',
                 $title,
                 $message,
-                'article',
-                $parentComment->article_id,
+                'comment',
+                $replyCommentId,
                 $actorId
             );
         } catch (Exception $e) {
