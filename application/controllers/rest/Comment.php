@@ -32,6 +32,8 @@ class Comment extends RestController
                 $item = [
                     'id'                 => $comment->id,
                     'name'               => $this->security->xss_clean($comment->name),
+                    'profile_image'      => $comment->profile_image ?? null,
+                    'profile_image_url'  => !empty($comment->profile_image) ? '/uploads/profiles/' . $comment->profile_image : null,
                     'comment'            => $this->security->xss_clean($comment->comment),
                     'created_at'         => $this->security->xss_clean($comment->created_at),
                     'can_edit'           => $current_user_id && $comment->writer_id == $current_user_id,

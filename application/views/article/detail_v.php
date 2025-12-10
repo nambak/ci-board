@@ -16,10 +16,15 @@
     <div class="row mb-4">
         <div class="col">
             <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="me-3">작성자:
-                        <a href="/user/<?= $currentArticle->user_id ?>">
-                            <?= html_escape($currentArticle->name) ?>
+                <div class="d-flex align-items-center">
+                    <span class="me-3 d-flex align-items-center">작성자:
+                        <a href="/user/<?= $currentArticle->user_id ?>" class="d-flex align-items-center text-decoration-none ms-2">
+                            <?= profile_avatar_html(
+                                $currentArticle->profile_image ?? null,
+                                $currentArticle->name,
+                                28
+                            ) ?>
+                            <span class="ms-1"><?= html_escape($currentArticle->name) ?></span>
                         </a>
                     </span>
                     <span class="me-3">작성일: <?= html_escape($currentArticle->created_at) ?></span>

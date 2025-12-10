@@ -40,12 +40,17 @@
                     </div>
                 </form>
 
-                <div class="text-end">
+                <div class="text-end d-flex align-items-center">
                     <?php if($this->session->userdata('logged_in')): ?>
                         <!-- 로그인된 상태 -->
-                        <span class="text-white me-3">
-                            <a href="/profile"><?= $this->session->userdata('user_name') ?></a>님 환영합니다
-                        </span>
+                        <a href="/profile" class="d-flex align-items-center text-decoration-none me-3">
+                            <?= profile_avatar_html(
+                                $this->session->userdata('profile_image'),
+                                $this->session->userdata('user_name'),
+                                32
+                            ) ?>
+                            <span class="text-white ms-2"><?= html_escape($this->session->userdata('user_name')) ?></span>
+                        </a>
                         <a href="/logout" class="btn btn-outline-light">로그아웃</a>
                     <?php else: ?>
                         <a href="/login" class="btn btn-outline-light me-2">로그인</a>

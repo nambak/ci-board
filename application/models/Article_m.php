@@ -46,7 +46,7 @@ class Article_m extends CI_Model
 
     public function get($id)
     {
-        $this->db->select('articles.*, users.name, users.email');
+        $this->db->select('articles.*, users.name, users.email, users.profile_image');
         $this->db->from('articles');
         $this->db->join('users', 'users.id = articles.user_id');
         $this->db->where('articles.id', $id);

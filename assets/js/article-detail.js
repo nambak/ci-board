@@ -525,11 +525,17 @@ const ArticleDetail = {
                 ? `<button class="btn btn-sm btn-link text-warning report-comment-btn" data-target-type="comment" data-target-id="${comment.id}"><i class="bi bi-flag"></i> 신고</button>`
                 : '';
 
+            // 프로필 이미지 또는 이니셜 아바타
+            const profileAvatar = comment.profile_image_url
+                ? `<img src="${comment.profile_image_url}" alt="프로필" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">`
+                : `<div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white me-2" style="width: 32px; height: 32px; font-size: 13px;">${this.escapeHtml(comment.name).charAt(0).toUpperCase()}</div>`;
+
             const template = `<div class="card mb-2 comment-item" data-comment-id="${comment.id}" data-depth="${comment.depth}" style="${indentStyle}">
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
-                            <div>
+                            <div class="d-flex align-items-center">
                                 ${replyIndicator}
+                                ${profileAvatar}
                                 <strong>${this.escapeHtml(comment.name)}</strong>
                                 <small class="text-muted ms-2">${comment.created_at}</small>
                             </div>

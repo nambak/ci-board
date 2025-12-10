@@ -48,7 +48,7 @@ class Comment_m extends CI_Model
     public function fetchByPost($id)
     {
         // 모든 댓글 조회 (생성일 순 정렬)
-        $query = $this->db->select('comments.*, users.name, parent_user.name as parent_author_name')
+        $query = $this->db->select('comments.*, users.name, users.profile_image, parent_user.name as parent_author_name')
             ->from('comments')
             ->join('users', 'users.id = comments.writer_id')
             ->join('comments as parent_comment', 'parent_comment.id = comments.parent_id', 'left')

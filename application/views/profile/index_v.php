@@ -7,8 +7,10 @@
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-4">
-                        <div class="avatar-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px; border-radius: 50%; font-size: 2.5rem;">
-                            <span id="userInitial"></span>
+                        <div id="profileImageContainer">
+                            <div class="avatar-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px; border-radius: 50%; font-size: 2.5rem;">
+                                <span id="userInitial"></span>
+                            </div>
                         </div>
                     </div>
 
@@ -88,8 +90,12 @@
                         $('#emailSection').show();
                     }
 
-                    // 아바타 이니셜 설정
-                    if (user.name) {
+                    // 프로필 이미지 또는 이니셜 아바타 설정
+                    if (user.profile_image_url) {
+                        $('#profileImageContainer').html(
+                            '<img src="' + user.profile_image_url + '" alt="프로필" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">'
+                        );
+                    } else if (user.name) {
                         $('#userInitial').text(user.name.charAt(0).toUpperCase());
                     }
 
