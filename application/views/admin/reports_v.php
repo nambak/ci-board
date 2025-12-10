@@ -31,7 +31,7 @@
             <div class="col-md-3 col-sm-6 mb-3">
                 <div class="card bg-secondary text-white h-100">
                     <div class="card-body">
-                        <h5 class="card-title">기각</h5>
+                        <h5 class="card-title">반려</h5>
                         <h2 id="rejectedCount">0</h2>
                     </div>
                 </div>
@@ -46,7 +46,7 @@
                     <option value="pending">대기중</option>
                     <option value="processing">처리중</option>
                     <option value="completed">처리완료</option>
-                    <option value="rejected">기각</option>
+                    <option value="rejected">반려</option>
                 </select>
             </div>
             <div class="col-md-3 mb-2">
@@ -101,7 +101,7 @@
             'pending': '<span class="badge bg-warning">대기중</span>',
             'processing': '<span class="badge bg-info">처리중</span>',
             'completed': '<span class="badge bg-success">처리완료</span>',
-            'rejected': '<span class="badge bg-secondary">기각</span>'
+            'rejected': '<span class="badge bg-secondary">반려</span>'
         };
         return statusMap[value] || value;
     }
@@ -130,29 +130,29 @@
 
     // 액션 버튼 포맷터
     function actionFormatter(value, row) {
-        let buttons = `<button class="btn btn-sm btn-outline-primary view-detail-btn me-1" data-id="${row.id}">
-            <i class="bi bi-eye"></i>
+        let buttons = `<button class="btn btn-sm btn-outline-primary view-detail-btn" data-id="${row.id}">
+            <i class="bi bi-eye"></i> 상세
         </button>`;
 
         if (row.status === 'pending') {
             buttons += `
-                <button class="btn btn-sm btn-info change-status-btn me-1" data-id="${row.id}" data-status="processing">
-                    <i class="bi bi-play"></i>
+                <button class="btn btn-sm btn-info change-status-btn" data-id="${row.id}" data-status="processing">
+                    <i class="bi bi-play"></i> 처리중
                 </button>
-                <button class="btn btn-sm btn-success change-status-btn me-1" data-id="${row.id}" data-status="completed">
-                    <i class="bi bi-check"></i>
+                <button class="btn btn-sm btn-success change-status-btn" data-id="${row.id}" data-status="completed">
+                    <i class="bi bi-check"></i> 처리완료
                 </button>
                 <button class="btn btn-sm btn-secondary change-status-btn" data-id="${row.id}" data-status="rejected">
-                    <i class="bi bi-x"></i>
+                    <i class="bi bi-x"></i> 반려
                 </button>
             `;
         } else if (row.status === 'processing') {
             buttons += `
-                <button class="btn btn-sm btn-success change-status-btn me-1" data-id="${row.id}" data-status="completed">
-                    <i class="bi bi-check"></i>
+                <button class="btn btn-sm btn-success change-status-btn" data-id="${row.id}" data-status="completed">
+                    <i class="bi bi-check"></i> 처리완료
                 </button>
                 <button class="btn btn-sm btn-secondary change-status-btn" data-id="${row.id}" data-status="rejected">
-                    <i class="bi bi-x"></i>
+                    <i class="bi bi-x"></i> 반려
                 </button>
             `;
         }
@@ -216,8 +216,7 @@
             field: 'actions',
             title: '관리',
             halign: 'center',
-            align: 'center',
-            width: 150,
+            width: 330,
             formatter: actionFormatter
         }
     ];
@@ -287,7 +286,7 @@
         const statusText = {
             'processing': '처리중으로',
             'completed': '처리완료로',
-            'rejected': '기각으로'
+            'rejected': '반려로'
         };
 
         Swal.fire({
@@ -361,7 +360,7 @@
                     'pending': '<span class="badge bg-warning">대기중</span>',
                     'processing': '<span class="badge bg-info">처리중</span>',
                     'completed': '<span class="badge bg-success">처리완료</span>',
-                    'rejected': '<span class="badge bg-secondary">기각</span>'
+                    'rejected': '<span class="badge bg-secondary">반려</span>'
                 };
 
                 const html = `
