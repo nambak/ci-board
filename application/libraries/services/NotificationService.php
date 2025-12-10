@@ -30,7 +30,7 @@ class NotificationService
     {
         try {
             $article = $this->CI->article_m->get($articleId);
-            $actor = $this->CI->user_m->get($actorId);
+            $actor = $this->CI->user_m->get($actorId)[0] ?? null;
 
             if (!$article || !$actor) {
                 return;
