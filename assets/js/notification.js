@@ -131,9 +131,13 @@ const NotificationManager = {
             const $item = $(e.currentTarget);
             const id = $item.data('id');
             const isRead = $item.data('read');
+            const href = $item.attr('href');
 
-            if (isRead == 0) {
-                this.markAsRead(id);
+            if (isRead === 0) {
+                e.preventDefault();
+                this.markAsRead(id, () => {
+                    window.location.href = href;
+                });
             }
         });
     },
