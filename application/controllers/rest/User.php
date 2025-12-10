@@ -392,16 +392,13 @@ class User extends RestController
                 $crop_config['x_axis'] = $x_axis;
                 $crop_config['y_axis'] = $y_axis;
 
-                $this->image_lib->initialize($crop_config);
-                $this->image_lib->crop();
+                $this->imageCrop($crop_config, $upload_data);
+
                 $this->image_lib->clear();
             }
 
             // 200x200으로 리사이즈
-            $this->image_lib->initialize($resize_config);
-            if (!$this->image_lib->resize()) {
-                log_message('error', 'Image resize error: ' . $this->image_lib->display_errors());
-            }
+            $this->imageResize($resize_config, $upload_data);
 
             // 기존 프로필 이미지 조회 (삭제용)
             $users = $this->User_m->get($user_id);
@@ -618,4 +615,35 @@ class User extends RestController
             }
         }
     }
+
+    private function imageCrop($config, $upload_data)
+    {
+        $this->image_lib->initialize($config);
+
+        if (!$this->image_lib->crop()) {
+            log_message('error', 'Profile image crop error:' . $this->image_lib->display_errors());
+            @unlink($upload_data['full_path']);
+            $this->response([
+                'success' => false,
+                'message' => '이미지 처리 중 오류가 발생했습니다.'
+            ], self::HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    private function imageResize($config, $uploadData)
+    {
+        $this->image_lib->initialize($config);
+
+        if ($this->image_lib->resize()) {
+            log_message('error', 'Profile image resize error:' . $this->image_lib->display_errors());
+            @unlink($uploadData['full_path']);
+            $this->response([
+                'success' => false,
+                'message' => '이미지 처리중 오류가 발생했습니다.'
+            ], self::HTTP_INTERNAL_ERROR);
+        }
+    }
 }
+
+
+
