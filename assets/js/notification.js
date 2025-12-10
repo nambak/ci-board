@@ -165,12 +165,15 @@ const NotificationManager = {
     /**
      * 개별 알림 읽음 처리
      */
-    markAsRead(id) {
+    markAsRead(id, onSuccess) {
         $.ajax({
             url: `/rest/notification/${id}/read`,
             type: 'PUT',
             success: () => {
                 this.updateUnreadCount();
+                if (typeof onSuccess === 'function') {
+                    onSuccess();
+                }
             }
         });
     },
@@ -275,9 +278,13 @@ const NotificationManager = {
             const $item = $(e.currentTarget);
             const id = $item.data('id');
             const isRead = $item.data('read');
+            const href = $item.attr('href');
 
             if (isRead == 0) {
-                this.markAsRead(id);
+                e.preventDefault();
+                this.markAsRead(id, () => {
+                    window.location.href = href;
+                });
             }
         });
 
@@ -311,7 +318,7 @@ const NotificationManager = {
     renderPagination(pagination) {
         const $nav = $('#paginationNav');
 
-        if (!pagination || pagination.total_pages <= 1) {
+        if (!pagination || pagination.total_pages < 1) {
             $nav.empty();
             return;
         }
