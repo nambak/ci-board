@@ -634,7 +634,7 @@ class User extends RestController
     {
         $this->image_lib->initialize($config);
 
-        if ($this->image_lib->resize()) {
+        if (!$this->image_lib->resize()) {
             log_message('error', 'Profile image resize error:' . $this->image_lib->display_errors());
             @unlink($uploadData['full_path']);
             $this->response([
