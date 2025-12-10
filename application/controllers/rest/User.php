@@ -51,14 +51,14 @@ class User extends RestController
 
             // 응답 데이터 구성
             $response_data = [
-                'id'            => $user->id,
-                'name'          => $user->name,
-                'email'         => $user->email,
-                'profile_image' => $user->profile_image ?? null,
+                'id'                => $user->id,
+                'name'              => $user->name,
+                'email'             => $user->email,
+                'profile_image'     => $user->profile_image ?? null,
                 'profile_image_url' => !empty($user->profile_image) ? '/uploads/profiles/' . $user->profile_image : null,
-                'created_at'    => $user->created_at,
-                'post_count'    => $this->Article_m->countByUserId($user_id),
-                'comment_count' => $this->Comment_m->countByUserId($user_id)
+                'created_at'        => $user->created_at,
+                'post_count'        => $this->Article_m->countByUserId($user_id),
+                'comment_count'     => $this->Comment_m->countByUserId($user_id)
             ];
 
             $this->response([
@@ -143,15 +143,15 @@ class User extends RestController
 
             $user = $users[0];
             $responseData = [
-                'id'            => $user->id,
-                'name'          => $user->name,
-                'email'         => $user->email,
-                'profile_image' => $user->profile_image ?? null,
+                'id'                => $user->id,
+                'name'              => $user->name,
+                'email'             => $user->email,
+                'profile_image'     => $user->profile_image ?? null,
                 'profile_image_url' => !empty($user->profile_image) ? '/uploads/profiles/' . $user->profile_image : null,
-                'created_at'    => $user->created_at,
-                'article_count' => $this->Article_m->countByUserId($user->id),
-                'comment_count' => $this->Comment_m->countByUserId($user->id),
-                'is_owner'      => $current_user_id && $current_user_id === (int)$user->id
+                'created_at'        => $user->created_at,
+                'article_count'     => $this->Article_m->countByUserId($user->id),
+                'comment_count'     => $this->Comment_m->countByUserId($user->id),
+                'is_owner'          => $current_user_id && $current_user_id === (int)$user->id
             ];
 
             $this->response([
@@ -403,14 +403,12 @@ class User extends RestController
                 log_message('error', 'Image resize error: ' . $this->image_lib->display_errors());
             }
 
-            // 기존 프로필 이미지 삭제
+            // 기존 프로필 이미지 조회 (삭제용)
             $users = $this->User_m->get($user_id);
-            if (!empty($users) && !empty($users[0]->profile_image)) {
-                $old_image_path = FCPATH . 'uploads/profiles/' . $users[0]->profile_image;
-                if (file_exists($old_image_path)) {
-                    @unlink($old_image_path);
-                }
-            }
+            $oldProfileImage = (!empty($users) && !empty($users[0]->profile_image))
+                ? $users[0]->profile_image
+                : null;
+
 
             // DB 업데이트
             $result = $this->User_m->update($user_id, [
@@ -418,14 +416,17 @@ class User extends RestController
             ]);
 
             if ($result) {
+                // 기존 프로필 이미지 삭제
+                $this->deleteProfileImage($oldProfileImage);
+
                 // 세션 업데이트
                 $this->session->set_userdata('profile_image', $upload_data['file_name']);
 
                 $this->response([
                     'success' => true,
                     'message' => '프로필 이미지가 업로드되었습니다.',
-                    'data' => [
-                        'profile_image' => $upload_data['file_name'],
+                    'data'    => [
+                        'profile_image'     => $upload_data['file_name'],
                         'profile_image_url' => '/uploads/profiles/' . $upload_data['file_name']
                     ]
                 ], self::HTTP_OK);
@@ -609,6 +610,16 @@ class User extends RestController
                 'success' => false,
                 'message' => '권한 변경 중 오류가 발생했습니다.'
             ], self::HTTP_INTERNAL_ERROR);
+        }
+    }
+
+    private function deleteProfileImage($oldProfileImage)
+    {
+        if (!empty($oldProfileImage)) {
+            $oldImagePath = FCPATH . 'uploads/profiles/' . $oldProfileImage;
+            if (file_exists($oldImagePath)) {
+                @unlink($oldImagePath);
+            }
         }
     }
 }
