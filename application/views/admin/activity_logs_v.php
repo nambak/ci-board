@@ -147,9 +147,14 @@
 
     // 상세 보기 버튼 포맷터
     function detailFormatter(value, row) {
+        const safeRow = JSON.stringify(row)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
         return `
-            <button class="btn btn-sm btn-outline-info view-detail"
-                    data-row='${JSON.stringify(row).replace(/'/g, "&#39;")}'>
+            <button class="btn btn-sm btn-outline-info view-detail" data-row='${safeRow}'>
                 <i class="bi bi-eye"></i>
             </button>
         `;
