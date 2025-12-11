@@ -338,7 +338,7 @@
     });
 
     // 병합 모달 열기
-    $(document).on('click', '.merge-btn', () => {
+    $(document).on('click', '.merge-btn', function () {
         const sourceId = $(this).data('id');
         const sourceName = $(this).data('name');
 
