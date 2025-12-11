@@ -33,8 +33,19 @@ class Activity_log extends RestController
             // bootstrap-table 페이지네이션 파라미터
             $limit = (int)$this->get('limit') ?: 20;
             $offset = (int)$this->get('offset') ?: 0;
+
+            // 정렬 필드 화이트리스트 검증
+            $allowedSortFields = ['id', 'created_at', 'action', 'user_id', 'ip_address'];
             $sort = $this->get('sort') ?: 'created_at';
+            if (!in_array($sort, $allowedSortFields)) {
+                $sort = 'created_at';
+            }
+
+            // 정렬 방향 검증
             $order = strtoupper($this->get('order') ?: 'DESC');
+            if (!in_array($order, ['ASC', 'DESC'])) {
+                $order = 'DESC';
+            }
 
             // limit 범위 제한
             $limit = max(1, min(100, $limit));
