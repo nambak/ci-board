@@ -370,7 +370,7 @@
     });
 
     // 태그 병합
-    $('#confirmMergeBtn').on('click', function () {
+    $('#confirmMergeBtn').on('click', () => {
         const sourceId = $('#mergeSourceId').val();
         const targetId = $('#mergeTargetId').val();
 
@@ -382,15 +382,27 @@
         $.ajax({
             url: '/rest/tag/merge',
             method: 'POST',
-            data: {source_id: sourceId, target_id: targetId},
-            success: function (response) {
+            data: {
+                source_id: sourceId,
+                target_id: targetId,
+                [csrfName]: csrfHash
+            },
+            success: (response) => {
                 $('#mergeTagModal').modal('hide');
                 $('#tag-list').bootstrapTable('refresh');
-                Swal.fire({icon: 'success', text: '태그가 병합되었습니다.', timer: 1500, showConfirmButton: false});
+                Swal.fire({
+                    icon: 'success',
+                    text: '태그가 병합되었습니다.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
             },
-            error: function (xhr) {
+            error: (xhr) => {
                 const message = xhr.responseJSON?.message || '태그 병합에 실패했습니다.';
-                Swal.fire({icon: 'error', text: message});
+                Swal.fire({
+                    icon: 'error',
+                    text: message
+                });
             }
         });
     });
