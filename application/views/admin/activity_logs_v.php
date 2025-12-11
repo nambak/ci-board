@@ -89,6 +89,13 @@
     const csrfName = '<?= $this->security->get_csrf_token_name() ?>';
     const csrfHash = '<?= $this->security->get_csrf_hash() ?>';
 
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     // 액션 배지 포맷터
     function actionFormatter(value, row) {
         const actionColors = {
@@ -322,7 +329,7 @@
                 </tr>
                 <tr>
                     <th>사용자</th>
-                    <td>${row.user_name} (${row.user_email})</td>
+                    <td>${escapeHtml(row.user_name)} (${escapeHtml(row.user_email)})</td>
                 </tr>
                 <tr>
                     <th>액션</th>
@@ -334,15 +341,15 @@
                 </tr>
                 <tr>
                     <th>설명</th>
-                    <td>${row.description || '-'}</td>
+                    <td>${escapeHtml(row.description) || '-'}</td>
                 </tr>
                 <tr>
                     <th>IP 주소</th>
-                    <td>${row.ip_address}</td>
+                    <td>${escapeHtml(row.ip_address)}</td>
                 </tr>
                 <tr>
                     <th>User-Agent</th>
-                    <td><small>${row.user_agent || '-'}</small></td>
+                    <td><small>${escapeHtml(row.user_agent) || '-'}</small></td>
                 </tr>
                 <tr>
                     <th>일시</th>
