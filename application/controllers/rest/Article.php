@@ -98,12 +98,14 @@ class Article extends RestController
                 return;
             }
 
-            $this->article_m->delete($id);
+            $deleted = $this->article_m->delete($id);
 
             // 게시글 삭제 로깅
-            $this->activity_logger->logArticleDelete($id, (array)$article);
+            if  ($deleted) {
+                $this->activity_logger->logArticleDelete($id, (array) $article);
+            }
 
-            $this->response('success', 200);
+            $this->response($deleted ? 'success' : ['message' => 'delete failed'], $deleted ? 200 : 500);
 
         } catch (Exception $e) {
             $this->response(['message' => 'server error: ' . $e->getMessage()], 500);
