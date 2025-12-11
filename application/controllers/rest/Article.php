@@ -196,10 +196,31 @@ class Article extends RestController
             // 태그 처리
             if ($result && $tagsJson) {
                 $tagNames = json_decode($tagsJson, true);
+
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    log_message('error', 'Invalid tag JSON for article: ' . $result);
+                } else if (!is_array($tagNames)) {
+                    log_message('error', 'Tag must be array for article: ' . $result);
+                } else if (count($tagNames) > 5) {
+                    log_message('info', 'Too many tags for article: ' . $result);
+                    $tagNames = array_slice($tagNames, 0, 5);
+                }
+
                 if (is_array($tagNames) && !empty($tagNames)) {
-                    $tagIds = $this->Tag_m->getOrCreateByNames($tagNames);
-                    foreach ($tagIds as $tagId) {
-                        $this->Article_tag_m->add($result, $tagId);
+                    try {
+                        $this->db->trans_start();
+                        $tagIds = $this->Tag_m->getOrCreateByNames($tagNames);
+                        foreach ($tagIds as $tagId) {
+                            $this->Article_tag_m->add($result, $tagId);
+                        }
+                        $this->db->trans_complete();
+
+                        if ($this->db->trans_status() === FALSE) {
+                            log_message('error', 'Failed to add tags for article: ' . $result);
+                        }
+                    } catch (Exception $e) {
+                        $this->db->trans_rollback();
+                        log_message('error', 'Tag creation error for article: ' . $result . ' - ' . $e->getMessage());
                     }
                 }
             }
