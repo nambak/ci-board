@@ -111,8 +111,12 @@
 
     // 슬러그 포맷터
     function slugFormatter(value, row) {
-        return `<a href="/tag/${value}" target="_blank" class="text-decoration-none">
-            <code>${value}</code>
+        const raw = typeof value === 'string' ? value : '';
+        const urlSlug = encodeURIComponent(raw);
+        const display = escapeHtml(raw);
+
+        return `<a href="/tag/${urlSlug}" target="_blank" class="text-decoration-none">
+            <code>${display}</code>
             <i class="bi bi-box-arrow-up-right small ms-1"></i>
         </a>`;
     }
@@ -153,7 +157,8 @@
             field: 'name',
             title: '태그명',
             halign: 'center',
-            sortable: true
+            sortable: true,
+            formatter: (value) => escapeHtml(value ?? ''),
         },
         {
             field: 'slug',
