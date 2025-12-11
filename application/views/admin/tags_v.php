@@ -313,6 +313,9 @@
                 $.ajax({
                     url: `/rest/tag/${id}`,
                     method: 'DELETE',
+                    data: {
+                        [csrfName]: csrfHash
+                    },
                     success: (response) => {
                         $('#tag-list').bootstrapTable('refresh');
                         Swal.fire({
