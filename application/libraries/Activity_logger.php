@@ -343,7 +343,7 @@ class Activity_logger
         }
 
         if (!is_array($data)) {
-            return $data;
+            return [];
         }
 
         // 민감한 필드 제거
