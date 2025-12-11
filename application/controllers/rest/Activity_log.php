@@ -201,6 +201,8 @@ class Activity_log extends RestController
 
         try {
             $limit = (int)$this->get('limit') ?: 50;
+            $limit = max(1, min(100, $limit));
+
             $logs = $this->Activity_log_m->getByUser((int)$userId, $limit);
 
             $rows = array_map(function ($log) {
@@ -256,6 +258,8 @@ class Activity_log extends RestController
 
         try {
             $limit = (int)$this->get('limit') ?: 50;
+            $limit = max(1, min(100, $limit));
+
             $logs = $this->Activity_log_m->getByIp($ipAddress, $limit);
 
             $rows = array_map(function ($log) {
