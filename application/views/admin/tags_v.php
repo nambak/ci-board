@@ -335,7 +335,7 @@
     });
 
     // 병합 모달 열기
-    $(document).on('click', '.merge-btn', function () {
+    $(document).on('click', '.merge-btn', () => {
         const sourceId = $(this).data('id');
         const sourceName = $(this).data('name');
 
@@ -346,14 +346,18 @@
         $.ajax({
             url: '/rest/tag',
             method: 'GET',
-            data: {limit: 100, sort: 'usage_count', order: 'desc'},
-            success: function (response) {
+            data: {
+                limit: 100,
+                sort: 'usage_count',
+                order: 'desc'
+            },
+            success: (response) => {
                 const $select = $('#mergeTargetId');
                 $select.empty().append('<option value="">태그 선택...</option>');
 
                 response.rows.forEach(tag => {
                     if (tag.id != sourceId) {
-                        $select.append(`<option value="${tag.id}">${tag.name} (${tag.usage_count}개)</option>`);
+                        $select.append(`<option value="${tag.id}">${escapeHtml(tag.name)} (${tag.usage_count}개)</option>`);
                     }
                 });
 
