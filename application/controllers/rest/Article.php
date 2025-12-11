@@ -85,16 +85,16 @@ class Article extends RestController
             $updated = $this->article_m->update($id, $title, $content);
 
             // 태그 동기화
-            if ($tagsJson) {
-                $tagNames = json_decode($tagsJson, true);
-                if (is_array($tagNames)) {
-                    $tagIds = $this->Tag_m->getOrCreateByNames($tagNames);
-                    $this->Article_tag_m->syncTags($id, $tagIds);
-                }
-            }
-
-            // 게시글 수정 로깅
             if ($updated) {
+                if ($tagsJson) {
+                    $tagNames = json_decode($tagsJson, true);
+                    if (is_array($tagNames)) {
+                        $tagIds = $this->Tag_m->getOrCreateByNames($tagNames);
+                        $this->Article_tag_m->syncTags($id, $tagIds);
+                    }
+                }
+
+                // 게시글 수정 로깅
                 $this->activity_logger->logArticleUpdate($id, $oldData, ['title' => $title, 'content' => $content]);
             }
 
