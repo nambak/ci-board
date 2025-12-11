@@ -11,6 +11,8 @@ class Article extends RestController
         $this->load->model('article_m');
         $this->load->model('article_like_m');
         $this->load->model('user_m');
+        $this->load->model('Tag_m');
+        $this->load->model('Article_tag_m');
         $this->load->library('session');
         $this->load->library('services/ArticleService', null, 'article_service');
         $this->load->library('activity_logger');
@@ -41,6 +43,9 @@ class Article extends RestController
             $article->like_count = (int)($article->like_count ?? 0);
             $article->liked_by_me = $userId ? $this->article_like_m->hasLiked($id, $userId) : false;
 
+            // 태그 정보 추가
+            $article->tags = $this->Article_tag_m->getByArticle($id);
+
             $this->response($article, 200);
         } catch (Exception $e) {
             log_message('error', 'Article::index_get error: ' . $e->getMessage());
@@ -57,6 +62,7 @@ class Article extends RestController
         try {
             $title = $this->put('title', true);
             $content = $this->put('content', true);
+            $tagsJson = $this->put('tags', true);
 
             // 게시글 존재 확인
             $post = $this->article_m->get($id);
@@ -77,6 +83,15 @@ class Article extends RestController
             $oldData = ['title' => $post->title, 'content' => $post->content];
 
             $updated = $this->article_m->update($id, $title, $content);
+
+            // 태그 동기화
+            if ($tagsJson) {
+                $tagNames = json_decode($tagsJson, true);
+                if (is_array($tagNames)) {
+                    $tagIds = $this->Tag_m->getOrCreateByNames($tagNames);
+                    $this->Article_tag_m->syncTags($id, $tagIds);
+                }
+            }
 
             // 게시글 수정 로깅
             if ($updated) {
@@ -123,6 +138,7 @@ class Article extends RestController
             $title = $this->input->post('title', true);
             $content = $this->input->post('content', true);
             $boardId = $this->input->post('board_id', true);
+            $tagsJson = $this->input->post('tags', true);
             $userId = get_user_id();
 
             if (!$userId) {
@@ -150,6 +166,17 @@ class Article extends RestController
             }
 
             $result = $this->article_m->store($boardId, $userId, $title, $content);
+
+            // 태그 처리
+            if ($result && $tagsJson) {
+                $tagNames = json_decode($tagsJson, true);
+                if (is_array($tagNames) && !empty($tagNames)) {
+                    $tagIds = $this->Tag_m->getOrCreateByNames($tagNames);
+                    foreach ($tagIds as $tagId) {
+                        $this->Article_tag_m->add($result, $tagId);
+                    }
+                }
+            }
 
             // 게시글 작성 로깅
             if ($result) {

@@ -7,6 +7,7 @@ class Article extends MY_Controller
     {
         parent::__construct();
         $this->load->model('article_m');
+        $this->load->model('Article_tag_m');
         $this->load->library('session');
         $this->load->library('services/ArticleService', null, 'article_service');
     }
@@ -42,11 +43,15 @@ class Article extends MY_Controller
         $prevArticle = $this->article_m->getPrevious($currentBoardId, $id);
         $nextArticle = $this->article_m->getNext($currentBoardId, $id);
 
+        // 태그 정보 가져오기
+        $tags = $this->Article_tag_m->getByArticle($id);
+
         $data = [
             'currentArticle' => $currentArticle,
             'prevArticleId'  => $prevArticle ? $prevArticle->id : null,
             'nextArticleId'  => $nextArticle ? $nextArticle->id : null,
             'user_id'     => $this->session->userdata('user_id'),
+            'tags'        => $tags,
         ];
 
         $this->load->view('article/detail_v', $data);

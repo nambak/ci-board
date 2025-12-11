@@ -40,6 +40,21 @@
             </div>
         </div>
     </div>
+    <!-- 태그 영역 -->
+    <?php if (!empty($tags)): ?>
+    <div class="row mb-3">
+        <div class="col">
+            <div class="article-tags">
+                <i class="bi bi-tags me-2 text-muted"></i>
+                <?php foreach ($tags as $tag): ?>
+                    <a href="/tag/<?= html_escape($tag->slug) ?>" class="tag-link">
+                        <?= html_escape($tag->name) ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
     <!-- 게시글 내용 -->
     <div class="row mb-4">
         <div class="col">

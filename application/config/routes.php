@@ -84,3 +84,16 @@ $route['rest/activity_log'] = 'rest/activity_log/index';
 $route['rest/activity_log/stats'] = 'rest/activity_log/stats';
 $route['rest/activity_log/user/(:num)'] = 'rest/activity_log/user/$1';
 $route['rest/activity_log/ip/(:any)'] = 'rest/activity_log/ip/$1';
+
+// Tag REST API routes
+$route['rest/tag'] = 'rest/tag/index';
+$route['rest/tag/popular'] = 'rest/tag/popular';
+$route['rest/tag/search'] = 'rest/tag/search';
+$route['rest/tag/merge'] = 'rest/tag/merge';
+$route['rest/tag/unused'] = 'rest/tag/unused';
+$route['rest/tag/(:num)'] = 'rest/tag/show/$1';
+$route['rest/tag/(:any)/articles'] = 'rest/tag/articles/$1';
+
+// Tag page routes
+$route['tags'] = 'tag/list';
+$route['tag/(:any)'] = 'tag/index/$1';
