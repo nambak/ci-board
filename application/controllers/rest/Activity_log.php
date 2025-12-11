@@ -34,6 +34,10 @@ class Activity_log extends RestController
             $limit = (int)$this->get('limit') ?: 20;
             $offset = (int)$this->get('offset') ?: 0;
 
+            // limit, offset 범위 제한
+            $limit = max(1, min(100, $limit));
+            $offset = max(0, $offset);
+
             // 정렬 필드 화이트리스트 검증
             $allowedSortFields = ['id', 'created_at', 'action', 'user_id', 'ip_address'];
             $sort = $this->get('sort') ?: 'created_at';
