@@ -303,7 +303,7 @@ class Activity_log extends RestController
             'comment_delete'   => '댓글 삭제',
             'password_change'  => '비밀번호 변경',
             'profile_update'   => '프로필 수정',
-            'user_delete'      => '사용자 삭제',
+            'user_delete'      => '사용자 탈퇴',
             'user_role_change' => '권한 변경',
             'board_create'     => '게시판 생성',
             'board_update'     => '게시판 수정',
