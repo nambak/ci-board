@@ -33,7 +33,7 @@ class Tag extends MY_Controller
 
         // 페이지네이션 설정
         $perPage = 20;
-        $page = (int)$this->input->get('page') ?: 1;
+        $page = max(1, (int)$this->input->get('page'));
         $offset = ($page - 1) * $perPage;
 
         // 게시글 목록 조회
