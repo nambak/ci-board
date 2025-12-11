@@ -295,10 +295,14 @@
     $(document).on('click', '.delete-btn', function () {
         const id = $(this).data('id');
         const name = $(this).data('name');
+        const html = `
+            <strong>${escapeHtml(name)}</strong> 태그를 삭제하시겠습니까?<br>
+            <small class="text-muted">이 태그와 연결된 게시글 관계도 삭제됩니다.</small>
+        `;
 
         Swal.fire({
             title: '태그 삭제',
-            html: `<strong>${name}</strong> 태그를 삭제하시겠습니까?<br><small class="text-muted">이 태그와 연결된 게시글 관계도 삭제됩니다.</small>`,
+            html: html,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc3545',
@@ -309,13 +313,21 @@
                 $.ajax({
                     url: `/rest/tag/${id}`,
                     method: 'DELETE',
-                    success: function (response) {
+                    success: (response) => {
                         $('#tag-list').bootstrapTable('refresh');
-                        Swal.fire({icon: 'success', text: '태그가 삭제되었습니다.', timer: 1500, showConfirmButton: false});
+                        Swal.fire({
+                            icon: 'success',
+                            text: '태그가 삭제되었습니다.',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
                     },
-                    error: function (xhr) {
+                    error: (xhr) => {
                         const message = xhr.responseJSON?.message || '태그 삭제에 실패했습니다.';
-                        Swal.fire({icon: 'error', text: message});
+                        Swal.fire({
+                            icon: 'error',
+                            text: message
+                        });
                     }
                 });
             }
