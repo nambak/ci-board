@@ -13,6 +13,7 @@ class Article extends RestController
         $this->load->model('user_m');
         $this->load->library('session');
         $this->load->library('services/ArticleService', null, 'article_service');
+        $this->load->library('activity_logger');
         $this->load->helper('auth');
     }
 
@@ -72,7 +73,13 @@ class Article extends RestController
                 $this->response(['message' => 'content required'], 400);
             }
 
+            // 변경 전 데이터 저장
+            $oldData = ['title' => $post->title, 'content' => $post->content];
+
             $this->article_m->update($id, $title, $content);
+
+            // 게시글 수정 로깅
+            $this->activity_logger->logArticleUpdate($id, $oldData, ['title' => $title, 'content' => $content]);
 
             $this->response(['message' => 'success'], 200);
         } catch (Exception $e) {
@@ -83,7 +90,19 @@ class Article extends RestController
     public function index_delete($id)
     {
         try {
+            // 삭제 전 게시글 정보 가져오기
+            $article = $this->article_m->get($id);
+
+            if (!$article) {
+                $this->response(['message' => 'article not found'], 404);
+                return;
+            }
+
             $this->article_m->delete($id);
+
+            // 게시글 삭제 로깅
+            $this->activity_logger->logArticleDelete($id, (array)$article);
+
             $this->response('success', 200);
 
         } catch (Exception $e) {
@@ -124,6 +143,9 @@ class Article extends RestController
             }
 
             $result = $this->article_m->store($boardId, $userId, $title, $content);
+
+            // 게시글 작성 로깅
+            $this->activity_logger->logArticleCreate($result, $title, $boardId);
 
             // 멘션 알림 (게시글 내용에 @사용자명이 있으면)
             $this->load->library('services/NotificationService', null, 'notification_service');

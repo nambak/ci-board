@@ -94,6 +94,16 @@ class Admin extends MY_Controller
     }
 
     /**
+     * 관리자 → 활동 로그
+     *
+     * @return void
+     */
+    public function activity_logs()
+    {
+        $this->load->view('admin/activity_logs_v');
+    }
+
+    /**
      * Admin 전용 레이아웃 적용
      */
     public function _output($output)

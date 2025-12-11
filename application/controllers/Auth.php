@@ -9,6 +9,7 @@ class Auth extends MY_Controller
         $this->load->helper(['url', 'form', 'email']);
         $this->load->library('session');
         $this->load->library('form_validation');
+        $this->load->library('activity_logger');
         $this->load->model('User_m');
     }
 
@@ -50,10 +51,18 @@ class Auth extends MY_Controller
      */
     public function logout()
     {
-         $this->session->sess_destroy();
+        // 로그아웃 전에 사용자 정보 가져오기
+        $userId = $this->session->userdata('user_id');
+        $userName = $this->session->userdata('user_name');
 
-         redirect('/login', 'refresh');
+        // 로그아웃 로깅
+        if ($userId) {
+            $this->activity_logger->logLogout($userId, $userName);
+        }
 
+        $this->session->sess_destroy();
+
+        redirect('/login', 'refresh');
     }
 
     /**

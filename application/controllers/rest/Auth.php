@@ -17,6 +17,7 @@ class Auth extends RestController
         $this->load->library('form_validation');
         $this->load->library('rate_limiter');
         $this->load->library('simple_captcha');
+        $this->load->library('activity_logger');
         $this->load->helper(['security', 'string', 'signup_security', 'email']);
 
         $this->load->model('user_m');
@@ -57,6 +58,9 @@ class Auth extends RestController
 
         // 사용자가 존재하지 않는 경우
         if (!$user) {
+            // 로그인 실패 로깅
+            $this->activity_logger->logLoginFailed($email);
+
             $this->response([
                 'success' => false,
                 'message' => '이메일 또는 비밀번호가 올바르지 않습니다.',
@@ -78,6 +82,9 @@ class Auth extends RestController
             ];
 
             $this->session->set_userdata($sessionData);
+
+            // 로그인 성공 로깅
+            $this->activity_logger->logLogin($user->id, $user->name);
 
             // Remember Token
             if ($remember) {
@@ -106,6 +113,9 @@ class Auth extends RestController
                 'redirect_url' => $this->session->userdata('redirect_url') ?? base_url(),
             ], self::HTTP_OK);
         } else {
+            // 로그인 실패 로깅
+            $this->activity_logger->logLoginFailed($email);
+
             // 로그인 실패
             $this->response([
                 'success' => false,

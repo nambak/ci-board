@@ -171,6 +171,28 @@ CREATE TABLE IF NOT EXISTS `notifications` (
   CONSTRAINT `fk_notifications_actor` FOREIGN KEY (`actor_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='알림 정보';
 
+-- 활동 로그 테이블
+CREATE TABLE IF NOT EXISTS `activity_logs` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` INT UNSIGNED NULL COMMENT '사용자 ID (비로그인 시 NULL)',
+  `action` VARCHAR(50) NOT NULL COMMENT '액션 타입 (login, logout, article_create 등)',
+  `target_type` VARCHAR(50) NULL COMMENT '대상 타입 (article, comment, user 등)',
+  `target_id` INT UNSIGNED NULL COMMENT '대상 ID',
+  `description` VARCHAR(500) NULL COMMENT '액션 설명',
+  `old_data` JSON NULL COMMENT '변경 전 데이터',
+  `new_data` JSON NULL COMMENT '변경 후 데이터',
+  `ip_address` VARCHAR(45) NOT NULL COMMENT 'IP 주소 (IPv6 지원)',
+  `user_agent` VARCHAR(500) NULL COMMENT 'User-Agent',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일',
+  PRIMARY KEY (`id`),
+  KEY `idx_activity_logs_user_id` (`user_id`),
+  KEY `idx_activity_logs_action` (`action`),
+  KEY `idx_activity_logs_created_at` (`created_at`),
+  KEY `idx_activity_logs_ip_address` (`ip_address`),
+  KEY `idx_activity_logs_target` (`target_type`, `target_id`),
+  CONSTRAINT `fk_activity_logs_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='활동 로그';
+
 -- ============================================
 -- 초기 데이터 삽입 (선택사항)
 -- ============================================
