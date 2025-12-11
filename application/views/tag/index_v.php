@@ -27,7 +27,7 @@
                                 <div class="flex-grow-1">
                                     <h5 class="mb-1"><?= html_escape($article->title) ?></h5>
                                     <p class="mb-2 text-muted small">
-                                        <?= mb_substr(strip_tags($article->content), 0, 150) ?>...
+                                        <?= html_escape(mb_substr(strip_tags($article->content), 0, 150)) ?>...
                                     </p>
                                     <?php if (!empty($article->tags)): ?>
                                         <div class="article-tags mb-2">
