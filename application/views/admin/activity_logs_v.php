@@ -196,6 +196,9 @@
         });
     }
 
+    // 일시적인 필터 상태를 저장하는 변수
+    let temporaryUserId = null;
+
     const columns = [
         {
             field: 'id',
@@ -275,7 +278,7 @@
         sortName: 'created_at',
         sortOrder: 'desc',
         queryParams: (params) => {
-            return {
+            const queryParams = {
                 limit: params.limit,
                 offset: params.offset,
                 sort: params.sort || 'created_at',
@@ -286,6 +289,13 @@
                 date_to: $('#filter-date-to').val(),
                 ip_address: $('#filter-ip').val()
             };
+
+            // 일시적인 user_id 필터가 있으면 추가
+            if (temporaryUserId) {
+                queryParams.user_id = temporaryUserId;
+            }
+
+            return queryParams;
         },
         headerStyle: (column) => {
             return {
@@ -313,6 +323,7 @@
         $('#filter-date-from').val('');
         $('#filter-date-to').val('');
         $('#filter-ip').val('');
+        temporaryUserId = null; // 일시적인 user_id 필터도 제거
         $('#activity-log-list').bootstrapTable('refresh');
     });
 
@@ -390,23 +401,23 @@
     // 사용자별 로그 보기
     $(document).on('click', '.view-user-logs', function() {
         const userId = $(this).data('user-id');
-        // 필터 적용 후 새로고침
+
+        // 다른 필터 초기화
         $('#filter-action').val('');
         $('#filter-target-type').val('');
         $('#filter-date-from').val('');
         $('#filter-date-to').val('');
         $('#filter-ip').val('');
 
-        // 사용자 ID로 필터링 (URL 파라미터로 처리)
-        $('#activity-log-list').bootstrapTable('refresh', {
-            url: '<?= site_url('rest/activity_log') ?>?user_id=' + userId
-        });
+        // 일시적으로 user_id 저장 후 새로고침
+        temporaryUserId = userId;
+        $('#activity-log-list').bootstrapTable('refresh');
 
         Swal.fire({
             icon: 'info',
             title: '사용자 활동 조회',
-            text: '해당 사용자의 활동 로그를 표시합니다.',
-            timer: 1500,
+            text: '해당 사용자의 활동 로그를 표시합니다. 초기화 버튼으로 전체 목록을 볼 수 있습니다.',
+            timer: 2000,
             showConfirmButton: false
         });
     });
