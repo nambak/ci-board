@@ -94,10 +94,15 @@
     const csrfHash = '<?= $this->security->get_csrf_hash() ?>';
 
     function escapeHtml(text) {
-        if (!text) return '';
+        if (text === null || text === undefined) return '';
         const div = document.createElement('div');
-        div.textContent = text;
+        div.textContent = String(text);
         return div.innerHTML;
+    }
+
+    // escapeHtml로 기본 이스케이프 후, 속성 컨텍스트에서 필요한 추가 문자 처리
+    function escapeAttr(text) {
+        return escapeHtml(text).replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
 
     // 액션 배지 포맷터
@@ -122,20 +127,25 @@
         };
 
         const color = actionColors[value] || 'secondary';
-        return `<span class="badge bg-${color}">${row.action_label}</span>`;
+        return `<span class="badge bg-${color}">${escapeHtml(row.action_label)}</span>`;
     }
 
     // 사용자 포맷터
     function userFormatter(value, row) {
         if (row.user_id) {
-            return `<a href="javascript:void(0)" class="view-user-logs" data-user-id="${row.user_id}">${value}</a>`;
+            return `<a href="javascript:void(0)" class="view-user-logs" data-user-id="${row.user_id}">
+                ${escapeHtml(value)}
+            </a>`;
         }
+
         return '<span class="text-muted">비회원</span>';
     }
 
     // IP 주소 포맷터
     function ipFormatter(value, row) {
-        return `<a href="javascript:void(0)" class="view-ip-logs" data-ip="${value}">${value}</a>`;
+        const safeIpText = escapeHtml(value);
+        const safeIpAttr = escapeAttr(value);
+        return `<a href="javascript:void(0)" class="view-ip-logs" data-ip="${safeIpAttr}">${safeIpText}</a>`;
     }
 
     // 대상 포맷터
@@ -224,7 +234,8 @@
             field: 'description',
             title: '설명',
             halign: 'center',
-            align: 'left'
+            align: 'left',
+            formatter: (value) => escapeHtml(value || '')
         },
         {
             field: 'ip_address',
