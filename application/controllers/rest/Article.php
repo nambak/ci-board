@@ -84,13 +84,39 @@ class Article extends RestController
 
             $updated = $this->article_m->update($id, $title, $content);
 
+            // 태그 처리를 위한 유효성 검증
+            $tagIds = null;
+            if ($tagsJson) {
+                $tagNames = json_decode($tagsJson, true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    $this->response(['message' => 'invalid tags format'], 400);
+                    return;
+                }
+                if (!is_array($tagNames)) {
+                    $this->response(['message' => 'invalid tags format'], 400);
+                    return;
+                }
+                $tagIds = $tagNames;
+            }
+
             // 태그 동기화
             if ($updated) {
-                if ($tagsJson) {
-                    $tagNames = json_decode($tagsJson, true);
-                    if (is_array($tagNames)) {
-                        $tagIds = $this->Tag_m->getOrCreateByNames($tagNames);
-                        $this->Article_tag_m->syncTags($id, $tagIds);
+                if ($tagIds !== null) {
+                    try {
+                        $this->db->trans_start();
+                        $createdTagIds = $this->Tag_m->getOrCreateByNames($tagIds);
+                        $this->Article_tag_m->syncTags($id, $createdTagIds);
+                        $this->db->trans_complete();
+
+                        if ($this->db->trans_status() === FALSE) {
+                            $this->response(['message' => 'failed to sync tags'], 500);
+                            return;
+                        }
+                    } catch (Exception $e) {
+                        $this->db->trans_rollback();
+                        log_message('error', 'Tag sync error: ' . $e->getMessage());
+                        $this->response(['message' => 'failed to sync tags'], 500);
+                        return;
                     }
                 }
 
