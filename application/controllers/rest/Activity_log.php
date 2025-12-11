@@ -100,8 +100,8 @@ class Activity_log extends RestController
                     'ip_address'   => $log->ip_address,
                     'user_agent'   => $log->user_agent,
                     'created_at'   => $log->created_at,
-                    'old_data'     => $log->old_data,
-                    'new_data'     => $log->new_data,
+                    'old_data'     => $log->old_data ? json_decode($log->old_data, true) : null,
+                    'new_data'     => $log->new_data ? json_decode($log->new_data, true) : null
                 ];
             }, $logs);
 
