@@ -158,7 +158,8 @@
     // 날짜 포맷터
     function dateFormatter(value, row) {
         if (!value) return '-';
-        const date = new Date(value);
+        // MySQL datetime은 UTC로 저장되어 있으므로 명시적으로 UTC로 파싱
+        const date = new Date(value + ' UTC');
         return date.toLocaleString('ko-KR', {
             year: 'numeric',
             month: '2-digit',
