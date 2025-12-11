@@ -152,7 +152,9 @@ class Article extends RestController
             $result = $this->article_m->store($boardId, $userId, $title, $content);
 
             // 게시글 작성 로깅
-            $this->activity_logger->logArticleCreate($result, $title, $boardId);
+            if ($result) {
+                $this->activity_logger->logArticleCreate($result, $title, $boardId);
+            }
 
             // 멘션 알림 (게시글 내용에 @사용자명이 있으면)
             $this->load->library('services/NotificationService', null, 'notification_service');
