@@ -193,6 +193,30 @@ CREATE TABLE IF NOT EXISTS `activity_logs` (
   CONSTRAINT `fk_activity_logs_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='활동 로그';
 
+-- 태그 테이블
+CREATE TABLE IF NOT EXISTS `tags` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(50) NOT NULL COMMENT '태그명',
+  `slug` VARCHAR(50) NOT NULL COMMENT 'URL용 슬러그',
+  `usage_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '사용 횟수',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_tags_name` (`name`),
+  UNIQUE KEY `uk_tags_slug` (`slug`),
+  KEY `idx_tags_usage_count` (`usage_count`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='태그 정보';
+
+-- 게시글-태그 연결 테이블
+CREATE TABLE IF NOT EXISTS `article_tags` (
+  `article_id` INT UNSIGNED NOT NULL COMMENT '게시글 ID',
+  `tag_id` INT UNSIGNED NOT NULL COMMENT '태그 ID',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일',
+  PRIMARY KEY (`article_id`, `tag_id`),
+  KEY `idx_article_tags_tag_id` (`tag_id`),
+  CONSTRAINT `fk_article_tags_article` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_article_tags_tag` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='게시글-태그 연결';
+
 -- ============================================
 -- 초기 데이터 삽입 (선택사항)
 -- ============================================

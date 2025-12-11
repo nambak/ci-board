@@ -11,6 +11,11 @@ const ArticleEdit = {
                 if (data) {
                     $(this.pageId + 'input[name=title]').val(data.title);
                     $(this.pageId + 'textarea[name=content]').val(data.content);
+
+                    // 기존 태그 로드
+                    if (data.tags && Array.isArray(data.tags)) {
+                        TagInput.setTags(data.tags);
+                    }
                 }
             },
             error: (error) => {
@@ -54,15 +59,19 @@ const ArticleEdit = {
             return false;
         }
 
+        // 태그 가져오기
+        const tags = TagInput.getTags();
+
         $.ajax({
             url: `/rest/article/${this.articleId}`,
             type: 'PUT',
             data: {
                 title: title,
                 content: content,
+                tags: JSON.stringify(tags)
             },
             success: (response) => {
-                if (response === 'success') {
+                if (response.message === 'success' || response === 'success') {
                     Swal.fire({
                         title: '수정되었습니다.',
                         icon: 'success'
@@ -84,6 +93,9 @@ const ArticleEdit = {
 
     init(articleId) {
         this.articleId = articleId;
+
+        // 태그 입력 초기화
+        TagInput.init();
 
         this.initCancelButton(articleId);
         this.initConfirmButton(articleId);

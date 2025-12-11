@@ -23,6 +23,28 @@
                 </div>
             </div>
         </div>
+        <!-- 태그 입력 영역 -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <i class="bi bi-tags"></i> 태그 (최대 5개)
+                    </div>
+                    <div class="card-body">
+                        <div class="tag-input-container">
+                            <div id="selectedTags" class="selected-tags mb-2">
+                                <!-- 선택된 태그가 여기에 표시됩니다 -->
+                            </div>
+                            <input type="text" class="form-control" id="tagInput" placeholder="태그를 입력하고 Enter 또는 쉼표로 구분하세요" autocomplete="off">
+                            <div id="tagSuggestions" class="tag-suggestions"></div>
+                        </div>
+                        <small class="text-muted">
+                            인기 태그: <span id="popularTags" class="popular-tags"></span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- 파일 첨부 영역 -->
         <div class="row mb-4">
             <div class="col">
@@ -60,4 +82,5 @@
         </div>
     </form>
 </article>
+<script src="/assets/js/tag-input.js" defer></script>
 <script src="/assets/js/article-create.js" defer></script>

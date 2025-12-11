@@ -177,11 +177,15 @@ const ArticleCreate = {
             }
         });
 
+        // 태그 가져오기
+        const tags = TagInput.getTags();
+
         const postData = {
             board_id: this.boardId,
             title: title,
             content: content,
-            user_id: this.userId
+            user_id: this.userId,
+            tags: JSON.stringify(tags)
         };
         postData[this.csrfTokenName] = this.csrfHash;
 
@@ -260,6 +264,9 @@ const ArticleCreate = {
         this.initCancelButton();
         this.initSaveButton();
         this.initFileInput();
+
+        // 태그 입력 초기화
+        TagInput.init();
     }
 };
 
