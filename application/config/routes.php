@@ -78,3 +78,9 @@ $route['rest/notification/(:num)/read'] = 'rest/notification/read/$1';
 // Admin REST API routes
 $route['rest/admin/reports'] = 'rest/admin/reports/index';
 $route['rest/admin/reports/(:num)'] = 'rest/admin/reports/index/$1';
+
+// Activity Log REST API routes
+$route['rest/activity_log'] = 'rest/activity_log/index';
+$route['rest/activity_log/stats'] = 'rest/activity_log/stats';
+$route['rest/activity_log/user/(:num)'] = 'rest/activity_log/user/$1';
+$route['rest/activity_log/ip/(:any)'] = 'rest/activity_log/ip/$1';

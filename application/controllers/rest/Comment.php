@@ -11,6 +11,7 @@ class Comment extends RestController
         $this->load->model('comment_m');
         $this->load->model('article_m');
         $this->load->model('user_m');
+        $this->load->library('activity_logger');
         $this->load->helper('auth');
     }
 
@@ -176,6 +177,9 @@ class Comment extends RestController
         try {
             $commentId = $this->comment_m->create($articleId, $comment, $writerId, $parentId);
 
+            // 댓글 작성 로깅
+            $this->activity_logger->logCommentCreate($commentId, $articleId, $comment);
+
             // 알림 생성
             $this->load->library('services/NotificationService', null, 'notification_service');
             if ($parentId) {
@@ -236,8 +240,11 @@ class Comment extends RestController
         }
 
         try {
+            $oldContent = $existingComment->comment;
             $result = $this->comment_m->update($id, $comment);
             if ($result) {
+                // 댓글 수정 로깅
+                $this->activity_logger->logCommentUpdate($id, $oldContent, $comment);
                 $this->response(['message' => 'success'], 200);
             } else {
                 $this->response(['message' => 'update failed'], 500);
@@ -285,8 +292,11 @@ class Comment extends RestController
         }
 
         try {
+            $articleId = $existingComment->article_id;
             $result = $this->comment_m->delete($id);
             if ($result) {
+                // 댓글 삭제 로깅
+                $this->activity_logger->logCommentDelete($id, $articleId);
                 $this->response(['message' => 'success'], 200);
             } else {
                 $this->response(['message' => 'delete failed'], 500);

@@ -32,6 +32,11 @@
                     <i class="bi bi-flag"></i> 신고 관리
                 </a>
             </li>
+            <li class="nav-item mb-2">
+                <a href="/admin/activity_logs" class="nav-link text-white">
+                    <i class="bi bi-clock-history"></i> 활동 로그
+                </a>
+            </li>
         </ul>
     </div>
 </aside>

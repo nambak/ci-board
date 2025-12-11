@@ -12,6 +12,7 @@ class User extends RestController
         parent::__construct();
 
         $this->load->library('session');
+        $this->load->library('activity_logger');
         $this->load->helper(['auth']);
         $this->load->model('User_m');
         $this->load->model('Article_m');
@@ -276,11 +277,23 @@ class User extends RestController
                 $update_data['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
             }
 
+            // 변경 전 데이터 저장 (로깅용)
+            $usersBeforeUpdate = $this->User_m->get($user_id);
+            $oldData = !empty($usersBeforeUpdate) ? (array)$usersBeforeUpdate[0] : [];
+
             $result = $this->User_m->update($user_id, $update_data);
 
             if ($result) {
                 // 세션 정보도 업데이트
                 $this->session->set_userdata('user_name', trim($name));
+
+                // 비밀번호 변경 로깅
+                if (!empty($password) && !empty($newPassword)) {
+                    $this->activity_logger->logPasswordChange($user_id);
+                }
+
+                // 프로필 수정 로깅
+                $this->activity_logger->logProfileUpdate($user_id, $oldData, $update_data);
 
                 $message = '프로필이 수정되었습니다.';
                 if (!empty($password) && !empty($newPassword)) {
@@ -588,9 +601,13 @@ class User extends RestController
             }
 
             // 권한 변경
+            $oldRole = $targetUser->role;
             $result = $this->User_m->updateRole($userId, $newRole);
 
             if ($result) {
+                // 권한 변경 로깅
+                $this->activity_logger->logUserRoleChange($userId, $oldRole, $newRole);
+
                 $roleLabel = $newRole === 'admin' ? '관리자' : '일반 사용자';
                 $this->response([
                     'success' => true,
