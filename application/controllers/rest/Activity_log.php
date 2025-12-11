@@ -77,24 +77,26 @@ class Activity_log extends RestController
             // 응답 데이터 가공
             $rows = array_map(function ($log) {
                 return [
-                    'id' => $log->id,
-                    'user_id' => $log->user_id,
-                    'user_name' => $log->user_name ?? '비회원',
-                    'user_email' => $log->user_email ?? '-',
-                    'action' => $log->action,
+                    'id'           => $log->id,
+                    'user_id'      => $log->user_id,
+                    'user_name'    => $log->user_name ?? '비회원',
+                    'user_email'   => $log->user_email ?? '-',
+                    'action'       => $log->action,
                     'action_label' => $this->getActionLabel($log->action),
-                    'target_type' => $log->target_type,
-                    'target_id' => $log->target_id,
-                    'description' => $log->description,
-                    'ip_address' => $log->ip_address,
-                    'user_agent' => $log->user_agent,
-                    'created_at' => $log->created_at
+                    'target_type'  => $log->target_type,
+                    'target_id'    => $log->target_id,
+                    'description'  => $log->description,
+                    'ip_address'   => $log->ip_address,
+                    'user_agent'   => $log->user_agent,
+                    'created_at'   => $log->created_at,
+                    'old_data'     => $log->old_data,
+                    'new_data'     => $log->new_data,
                 ];
             }, $logs);
 
             // bootstrap-table 형식 응답
             $this->response([
-                'rows' => $rows,
+                'rows'  => $rows,
                 'total' => $total
             ], self::HTTP_OK);
 
@@ -135,17 +137,17 @@ class Activity_log extends RestController
             $actionStatsWithLabel = array_map(function ($stat) {
                 return [
                     'action' => $stat->action,
-                    'label' => $this->getActionLabel($stat->action),
-                    'count' => (int)$stat->count
+                    'label'  => $this->getActionLabel($stat->action),
+                    'count'  => (int)$stat->count
                 ];
             }, $actionStats);
 
             $this->response([
                 'success' => true,
-                'data' => [
-                    'total' => $total,
+                'data'    => [
+                    'total'        => $total,
                     'action_stats' => $actionStatsWithLabel,
-                    'daily_stats' => $dailyStats
+                    'daily_stats'  => $dailyStats
                 ]
             ], self::HTTP_OK);
 
@@ -188,20 +190,20 @@ class Activity_log extends RestController
 
             $rows = array_map(function ($log) {
                 return [
-                    'id' => $log->id,
-                    'action' => $log->action,
+                    'id'           => $log->id,
+                    'action'       => $log->action,
                     'action_label' => $this->getActionLabel($log->action),
-                    'target_type' => $log->target_type,
-                    'target_id' => $log->target_id,
-                    'description' => $log->description,
-                    'ip_address' => $log->ip_address,
-                    'created_at' => $log->created_at
+                    'target_type'  => $log->target_type,
+                    'target_id'    => $log->target_id,
+                    'description'  => $log->description,
+                    'ip_address'   => $log->ip_address,
+                    'created_at'   => $log->created_at
                 ];
             }, $logs);
 
             $this->response([
                 'success' => true,
-                'rows' => $rows
+                'rows'    => $rows
             ], self::HTTP_OK);
 
         } catch (Exception $e) {
@@ -243,21 +245,21 @@ class Activity_log extends RestController
 
             $rows = array_map(function ($log) {
                 return [
-                    'id' => $log->id,
-                    'user_id' => $log->user_id,
-                    'user_name' => $log->user_name ?? '비회원',
-                    'action' => $log->action,
+                    'id'           => $log->id,
+                    'user_id'      => $log->user_id,
+                    'user_name'    => $log->user_name ?? '비회원',
+                    'action'       => $log->action,
                     'action_label' => $this->getActionLabel($log->action),
-                    'target_type' => $log->target_type,
-                    'target_id' => $log->target_id,
-                    'description' => $log->description,
-                    'created_at' => $log->created_at
+                    'target_type'  => $log->target_type,
+                    'target_id'    => $log->target_id,
+                    'description'  => $log->description,
+                    'created_at'   => $log->created_at
                 ];
             }, $logs);
 
             $this->response([
                 'success' => true,
-                'rows' => $rows
+                'rows'    => $rows
             ], self::HTTP_OK);
 
         } catch (Exception $e) {
@@ -279,22 +281,22 @@ class Activity_log extends RestController
     private function getActionLabel($action)
     {
         $labels = [
-            'login' => '로그인',
-            'logout' => '로그아웃',
-            'login_failed' => '로그인 실패',
-            'article_create' => '게시글 작성',
-            'article_update' => '게시글 수정',
-            'article_delete' => '게시글 삭제',
-            'comment_create' => '댓글 작성',
-            'comment_update' => '댓글 수정',
-            'comment_delete' => '댓글 삭제',
-            'password_change' => '비밀번호 변경',
-            'profile_update' => '프로필 수정',
-            'user_delete' => '사용자 삭제',
+            'login'            => '로그인',
+            'logout'           => '로그아웃',
+            'login_failed'     => '로그인 실패',
+            'article_create'   => '게시글 작성',
+            'article_update'   => '게시글 수정',
+            'article_delete'   => '게시글 삭제',
+            'comment_create'   => '댓글 작성',
+            'comment_update'   => '댓글 수정',
+            'comment_delete'   => '댓글 삭제',
+            'password_change'  => '비밀번호 변경',
+            'profile_update'   => '프로필 수정',
+            'user_delete'      => '사용자 삭제',
             'user_role_change' => '권한 변경',
-            'board_create' => '게시판 생성',
-            'board_update' => '게시판 수정',
-            'board_delete' => '게시판 삭제'
+            'board_create'     => '게시판 생성',
+            'board_update'     => '게시판 수정',
+            'board_delete'     => '게시판 삭제'
         ];
 
         return $labels[$action] ?? $action;
