@@ -22,6 +22,10 @@
                             <option value="password_change">비밀번호 변경</option>
                             <option value="profile_update">프로필 수정</option>
                             <option value="user_role_change">권한 변경</option>
+                            <option value="user_delete">사용자 탈퇴</option>
+                            <option value="board_create">게시판 생성</option>
+                            <option value="board_update">게시판 수정</option>
+                            <option value="board_delete">게시판 삭제</option>
                         </select>
                     </div>
                     <div class="col-md-2">
