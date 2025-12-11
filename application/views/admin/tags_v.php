@@ -6,7 +6,8 @@
                 <button type="button" class="btn btn-outline-danger btn-sm me-2" id="deleteUnusedBtn">
                     <i class="bi bi-trash"></i> 미사용 태그 삭제
                 </button>
-                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createTagModal">
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                        data-bs-target="#createTagModal">
                     <i class="bi bi-plus"></i> 태그 추가
                 </button>
             </div>
@@ -206,7 +207,7 @@
                 search: params.search || ''
             };
         },
-        headerStyle: () => ({ classes: 'table-dark' }),
+        headerStyle: () => ({classes: 'table-dark'}),
         onLoadError: (status, res) => {
             Swal.fire({
                 icon: 'error',
@@ -217,32 +218,47 @@
     });
 
     // 태그 생성
-    $('#createTagBtn').on('click', function() {
+    $('#createTagBtn').on('click', function () {
         const name = $('#newTagName').val().trim();
+
         if (!name) {
-            Swal.fire({ icon: 'warning', text: '태그 이름을 입력해주세요.' });
+            Swal.fire({
+                icon: 'warning',
+                text: '태그 이름을 입력해주세요.'
+            });
             return;
         }
 
         $.ajax({
             url: '/rest/tag',
             method: 'POST',
-            data: { name: name },
-            success: function(response) {
+            data: {
+                name: name,
+                [csrfName]: csrfHash
+            },
+            success: (response) => {
                 $('#createTagModal').modal('hide');
                 $('#newTagName').val('');
                 $('#tag-list').bootstrapTable('refresh');
-                Swal.fire({ icon: 'success', text: '태그가 생성되었습니다.', timer: 1500, showConfirmButton: false });
+                Swal.fire({
+                    icon: 'success',
+                    text: '태그가 생성되었습니다.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
             },
-            error: function(xhr) {
+            error: (xhr) => {
                 const message = xhr.responseJSON?.message || '태그 생성에 실패했습니다.';
-                Swal.fire({ icon: 'error', text: message });
+                Swal.fire({
+                    icon: 'error',
+                    text: message
+                });
             }
         });
     });
 
     // 수정 모달 열기
-    $(document).on('click', '.edit-btn', function() {
+    $(document).on('click', '.edit-btn', function () {
         const id = $(this).data('id');
         const name = $(this).data('name');
         $('#editTagId').val(id);
@@ -251,32 +267,32 @@
     });
 
     // 태그 수정
-    $('#updateTagBtn').on('click', function() {
+    $('#updateTagBtn').on('click', function () {
         const id = $('#editTagId').val();
         const name = $('#editTagName').val().trim();
         if (!name) {
-            Swal.fire({ icon: 'warning', text: '태그 이름을 입력해주세요.' });
+            Swal.fire({icon: 'warning', text: '태그 이름을 입력해주세요.'});
             return;
         }
 
         $.ajax({
             url: `/rest/tag/${id}`,
             method: 'PUT',
-            data: { name: name },
-            success: function(response) {
+            data: {name: name},
+            success: function (response) {
                 $('#editTagModal').modal('hide');
                 $('#tag-list').bootstrapTable('refresh');
-                Swal.fire({ icon: 'success', text: '태그가 수정되었습니다.', timer: 1500, showConfirmButton: false });
+                Swal.fire({icon: 'success', text: '태그가 수정되었습니다.', timer: 1500, showConfirmButton: false});
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 const message = xhr.responseJSON?.message || '태그 수정에 실패했습니다.';
-                Swal.fire({ icon: 'error', text: message });
+                Swal.fire({icon: 'error', text: message});
             }
         });
     });
 
     // 태그 삭제
-    $(document).on('click', '.delete-btn', function() {
+    $(document).on('click', '.delete-btn', function () {
         const id = $(this).data('id');
         const name = $(this).data('name');
 
@@ -293,13 +309,13 @@
                 $.ajax({
                     url: `/rest/tag/${id}`,
                     method: 'DELETE',
-                    success: function(response) {
+                    success: function (response) {
                         $('#tag-list').bootstrapTable('refresh');
-                        Swal.fire({ icon: 'success', text: '태그가 삭제되었습니다.', timer: 1500, showConfirmButton: false });
+                        Swal.fire({icon: 'success', text: '태그가 삭제되었습니다.', timer: 1500, showConfirmButton: false});
                     },
-                    error: function(xhr) {
+                    error: function (xhr) {
                         const message = xhr.responseJSON?.message || '태그 삭제에 실패했습니다.';
-                        Swal.fire({ icon: 'error', text: message });
+                        Swal.fire({icon: 'error', text: message});
                     }
                 });
             }
@@ -307,7 +323,7 @@
     });
 
     // 병합 모달 열기
-    $(document).on('click', '.merge-btn', function() {
+    $(document).on('click', '.merge-btn', function () {
         const sourceId = $(this).data('id');
         const sourceName = $(this).data('name');
 
@@ -318,8 +334,8 @@
         $.ajax({
             url: '/rest/tag',
             method: 'GET',
-            data: { limit: 100, sort: 'usage_count', order: 'desc' },
-            success: function(response) {
+            data: {limit: 100, sort: 'usage_count', order: 'desc'},
+            success: function (response) {
                 const $select = $('#mergeTargetId');
                 $select.empty().append('<option value="">태그 선택...</option>');
 
@@ -335,33 +351,33 @@
     });
 
     // 태그 병합
-    $('#confirmMergeBtn').on('click', function() {
+    $('#confirmMergeBtn').on('click', function () {
         const sourceId = $('#mergeSourceId').val();
         const targetId = $('#mergeTargetId').val();
 
         if (!targetId) {
-            Swal.fire({ icon: 'warning', text: '병합 대상 태그를 선택해주세요.' });
+            Swal.fire({icon: 'warning', text: '병합 대상 태그를 선택해주세요.'});
             return;
         }
 
         $.ajax({
             url: '/rest/tag/merge',
             method: 'POST',
-            data: { source_id: sourceId, target_id: targetId },
-            success: function(response) {
+            data: {source_id: sourceId, target_id: targetId},
+            success: function (response) {
                 $('#mergeTagModal').modal('hide');
                 $('#tag-list').bootstrapTable('refresh');
-                Swal.fire({ icon: 'success', text: '태그가 병합되었습니다.', timer: 1500, showConfirmButton: false });
+                Swal.fire({icon: 'success', text: '태그가 병합되었습니다.', timer: 1500, showConfirmButton: false});
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 const message = xhr.responseJSON?.message || '태그 병합에 실패했습니다.';
-                Swal.fire({ icon: 'error', text: message });
+                Swal.fire({icon: 'error', text: message});
             }
         });
     });
 
     // 미사용 태그 삭제
-    $('#deleteUnusedBtn').on('click', function() {
+    $('#deleteUnusedBtn').on('click', function () {
         Swal.fire({
             title: '미사용 태그 삭제',
             text: '사용되지 않는 모든 태그를 삭제하시겠습니까?',
@@ -375,7 +391,7 @@
                 $.ajax({
                     url: '/rest/tag/unused',
                     method: 'DELETE',
-                    success: function(response) {
+                    success: function (response) {
                         $('#tag-list').bootstrapTable('refresh');
                         Swal.fire({
                             icon: 'success',
@@ -384,9 +400,9 @@
                             showConfirmButton: false
                         });
                     },
-                    error: function(xhr) {
+                    error: function (xhr) {
                         const message = xhr.responseJSON?.message || '미사용 태그 삭제에 실패했습니다.';
-                        Swal.fire({ icon: 'error', text: message });
+                        Swal.fire({icon: 'error', text: message});
                     }
                 });
             }
