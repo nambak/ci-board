@@ -121,7 +121,7 @@
                         <div class="d-flex flex-wrap gap-2">
                             <?php foreach ($popularTags as $popularTag): ?>
                                 <a href="/tag/<?= html_escape($popularTag->slug) ?>"
-                                   class="badge <?= $popularTag->id === $tag->id ? 'bg-primary' : 'bg-light text-primary' ?> text-decoration-none">
+                                   class="badge <?= $popularTag->id == $tag->id ? 'bg-primary' : 'bg-light text-primary' ?> text-decoration-none">
                                     <?= html_escape($popularTag->name) ?>
                                     <span class="ms-1 opacity-75"><?= $popularTag->usage_count ?></span>
                                 </a>
