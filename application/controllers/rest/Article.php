@@ -76,12 +76,17 @@ class Article extends RestController
             // 변경 전 데이터 저장
             $oldData = ['title' => $post->title, 'content' => $post->content];
 
-            $this->article_m->update($id, $title, $content);
+            $updated = $this->article_m->update($id, $title, $content);
 
             // 게시글 수정 로깅
-            $this->activity_logger->logArticleUpdate($id, $oldData, ['title' => $title, 'content' => $content]);
+            if ($updated) {
+                $this->activity_logger->logArticleUpdate($id, $oldData, ['title' => $title, 'content' => $content]);
+            }
 
-            $this->response(['message' => 'success'], 200);
+            $this->response(
+                $updated ? ['message' => 'success'] : ['message' => 'update failed'],
+                $updated ? 200 : 500
+            );
         } catch (Exception $e) {
             $this->response(['message' => 'server error: ' . $e->getMessage()], 500);
         }
