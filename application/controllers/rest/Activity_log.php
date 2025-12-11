@@ -51,9 +51,6 @@ class Activity_log extends RestController
                 $order = 'DESC';
             }
 
-            // limit 범위 제한
-            $limit = max(1, min(100, $limit));
-
             // 필터 파라미터
             $filters = [];
 
@@ -252,6 +249,14 @@ class Activity_log extends RestController
             $this->response([
                 'success' => false,
                 'message' => 'IP 주소가 필요합니다.'
+            ], self::HTTP_BAD_REQUEST);
+            return;
+        }
+
+        if (!filter_var($ipAddress, FILTER_VALIDATE_IP)) {
+            $this->response([
+                'success' => false,
+                'message' => '유효하지 않은 IP 주소 형식입니다.',
             ], self::HTTP_BAD_REQUEST);
             return;
         }
