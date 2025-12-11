@@ -39,7 +39,7 @@ class Activity_log extends RestController
             $offset = max(0, $offset);
 
             // 정렬 필드 화이트리스트 검증
-            $allowedSortFields = ['id', 'created_at', 'action', 'user_id', 'ip_address'];
+            $allowedSortFields = ['id', 'created_at', 'action', 'user_id', 'ip_address', 'target_type'];
             $sort = $this->get('sort') ?: 'created_at';
             if (!in_array($sort, $allowedSortFields)) {
                 $sort = 'created_at';
