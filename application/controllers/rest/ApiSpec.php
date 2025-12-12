@@ -1,10 +1,8 @@
 <?php
 
-use chriskacerguis\RestServer\RestController;
-
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class ApiSpec extends RestController
+class ApiSpec extends MY_RestController
 {
     /**
      * 공통 스키마 파일 (먼저 로드됨)

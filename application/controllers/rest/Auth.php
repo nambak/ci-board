@@ -1,13 +1,10 @@
 <?php
 
-use chriskacerguis\RestServer\RestController;
-
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Auth extends RestController
+class Auth extends MY_RestController
 {
     const HTTP_UNPROCESSABLE_ENTITY = 422;
-    const HTTP_TOO_MANY_REQUESTS = 429;
 
     public function __construct()
     {
@@ -15,7 +12,6 @@ class Auth extends RestController
 
         $this->load->library('session');
         $this->load->library('form_validation');
-        $this->load->library('rate_limiter');
         $this->load->library('simple_captcha');
         $this->load->library('activity_logger');
         $this->load->helper(['security', 'string', 'signup_security', 'email']);

@@ -1,14 +1,12 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-use chriskacerguis\RestServer\RestController;
-
 /**
  * Attachment REST Controller
  *
  * 첨부파일 업로드, 다운로드, 삭제 기능을 제공하는 REST API 컨트롤러
  */
-class Attachment extends RestController
+class Attachment extends MY_RestController
 {
     public function __construct()
     {

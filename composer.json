@@ -18,6 +18,11 @@
 		"maximebf/debugbar": "^1.22",
       "ext-ctype": "*"
     },
+	"autoload": {
+		"classmap": [
+			"application/core"
+		]
+	},
 	"suggest": {
 		"paragonie/random_compat": "Provides better randomness in PHP 5.x"
 	},
