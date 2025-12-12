@@ -247,7 +247,6 @@ class Rate_limiter
             return;
         }
 
-        $current_time = date('Y-m-d H:i:s');
         $cutoff_time = date('Y-m-d H:i:s', strtotime('-1 hour'));
 
         // Delete old expired entries
