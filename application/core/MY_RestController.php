@@ -39,7 +39,7 @@ class MY_RestController extends RestController
 
         // Check IP whitelist
         $whitelist = $this->config->item('rate_limit_whitelist') ?: [];
-        if (in_array($ip_address, $whitelist)) {
+        if (in_array($ip_address, $whitelist, true)) {
             return;
         }
 
@@ -91,7 +91,7 @@ class MY_RestController extends RestController
 
         // If not allowed, return 429 error
         if (!$result['allowed']) {
-            $retry_after = $result['reset_time'] - time();
+            $retry_after = max(0, $result['reset_time'] - time());
 
             $this->output->set_header('Retry-After: ' . max(1, $retry_after));
 
@@ -103,6 +103,7 @@ class MY_RestController extends RestController
                 'limit' => $result['limit'],
                 'reset_time' => $result['reset_time']
             ], self::HTTP_TOO_MANY_REQUESTS);
+            return;
         }
     }
 
