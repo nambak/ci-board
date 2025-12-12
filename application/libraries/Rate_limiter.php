@@ -30,7 +30,7 @@ class Rate_limiter
             $this->enabled = $config['enabled'];
         }
     }
-    
+
     /**
      * Check if current request is allowed based on rate limits
      *
@@ -45,10 +45,10 @@ class Rate_limiter
     {
         if (!$this->enabled) {
             return [
-                'allowed' => true,
-                'remaining' => 999,
+                'allowed'    => true,
+                'remaining'  => 999,
                 'reset_time' => time() + 60,
-                'limit' => 999
+                'limit'      => 999
             ];
         }
 
@@ -74,19 +74,19 @@ class Rate_limiter
             // First request - create new record
             $expires_at = date('Y-m-d H:i:s', strtotime("+{$time_window} seconds"));
             $this->CI->db->insert('rate_limits', [
-                'ip_address' => $ip_address,
-                'endpoint' => $endpoint,
+                'ip_address'    => $ip_address,
+                'endpoint'      => $endpoint,
                 'request_count' => 1,
-                'window_start' => $current_time,
-                'expires_at' => $expires_at,
-                'created_at' => $current_time
+                'window_start'  => $current_time,
+                'expires_at'    => $expires_at,
+                'created_at'    => $current_time
             ]);
 
             return [
-                'allowed' => true,
-                'remaining' => $max_requests - 1,
+                'allowed'    => true,
+                'remaining'  => $max_requests - 1,
                 'reset_time' => strtotime($expires_at),
-                'limit' => $max_requests
+                'limit'      => $max_requests
             ];
         }
 
@@ -98,16 +98,16 @@ class Rate_limiter
                 ->where('id', $rate_limit->id)
                 ->update('rate_limits', [
                     'request_count' => 1,
-                    'window_start' => $current_time,
-                    'expires_at' => $expires_at,
-                    'updated_at' => $current_time
+                    'window_start'  => $current_time,
+                    'expires_at'    => $expires_at,
+                    'updated_at'    => $current_time
                 ]);
 
             return [
-                'allowed' => true,
-                'remaining' => $max_requests - 1,
+                'allowed'    => true,
+                'remaining'  => $max_requests - 1,
                 'reset_time' => strtotime($expires_at),
-                'limit' => $max_requests
+                'limit'      => $max_requests
             ];
         }
 
@@ -115,14 +115,15 @@ class Rate_limiter
         if ($rate_limit->request_count >= $max_requests) {
             // Log the violation
             $this->log_violation($ip_address, $endpoint, $rate_limit->request_count, $max_requests, $user_id);
-
-            log_message('warning', "Rate limit exceeded for {$endpoint} by {$ip_address}. Count: {$rate_limit->request_count}/{$max_requests}");
+            $message = "Rate limit exceeded for {$endpoint} by {$ip_address}. Count: {$rate_limit->request_count}/{$max_requests}";
+            $level = $this->CI->config->item('rate_limit_log_level') ?: 'error';
+            log_message($level, $message);
 
             return [
-                'allowed' => false,
-                'remaining' => 0,
+                'allowed'    => false,
+                'remaining'  => 0,
                 'reset_time' => strtotime($rate_limit->expires_at),
-                'limit' => $max_requests
+                'limit'      => $max_requests
             ];
         }
 
@@ -136,13 +137,13 @@ class Rate_limiter
         $new_count = $rate_limit->request_count + 1;
 
         return [
-            'allowed' => true,
-            'remaining' => $max_requests - $new_count,
+            'allowed'    => true,
+            'remaining'  => $max_requests - $new_count,
             'reset_time' => strtotime($rate_limit->expires_at),
-            'limit' => $max_requests
+            'limit'      => $max_requests
         ];
     }
-    
+
     /**
      * Get current rate limit status without incrementing
      *
@@ -156,11 +157,11 @@ class Rate_limiter
     {
         if (!$this->enabled) {
             return [
-                'allowed' => true,
-                'remaining' => 999,
+                'allowed'    => true,
+                'remaining'  => 999,
                 'reset_time' => time() + 60,
-                'limit' => 999,
-                'current' => 0
+                'limit'      => 999,
+                'current'    => 0
             ];
         }
 
@@ -180,22 +181,22 @@ class Rate_limiter
 
         if (!$rate_limit) {
             return [
-                'allowed' => true,
-                'remaining' => $max_requests,
+                'allowed'    => true,
+                'remaining'  => $max_requests,
                 'reset_time' => strtotime("+{$time_window} seconds"),
-                'limit' => $max_requests,
-                'current' => 0
+                'limit'      => $max_requests,
+                'current'    => 0
             ];
         }
 
         // Check if window expired
         if (strtotime($rate_limit->window_start) < strtotime($window_start)) {
             return [
-                'allowed' => true,
-                'remaining' => $max_requests,
+                'allowed'    => true,
+                'remaining'  => $max_requests,
                 'reset_time' => strtotime("+{$time_window} seconds"),
-                'limit' => $max_requests,
-                'current' => 0
+                'limit'      => $max_requests,
+                'current'    => 0
             ];
         }
 
@@ -203,11 +204,11 @@ class Rate_limiter
         $remaining = max(0, $max_requests - $rate_limit->request_count);
 
         return [
-            'allowed' => $allowed,
-            'remaining' => $remaining,
+            'allowed'    => $allowed,
+            'remaining'  => $remaining,
             'reset_time' => strtotime($rate_limit->expires_at),
-            'limit' => $max_requests,
-            'current' => (int)$rate_limit->request_count
+            'limit'      => $max_requests,
+            'current'    => (int)$rate_limit->request_count
         ];
     }
 
@@ -252,16 +253,16 @@ class Rate_limiter
         $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
 
         $this->CI->db->insert('rate_limit_logs', [
-            'ip_address' => $ip_address,
-            'endpoint' => $endpoint,
-            'user_id' => $user_id,
+            'ip_address'    => $ip_address,
+            'endpoint'      => $endpoint,
+            'user_id'       => $user_id,
             'request_count' => $request_count,
-            'limit_value' => $limit_value,
-            'user_agent' => $user_agent,
-            'created_at' => date('Y-m-d H:i:s')
+            'limit_value'   => $limit_value,
+            'user_agent'    => $user_agent,
+            'created_at'    => date('Y-m-d H:i:s')
         ]);
     }
-    
+
     /**
      * Get client IP address
      */
@@ -278,12 +279,12 @@ class Rate_limiter
             'HTTP_CLIENT_IP',            // Proxies
             'REMOTE_ADDR'                // Standard
         ];
-        
+
         foreach ($headers as $header) {
             if (!empty($_SERVER[$header])) {
                 $ips = explode(',', $_SERVER[$header]);
                 $ip = trim($ips[0]);
-                
+
                 // Validate IP address
                 if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
                     return $ip;
@@ -293,7 +294,7 @@ class Rate_limiter
                 }
             }
         }
-        
+
         return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
     }
 }
