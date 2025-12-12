@@ -20,89 +20,170 @@ $config['rate_limit_default'] = [
  * API 엔드포인트별 제한 설정
  *
  * 각 엔드포인트는 다음 형식으로 정의:
- * 'endpoint_pattern' => [
+ * 'METHOD /endpoint/path' => [
  *     'max_requests' => int,    // 최대 요청 수
  *     'time_window' => int,     // 시간 윈도우 (초)
  *     'description' => string   // 설명
  * ]
+ *
+ * HTTP 메서드별로 다른 제한을 설정할 수 있습니다.
+ * 와일드카드(*) 사용 가능하며, 구체적인 규칙이 우선 적용됩니다.
  */
 $config['rate_limit_rules'] = [
+    // ============================================
     // 인증 관련 API - 엄격한 제한
-    '/rest/auth/login' => [
+    // ============================================
+    'POST /rest/auth/login' => [
         'max_requests' => 5,
         'time_window' => 60,  // 5회/분
         'description' => '로그인 API'
     ],
-    '/rest/auth/register' => [
+    'POST /rest/auth/register' => [
         'max_requests' => 3,
         'time_window' => 3600,  // 3회/시간
         'description' => '회원가입 API'
     ],
-    '/rest/auth/password' => [
+    'POST /rest/auth/password' => [
         'max_requests' => 3,
         'time_window' => 3600,  // 3회/시간
         'description' => '비밀번호 재설정 API'
     ],
+    'GET /rest/auth/check-email' => [
+        'max_requests' => 10,
+        'time_window' => 60,  // 10회/분
+        'description' => '이메일 중복 체크 API'
+    ],
+    'POST /rest/auth/logout' => [
+        'max_requests' => 30,
+        'time_window' => 60,  // 30회/분
+        'description' => '로그아웃 API'
+    ],
 
-    // 조회 API - 관대한 제한
-    '/rest/board*' => [
+    // ============================================
+    // 게시판 API
+    // ============================================
+    // 조회 - 관대한 제한
+    'GET /rest/board*' => [
         'max_requests' => 100,
         'time_window' => 60,  // 100회/분
         'description' => '게시판 조회 API'
     ],
-    '/rest/article*' => [
+
+    // ============================================
+    // 게시글 API
+    // ============================================
+    // 조회 - 관대한 제한
+    'GET /rest/article*' => [
         'max_requests' => 100,
         'time_window' => 60,  // 100회/분
         'description' => '게시글 조회 API'
     ],
-    '/rest/comment*' => [
-        'max_requests' => 100,
-        'time_window' => 60,  // 100회/분
-        'description' => '댓글 조회 API'
-    ],
-    '/rest/user*' => [
-        'max_requests' => 50,
-        'time_window' => 60,  // 50회/분
-        'description' => '사용자 조회 API'
-    ],
-
-    // 작성/수정/삭제 API - 중간 제한
-    '/rest/article/create' => [
+    // 작성 - 엄격한 제한
+    'POST /rest/article' => [
         'max_requests' => 10,
         'time_window' => 60,  // 10회/분
         'description' => '게시글 작성 API'
     ],
-    '/rest/article/update' => [
+    // 수정 - 중간 제한
+    'PUT /rest/article/*' => [
         'max_requests' => 20,
         'time_window' => 60,  // 20회/분
         'description' => '게시글 수정 API'
     ],
-    '/rest/article/delete' => [
+    // 삭제 - 중간 제한
+    'DELETE /rest/article/*' => [
         'max_requests' => 20,
         'time_window' => 60,  // 20회/분
         'description' => '게시글 삭제 API'
     ],
-    '/rest/comment/create' => [
+    // 좋아요
+    'POST /rest/article/*/like' => [
+        'max_requests' => 30,
+        'time_window' => 60,  // 30회/분
+        'description' => '게시글 좋아요 API'
+    ],
+
+    // ============================================
+    // 댓글 API
+    // ============================================
+    // 조회 - 관대한 제한
+    'GET /rest/comment*' => [
+        'max_requests' => 100,
+        'time_window' => 60,  // 100회/분
+        'description' => '댓글 조회 API'
+    ],
+    // 작성 - 엄격한 제한
+    'POST /rest/comment' => [
         'max_requests' => 10,
         'time_window' => 60,  // 10회/분
         'description' => '댓글 작성 API'
     ],
-    '/rest/comment/update' => [
+    // 수정 - 중간 제한
+    'PUT /rest/comment/*' => [
         'max_requests' => 20,
         'time_window' => 60,  // 20회/분
         'description' => '댓글 수정 API'
     ],
-    '/rest/comment/delete' => [
+    // 삭제 - 중간 제한
+    'DELETE /rest/comment/*' => [
         'max_requests' => 20,
         'time_window' => 60,  // 20회/분
         'description' => '댓글 삭제 API'
     ],
 
-    // 이메일 중복 체크 등 - 엄격한 제한
-    '/rest/auth/check-email' => [
+    // ============================================
+    // 사용자 API
+    // ============================================
+    // 조회 - 중간 제한
+    'GET /rest/user*' => [
+        'max_requests' => 50,
+        'time_window' => 60,  // 50회/분
+        'description' => '사용자 조회 API'
+    ],
+    // 프로필 수정 - 중간 제한
+    'PUT /rest/user/*' => [
+        'max_requests' => 20,
+        'time_window' => 60,  // 20회/분
+        'description' => '사용자 정보 수정 API'
+    ],
+
+    // ============================================
+    // 첨부파일 API
+    // ============================================
+    // 업로드 - 엄격한 제한
+    'POST /rest/attachment' => [
         'max_requests' => 10,
         'time_window' => 60,  // 10회/분
-        'description' => '이메일 중복 체크 API'
+        'description' => '파일 업로드 API'
+    ],
+    // 다운로드 - 관대한 제한
+    'GET /rest/attachment/*' => [
+        'max_requests' => 100,
+        'time_window' => 60,  // 100회/분
+        'description' => '파일 다운로드 API'
+    ],
+
+    // ============================================
+    // 신고 API
+    // ============================================
+    'POST /rest/report' => [
+        'max_requests' => 5,
+        'time_window' => 300,  // 5회/5분
+        'description' => '신고 API'
+    ],
+
+    // ============================================
+    // 알림 API
+    // ============================================
+    'GET /rest/notification*' => [
+        'max_requests' => 50,
+        'time_window' => 60,  // 50회/분
+        'description' => '알림 조회 API'
+    ],
+    'PUT /rest/notification/*' => [
+        'max_requests' => 30,
+        'time_window' => 60,  // 30회/분
+        'description' => '알림 읽음 처리 API'
     ]
 ];
 

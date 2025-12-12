@@ -48,11 +48,12 @@ class MY_RestController extends RestController
             return;
         }
 
-        // Get current endpoint
+        // Get HTTP method and endpoint
+        $http_method = $this->input->method();
         $endpoint = '/' . ltrim($this->uri->uri_string(), '/');
 
         // Find matching rate limit rule
-        $rule = $this->_find_rate_limit_rule($endpoint);
+        $rule = $this->_find_rate_limit_rule($http_method, $endpoint);
 
         if (!$rule) {
             // Use default limits
@@ -73,10 +74,13 @@ class MY_RestController extends RestController
         // Get user ID if authenticated
         $user_id = $this->session->userdata('user_id');
 
+        // Combine method + endpoint for unique rate limit key
+        $rate_limit_key = strtoupper($http_method) . ' ' . $endpoint;
+
         // Check rate limit
         $result = $this->rate_limiter->is_allowed(
             $ip_address,
-            $endpoint,
+            $rate_limit_key,
             $max_requests,
             $time_window,
             $user_id
@@ -103,24 +107,66 @@ class MY_RestController extends RestController
     }
 
     /**
-     * Find matching rate limit rule for endpoint
+     * Find matching rate limit rule for METHOD + endpoint
+     *
+     * Implements two-pass lookup:
+     * 1. First pass: Try exact matches (METHOD /path)
+     * 2. Second pass: Try wildcard matches (METHOD /path/*)
+     *
+     * More specific rules take precedence over wildcard rules
+     *
+     * @param string $http_method HTTP method (GET, POST, PUT, DELETE, etc.)
+     * @param string $endpoint API endpoint path
+     * @return array|null Rule array or null if no match
      */
-    protected function _find_rate_limit_rule($endpoint)
+    protected function _find_rate_limit_rule($http_method, $endpoint)
     {
         $rate_limit_rules = $this->config->item('rate_limit_rules') ?: [];
+        $http_method = strtoupper($http_method);
+        $request_key = $http_method . ' ' . $endpoint;
 
+        // PASS 1: Exact matches (no wildcards)
+        // These are the most specific rules and should take precedence
         foreach ($rate_limit_rules as $pattern => $rule) {
-            // Exact match
-            if ($pattern === $endpoint) {
-                return $rule;
+            // Skip wildcard patterns in first pass
+            if (strpos($pattern, '*') !== false) {
+                continue;
             }
 
-            // Wildcard match (e.g., /rest/board*)
+            // Exact match: METHOD /exact/path
+            if ($pattern === $request_key) {
+                return $rule;
+            }
+        }
+
+        // PASS 2: Wildcard matches
+        // Sort patterns by specificity (longer paths = more specific)
+        $wildcard_rules = [];
+        foreach ($rate_limit_rules as $pattern => $rule) {
             if (strpos($pattern, '*') !== false) {
-                $regex_pattern = str_replace('*', '.*', preg_quote($pattern, '/'));
-                if (preg_match('/^' . $regex_pattern . '$/i', $endpoint)) {
-                    return $rule;
-                }
+                $wildcard_rules[$pattern] = $rule;
+            }
+        }
+
+        // Sort by pattern length (descending) for specificity
+        // Longer patterns like "POST /rest/article/*/like" should match before "POST /rest/article/*"
+        uksort($wildcard_rules, function($a, $b) {
+            return strlen($b) - strlen($a);
+        });
+
+        foreach ($wildcard_rules as $pattern => $rule) {
+            // Convert wildcard pattern to regex
+            // e.g., "POST /rest/article/*" -> "^POST /rest/article/.*$"
+            // 1. Replace * with placeholder to avoid preg_quote escaping it
+            // 2. Quote the rest of the pattern
+            // 3. Replace placeholder with .*
+            $placeholder = '___WILDCARD___';
+            $pattern_temp = str_replace('*', $placeholder, $pattern);
+            $regex_pattern = preg_quote($pattern_temp, '/');
+            $regex_pattern = str_replace($placeholder, '.*', $regex_pattern);
+
+            if (preg_match('/^' . $regex_pattern . '$/i', $request_key)) {
+                return $rule;
             }
         }
 
