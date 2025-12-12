@@ -135,7 +135,7 @@ application/
 
 #### Rate Limit 헤더
 
-모든 API 응답에는 다음 헤더가 포함됩니다:
+정상 응답에는 다음 헤더가 포함됩니다:
 
 ```http
 X-RateLimit-Limit: 100           # 최대 요청 수
