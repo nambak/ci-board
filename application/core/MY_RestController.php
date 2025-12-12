@@ -110,10 +110,10 @@ class MY_RestController extends RestController
      * Find matching rate limit rule for METHOD + endpoint
      *
      * Implements two-pass lookup:
-     * 1. First pass: Try exact matches (METHOD /path)
-     * 2. Second pass: Try wildcard matches (METHOD /path/*)
+     * 1. First pass: Try exact matches - return immediately if found
+     * 2. Second pass: Try wildcard matches - return first match
      *
-     * More specific rules take precedence over wildcard rules
+     * Exact matches take precedence over wildcard matches
      *
      * @param string $endpoint Method-aware endpoint (e.g., "POST /rest/article/create")
      * @return array|null Rule array or null if no match
@@ -122,51 +122,36 @@ class MY_RestController extends RestController
     {
         $rate_limit_rules = $this->config->item('rate_limit_rules') ?: [];
 
-        // PASS 1: Exact matches (no wildcards)
-        // These are the most specific rules and should take precedence
+        // PASS 1: Scan for exact matches
+        // Return immediately if pattern exactly equals endpoint
         foreach ($rate_limit_rules as $pattern => $rule) {
-            // Skip wildcard patterns in first pass
-            if (strpos($pattern, '*') !== false) {
-                continue;
-            }
-
-            // Exact match: METHOD /exact/path
             if ($pattern === $endpoint) {
                 return $rule;
             }
         }
 
-        // PASS 2: Wildcard matches
-        // Sort patterns by specificity (longer paths = more specific)
-        $wildcard_rules = [];
+        // PASS 2: Scan for wildcard matches
+        // Only check patterns containing '*'
         foreach ($rate_limit_rules as $pattern => $rule) {
-            if (strpos($pattern, '*') !== false) {
-                $wildcard_rules[$pattern] = $rule;
+            // Skip non-wildcard patterns
+            if (strpos($pattern, '*') === false) {
+                continue;
             }
-        }
 
-        // Sort by pattern length (descending) for specificity
-        // Longer patterns like "POST /rest/article/*/like" should match before "POST /rest/article/*"
-        uksort($wildcard_rules, function($a, $b) {
-            return strlen($b) - strlen($a);
-        });
-
-        foreach ($wildcard_rules as $pattern => $rule) {
             // Convert wildcard pattern to regex
-            // e.g., "POST /rest/article/*" -> "^POST /rest/article/.*$"
-            // 1. Replace * with placeholder to avoid preg_quote escaping it
-            // 2. Quote the rest of the pattern
-            // 3. Replace placeholder with .*
-            $placeholder = '___WILDCARD___';
-            $pattern_temp = str_replace('*', $placeholder, $pattern);
-            $regex_pattern = preg_quote($pattern_temp, '/');
-            $regex_pattern = str_replace($placeholder, '.*', $regex_pattern);
+            // 1. Use preg_quote to escape special regex characters
+            // 2. The escaped '\*' becomes '\\\*'
+            // 3. Replace '\\\*' with '.*' for regex wildcard matching
+            $regex_pattern = preg_quote($pattern, '/');
+            $regex_pattern = str_replace('\\*', '.*', $regex_pattern);
 
+            // Case-insensitive match
             if (preg_match('/^' . $regex_pattern . '$/i', $endpoint)) {
                 return $rule;
             }
         }
 
+        // No match found
         return null;
     }
 
