@@ -127,12 +127,23 @@ class Rate_limiter
             ];
         }
 
-        // Increment counter
+        // Increment counter atomically (avoid race)
         $this->CI->db
             ->where('id', $rate_limit->id)
-            ->set('request_count', 'request_count + 1', false)
+            ->where('request_count <', $max_requests)
+            ->set('request_count', 'request_count + 1', FALSE)
             ->set('updated_at', $current_time)
             ->update('rate_limits');
+
+        if ($this->CI->db->affected_rows() === 0) {
+            $this->log_violation($ip_address, $endpoint, $rate_limit->request_count, $max_requests, $user_id);
+            return [
+                'allowed'    => false,
+                'remaining'  => 0,
+                'reset_time' => strtotime($rate_limit->expires_at),
+                'limit'      => $max_requests
+            ];
+        }
 
         $new_count = $rate_limit->request_count + 1;
 
