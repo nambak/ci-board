@@ -48,39 +48,39 @@ class MY_RestController extends RestController
             return;
         }
 
-        // Get HTTP method and endpoint
-        $http_method = $this->input->method();
-        $endpoint = '/' . ltrim($this->uri->uri_string(), '/');
+        // Construct method-aware endpoint string: "METHOD /path"
+        $http_method = strtoupper($this->input->method());
+        $path = '/' . ltrim($this->uri->uri_string(), '/');
+        $endpoint = $http_method . ' ' . $path;
 
         // Find matching rate limit rule
-        $rule = $this->_find_rate_limit_rule($http_method, $endpoint);
+        $rule = $this->_find_rate_limit_rule($endpoint);
 
-        if (!$rule) {
+        // Determine base limits (from rule or default)
+        if ($rule) {
+            $max_requests = $rule['max_requests'];
+            $time_window = $rule['time_window'];
+        } else {
             // Use default limits
             $default = $this->config->item('rate_limit_default');
             $max_requests = $default['max_requests'];
             $time_window = $default['time_window'];
-        } else {
-            $max_requests = $rule['max_requests'];
-            $time_window = $rule['time_window'];
+        }
 
-            // Apply multiplier for authenticated users
-            if ($this->_is_authenticated_user()) {
-                $multiplier = $this->config->item('rate_limit_authenticated_multiplier') ?: 1;
-                $max_requests = $max_requests * $multiplier;
-            }
+        // Always apply multiplier for authenticated users
+        // (regardless of whether using rule or default)
+        if ($this->_is_authenticated_user()) {
+            $multiplier = $this->config->item('rate_limit_authenticated_multiplier') ?: 1;
+            $max_requests = (int)($max_requests * $multiplier);
         }
 
         // Get user ID if authenticated
         $user_id = $this->session->userdata('user_id');
 
-        // Combine method + endpoint for unique rate limit key
-        $rate_limit_key = strtoupper($http_method) . ' ' . $endpoint;
-
-        // Check rate limit
+        // Check rate limit using method-aware endpoint
         $result = $this->rate_limiter->is_allowed(
             $ip_address,
-            $rate_limit_key,
+            $endpoint,
             $max_requests,
             $time_window,
             $user_id
@@ -115,15 +115,12 @@ class MY_RestController extends RestController
      *
      * More specific rules take precedence over wildcard rules
      *
-     * @param string $http_method HTTP method (GET, POST, PUT, DELETE, etc.)
-     * @param string $endpoint API endpoint path
+     * @param string $endpoint Method-aware endpoint (e.g., "POST /rest/article/create")
      * @return array|null Rule array or null if no match
      */
-    protected function _find_rate_limit_rule($http_method, $endpoint)
+    protected function _find_rate_limit_rule($endpoint)
     {
         $rate_limit_rules = $this->config->item('rate_limit_rules') ?: [];
-        $http_method = strtoupper($http_method);
-        $request_key = $http_method . ' ' . $endpoint;
 
         // PASS 1: Exact matches (no wildcards)
         // These are the most specific rules and should take precedence
@@ -134,7 +131,7 @@ class MY_RestController extends RestController
             }
 
             // Exact match: METHOD /exact/path
-            if ($pattern === $request_key) {
+            if ($pattern === $endpoint) {
                 return $rule;
             }
         }
@@ -165,7 +162,7 @@ class MY_RestController extends RestController
             $regex_pattern = preg_quote($pattern_temp, '/');
             $regex_pattern = str_replace($placeholder, '.*', $regex_pattern);
 
-            if (preg_match('/^' . $regex_pattern . '$/i', $request_key)) {
+            if (preg_match('/^' . $regex_pattern . '$/i', $endpoint)) {
                 return $rule;
             }
         }
