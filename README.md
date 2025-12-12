@@ -8,6 +8,7 @@ CodeIgniter 3.x 기반의 게시판 서비스입니다. 웹 인터페이스와 R
 - **게시판 시스템**: 다중 게시판 지원, 게시글 작성/수정/삭제
 - **댓글 기능**: 게시글에 대한 댓글 작성/수정/삭제 (인라인 편집 지원)
 - **REST API**: 모든 주요 기능에 대한 RESTful API 제공
+- **API Rate Limiting**: IP 기반 요청 제한으로 DDoS 공격 방어 및 서버 보호
 - **API 문서화**: Redoc 지원
 
 ## 기술 스택
@@ -47,6 +48,9 @@ mysql -u root -p -e "CREATE DATABASE ci3board CHARACTER SET utf8mb4 COLLATE utf8
 
 # 스키마 생성
 mysql -u username -p ci3board < schema.sql
+
+# Rate Limiting 테이블 마이그레이션
+mysql -u username -p ci3board < migrations/001_add_rate_limiting_tables.sql
 ```
 
 4. **설정 파일 수정**
@@ -105,6 +109,90 @@ application/
 
 - **Redoc**: `http://localhost/redoc`
 - **OpenAPI 스펙**: `assets/api.json`
+
+### API Rate Limiting
+
+모든 REST API 요청은 Rate Limiting이 적용됩니다. DDoS 공격 방어 및 서버 보호를 위해 IP 주소 기반으로 요청 수를 제한합니다.
+
+#### 제한 정책
+
+| API 유형 | 제한 | 시간 윈도우 |
+|---------|------|------------|
+| 로그인 | 5회 | 1분 |
+| 회원가입 | 3회 | 1시간 |
+| 비밀번호 재설정 | 3회 | 1시간 |
+| 조회 API | 100회 | 1분 |
+| 작성/수정/삭제 API | 10-20회 | 1분 |
+
+#### 사용자 등급별 제한
+
+- **일반 사용자**: 기본 제한 적용
+- **인증된 사용자**: 기본 제한의 2배
+- **관리자**: 제한 없음
+- **화이트리스트 IP**: 제한 없음 (127.0.0.1, ::1)
+
+#### Rate Limit 헤더
+
+모든 API 응답에는 다음 헤더가 포함됩니다:
+
+```http
+X-RateLimit-Limit: 100           # 최대 요청 수
+X-RateLimit-Remaining: 95        # 남은 요청 수
+X-RateLimit-Reset: 1702345678    # 리셋 시간 (Unix timestamp)
+```
+
+#### 제한 초과 시
+
+제한을 초과하면 HTTP 429 응답을 받게 됩니다:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 45
+
+{
+  "success": false,
+  "message": "Too Many Requests. Please try again later.",
+  "error": "RATE_LIMIT_EXCEEDED",
+  "retry_after": 45,
+  "limit": 100,
+  "reset_time": 1702345678
+}
+```
+
+#### 설정
+
+Rate Limiting 설정은 `application/config/rate_limit.php`에서 관리합니다:
+
+```php
+// Rate Limiting 활성화/비활성화
+$config['rate_limit_enabled'] = true;
+
+// IP 화이트리스트 추가
+$config['rate_limit_whitelist'] = [
+    '127.0.0.1',
+    '::1',
+    '192.168.1.100'  // 신뢰된 IP 추가
+];
+
+// 인증된 사용자 배수 조정
+$config['rate_limit_authenticated_multiplier'] = 2;
+```
+
+#### 모니터링
+
+Rate Limit 초과 로그는 `rate_limit_logs` 테이블에 자동으로 기록됩니다:
+
+```sql
+SELECT
+    ip_address,
+    endpoint,
+    request_count,
+    limit_value,
+    created_at
+FROM rate_limit_logs
+ORDER BY created_at DESC
+LIMIT 10;
+```
 
 
 ## 개발

@@ -40,6 +40,93 @@
             "description": "수정 일시"
           }
         }
+      },
+      "RateLimitError": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false,
+            "description": "요청 성공 여부"
+          },
+          "message": {
+            "type": "string",
+            "example": "Too Many Requests. Please try again later.",
+            "description": "에러 메시지"
+          },
+          "error": {
+            "type": "string",
+            "example": "RATE_LIMIT_EXCEEDED",
+            "description": "에러 코드"
+          },
+          "retry_after": {
+            "type": "integer",
+            "example": 45,
+            "description": "재시도 대기 시간 (초)"
+          },
+          "limit": {
+            "type": "integer",
+            "example": 5,
+            "description": "최대 요청 수"
+          },
+          "reset_time": {
+            "type": "integer",
+            "example": 1702345678,
+            "description": "제한 리셋 시간 (Unix timestamp)"
+          }
+        }
+      }
+    },
+    "responses": {
+      "TooManyRequests": {
+        "description": "요청 제한 초과 (Rate Limit Exceeded)",
+        "headers": {
+          "X-RateLimit-Limit": {
+            "description": "시간 윈도우 내 최대 요청 수",
+            "schema": {
+              "type": "integer",
+              "example": 5
+            }
+          },
+          "X-RateLimit-Remaining": {
+            "description": "남은 요청 수",
+            "schema": {
+              "type": "integer",
+              "example": 0
+            }
+          },
+          "X-RateLimit-Reset": {
+            "description": "제한 리셋 시간 (Unix timestamp)",
+            "schema": {
+              "type": "integer",
+              "example": 1702345678
+            }
+          },
+          "Retry-After": {
+            "description": "재시도 대기 시간 (초)",
+            "schema": {
+              "type": "integer",
+              "example": 45
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/RateLimitError"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "RateLimitHeaders": {
+        "name": "X-RateLimit-Limit",
+        "in": "header",
+        "description": "모든 API 응답에 포함되는 Rate Limit 정보 헤더",
+        "schema": {
+          "type": "string"
+        }
       }
     }
   }
