@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `rate_limit_logs` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `ip_address` VARCHAR(45) NOT NULL COMMENT 'IP 주소',
   `endpoint` VARCHAR(100) NOT NULL COMMENT 'API 엔드포인트',
-  `user_id` INT NULL COMMENT '사용자 ID (인증된 경우)',
+  `user_id` INT UNSIGNED NULL COMMENT '사용자 ID (인증된 경우)',
   `request_count` INT UNSIGNED NOT NULL COMMENT '초과 시점의 요청 횟수',
   `limit_value` INT UNSIGNED NOT NULL COMMENT '제한 값',
   `user_agent` VARCHAR(500) NULL COMMENT 'User-Agent',
