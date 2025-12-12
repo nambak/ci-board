@@ -1,10 +1,8 @@
 <?php
 
-use chriskacerguis\RestServer\RestController;
-
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class Board extends RestController
+class Board extends MY_RestController
 {
     public function __construct()
     {

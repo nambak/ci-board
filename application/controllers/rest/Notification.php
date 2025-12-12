@@ -1,13 +1,11 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-use chriskacerguis\RestServer\RestController;
-
 /**
  * Notification REST API 컨트롤러
  * 알림 관련 REST API 엔드포인트 제공
  */
-class Notification extends RestController
+class Notification extends MY_RestController
 {
     public function __construct()
     {

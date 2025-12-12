@@ -1,9 +1,7 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-use chriskacerguis\RestServer\RestController;
-
-class Tag extends RestController
+class Tag extends MY_RestController
 {
     public function __construct()
     {
